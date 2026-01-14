@@ -9,6 +9,9 @@
 class UArrowComponent;
 class USkeletalMeshComponent;
 class UBoxComponent;
+class USpringArmComponent;
+class UCameraComponent;
+class UCarMovementComponent;
 
 UCLASS()
 class SPINNINGWHEELS_API ACar : public APawn
@@ -31,6 +34,15 @@ private:
 	UPROPERTY(Category=Car, VisibleAnywhere, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<USkeletalMeshComponent> SkeletalMeshComponent;
 
+	UPROPERTY(Category=Car, VisibleAnywhere, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<USpringArmComponent> SpringArmComponent;
+
+	UPROPERTY(Category=Car, VisibleAnywhere, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UCameraComponent> CameraComponent;
+
+	UPROPERTY(Category=Car, VisibleAnywhere, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UCarMovementComponent> CarMovementComponent;
+
 #if WITH_EDITORONLY_DATA
 	
 	UPROPERTY()
@@ -43,6 +55,8 @@ protected:
 
 	virtual void BeginPlay() override;
 
-public:	
+public:
+
+	void Drive();
 
 };

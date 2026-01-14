@@ -5,6 +5,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "SpinningWheels/Input/Configs/DriveInputConfig.h"
+#include "SpinningWheels/Pawns/Car.h"
 
 void ACarController::BeginPlay()
 {
@@ -37,9 +38,21 @@ void ACarController::SetupInputComponent()
 	}
 }
 
+void ACarController::SetPawn(APawn* InPawn)
+{
+	Super::SetPawn(InPawn);
+
+	Car = Cast<ACar>(InPawn);
+}
+
 void ACarController::Drive()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ACarController::Drive"))
+	UE_LOG(LogTemp, Warning, TEXT("ACarController::Drive"));
+	if (Car)
+	{
+		Car->Drive();
+	}
+	
 }
 
 void ACarController::Brake()

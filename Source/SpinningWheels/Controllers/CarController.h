@@ -8,6 +8,7 @@
 
 class UInputMappingContext;
 class UDriveInputConfig;
+class ACar;
 
 UCLASS()
 class SPINNINGWHEELS_API ACarController : public APlayerController
@@ -22,19 +23,21 @@ private:
 	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UDriveInputConfig> InputConfig;
 
+	ACar* Car;
+
+	/** Input Actions handler */
+	void Drive();
+	void Brake();
+	void Turn();
+
 protected:
 
 	virtual void BeginPlay() override;
 	
 	virtual void SetupInputComponent() override;
 
-private:
-
-	/** Actions */
-
-	void Drive();
-	void Brake();
-	void Turn();
+public:
 	
+	virtual void SetPawn(APawn* InPawn) override;
 	
 };

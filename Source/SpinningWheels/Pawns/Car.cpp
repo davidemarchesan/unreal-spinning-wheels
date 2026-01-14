@@ -1,7 +1,10 @@
 #include "Car.h"
 
+#include "Camera/CameraComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "SpinningWheels/Actors/Components/CarMovementComponent.h"
 
 ACar::ACar()
 {
@@ -31,6 +34,20 @@ ACar::ACar()
 		SkeletalMeshComponent->SetupAttachment(RootComponent);
 	}
 
+	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("Camera Arm");
+	if (SpringArmComponent)
+	{
+		SpringArmComponent->SetupAttachment(RootComponent);
+
+		CameraComponent = CreateDefaultSubobject<UCameraComponent>("Camera");
+		if (CameraComponent)
+		{
+			CameraComponent->SetupAttachment(SpringArmComponent);
+		}
+	}
+
+	CarMovementComponent = CreateDefaultSubobject<UCarMovementComponent>("Movement");
+
 #if WITH_EDITORONLY_DATA
 	ArrowComponent = CreateEditorOnlyDefaultSubobject<UArrowComponent>("Arrow");
 	if (ArrowComponent)
@@ -44,25 +61,27 @@ ACar::ACar()
 		ArrowComponent->SetupAttachment(RootComponent);
 	}
 #endif
-	
-	
 }
 
 void ACar::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void ACar::Drive()
+{
+	if (CarMovementComponent)
+	{
 	
+	}
 }
 
 void ACar::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void ACar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
 }
-
