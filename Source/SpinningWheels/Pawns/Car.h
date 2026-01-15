@@ -57,6 +57,8 @@ protected:
 
 public:
 
+	UCarMovementComponent* GetCarMovementComponent() const { return CarMovementComponent; }
+
 	void Drive();
 
 };

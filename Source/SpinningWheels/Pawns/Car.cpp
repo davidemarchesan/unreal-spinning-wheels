@@ -16,6 +16,7 @@ ACar::ACar()
 		BoxComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
 		BoxComponent->SetShouldUpdatePhysicsVolume(true);
 		BoxComponent->SetCanEverAffectNavigation(false);
+		BoxComponent->SetBoxExtent(FVector(183.f, 97.f, 48.f));
 		RootComponent = BoxComponent;
 	}
 
@@ -31,6 +32,7 @@ ACar::ACar()
 		SkeletalMeshComponent->PrimaryComponentTick.TickGroup = TG_PrePhysics;
 		SkeletalMeshComponent->SetGenerateOverlapEvents(false);
 		SkeletalMeshComponent->SetCanEverAffectNavigation(false);
+		SkeletalMeshComponent->SetRelativeLocation(FVector(-2.6f, 0.f, -48.f));
 		SkeletalMeshComponent->SetupAttachment(RootComponent);
 	}
 
@@ -38,6 +40,7 @@ ACar::ACar()
 	if (SpringArmComponent)
 	{
 		SpringArmComponent->SetupAttachment(RootComponent);
+		SpringArmComponent->SetRelativeLocation(FVector(-250.f, 0.f, 100.f));
 
 		CameraComponent = CreateDefaultSubobject<UCameraComponent>("Camera");
 		if (CameraComponent)
@@ -72,7 +75,7 @@ void ACar::Drive()
 {
 	if (CarMovementComponent)
 	{
-	
+		CarMovementComponent->Drive();
 	}
 }
 

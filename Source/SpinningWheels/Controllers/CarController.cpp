@@ -47,20 +47,18 @@ void ACarController::SetPawn(APawn* InPawn)
 
 void ACarController::Drive()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ACarController::Drive"));
 	if (Car)
 	{
 		Car->Drive();
 	}
-	
 }
 
 void ACarController::Brake()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ACarController::Brake"))
+	UE_LOG(LogTemp, Warning, TEXT("ACarController::Brake"));
 }
 
 void ACarController::Turn()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ACarController::Turn"))
+	UE_LOG(LogTemp, Warning, TEXT("ACarController::Turn"));
 }

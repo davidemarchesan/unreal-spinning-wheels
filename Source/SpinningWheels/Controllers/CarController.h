@@ -10,6 +10,9 @@ class UInputMappingContext;
 class UDriveInputConfig;
 class ACar;
 
+/**
+ * Debug use only
+ */
 UCLASS()
 class SPINNINGWHEELS_API ACarController : public APlayerController
 {
