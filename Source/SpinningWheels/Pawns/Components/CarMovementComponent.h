@@ -16,24 +16,29 @@ class SPINNINGWHEELS_API UCarMovementComponent : public UPawnMovementComponent
 
 private:
 
-	float Speed = 0.f;					// Current speed
-	float Acceleration = 0.f;			// Current acceleration
-	float BrakeDeceleration = 0.f;		// Current deceleration given by break
+	float Speed = 0.f;									// Current speed
+	float Acceleration = 0.f;							// Current acceleration
+	float BrakeDeceleration = 0.f;						// Current deceleration given by break
+	FRotator AngularVelocity = FRotator::ZeroRotator;	// Current rotation angular velocity (turning)
 
-	float DriveInputValue = 0.f;		// Is player pushing the drive button (float to handle decimal values in future?)
-	float BrakeInputValue = 0.f;		// Is player pushing the brake button
+	float DriveInputValue = 0.f;						// Is player pushing the drive button (float to handle decimal values in future?)
+	float BrakeInputValue = 0.f;						// Is player pushing the brake button
+	float TurnInputValue = 0.f;							// Is player turning (usually between -1 and 1)
 
 	float BrakeStartTime = 0.f;
 	float BrakeHoldTime = 0.f;
 
 	void CalcAcceleration(float DeltaTime);
 	void CalcBrakeDeceleration(float DeltaTime);
-	void CalcSpeed();
+	void CalcSpeed(float DeltaTime);
+
+	void CalcRotation();
 
 	void ApplyForces(float DeltaTime);
 	
 	void ResetDriveInputValue();
 	void ResetBrakeInputvalue();
+	void ResetTurnInputValue();
 
 	bool IsSpeedZero();
 
@@ -64,6 +69,9 @@ public:
 
 	UPROPERTY(Category=Brake, EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UCurveFloat> BrakeDecelerationCurve;
+
+	UPROPERTY(Category=Turn, EditAnywhere, BlueprintReadOnly)
+	float AngularSpeed;
 
 	UPROPERTY(Category=Forces, EditAnywhere, BlueprintReadOnly)
 	float GroundFriction;
