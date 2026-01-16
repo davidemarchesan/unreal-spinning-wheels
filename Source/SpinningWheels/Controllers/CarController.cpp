@@ -55,10 +55,18 @@ void ACarController::Drive()
 
 void ACarController::Brake()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ACarController::Brake"));
+	if (Car)
+	{
+		Car->Brake();
+	}
 }
 
-void ACarController::Turn()
+void ACarController::Turn(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ACarController::Turn"));
+
+	FVector2D InputVector = Value.Get<FVector2D>();
+	if (Car)
+	{
+		Car->Turn(InputVector);
+	}
 }

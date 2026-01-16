@@ -1,6 +1,7 @@
 #pragma once
 
-#include "SpinningWheels/Actors/Components/CarMovementComponent.h"
+// #include "SpinningWheels/Actors/Components/CarMovementComponent.h"
+#include "SpinningWheels/Pawns/Components/CarMovementComponent.h"
 #include "Widgets/SCompoundWidget.h"
 
 
@@ -20,5 +21,6 @@ private:
 	TWeakObjectPtr<UCarMovementComponent> CarMovementComponent;
 
 	TSharedPtr<STextBlock> DebugText;
+	TSharedPtr<SBorder> VelocityBorder;
 	
 };

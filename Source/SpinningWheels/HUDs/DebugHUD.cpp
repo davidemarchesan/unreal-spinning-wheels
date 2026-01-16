@@ -18,7 +18,7 @@ void ADebugHUD::BeginPlay()
 		{
 			const TSharedRef<SDebugOverlay> DebugOverlay = SNew(SDebugOverlay)
 				.CarMovementComponent(CarMovementComponent);
-
+		
 			GEngine->GameViewport->AddViewportWidgetContent(DebugOverlay);
 		}
 	}

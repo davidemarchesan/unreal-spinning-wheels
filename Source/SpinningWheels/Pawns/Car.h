@@ -19,8 +19,8 @@ class SPINNINGWHEELS_API ACar : public APawn
 	GENERATED_BODY()
 
 public:
-
-	ACar();
+	
+	ACar(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	virtual void Tick(float DeltaTime) override;
 
@@ -40,7 +40,7 @@ private:
 	UPROPERTY(Category=Car, VisibleAnywhere, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UCameraComponent> CameraComponent;
 
-	UPROPERTY(Category=Car, VisibleAnywhere, meta=(AllowPrivateAccess="true"))
+	UPROPERTY(Category=Car, VisibleDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UCarMovementComponent> CarMovementComponent;
 
 #if WITH_EDITORONLY_DATA
@@ -60,5 +60,6 @@ public:
 	UCarMovementComponent* GetCarMovementComponent() const { return CarMovementComponent; }
 
 	void Drive();
-
+	void Brake();
+	void Turn(FVector2D InputVector);
 };

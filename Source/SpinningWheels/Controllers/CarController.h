@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputActionValue.h"
 #include "GameFramework/Controller.h"
 #include "CarController.generated.h"
 
@@ -31,7 +32,7 @@ private:
 	/** Input Actions handler */
 	void Drive();
 	void Brake();
-	void Turn();
+	void Turn(const FInputActionValue& Value);
 
 protected:
 

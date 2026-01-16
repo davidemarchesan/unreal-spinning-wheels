@@ -3,13 +3,12 @@
 #include "Camera/CameraComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/CarMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "SpinningWheels/Actors/Components/CarMovementComponent.h"
 
-ACar::ACar()
+ACar::ACar(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
-	PrimaryActorTick.bCanEverTick = true;
-
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>("Box");
 	if (BoxComponent)
 	{
@@ -50,6 +49,10 @@ ACar::ACar()
 	}
 
 	CarMovementComponent = CreateDefaultSubobject<UCarMovementComponent>("Movement");
+	if (CarMovementComponent)
+	{
+		CarMovementComponent->UpdatedComponent = RootComponent;
+	}
 
 #if WITH_EDITORONLY_DATA
 	ArrowComponent = CreateEditorOnlyDefaultSubobject<UArrowComponent>("Arrow");
@@ -76,6 +79,22 @@ void ACar::Drive()
 	if (CarMovementComponent)
 	{
 		CarMovementComponent->Drive();
+	}
+}
+
+void ACar::Brake()
+{
+	// if (CarMovementComponent)
+	// {
+	// 	CarMovementComponent->Brake();
+	// }
+}
+
+void ACar::Turn(FVector2D InputVector)
+{
+	if (CarMovementComponent)
+	{
+		CarMovementComponent->Turn(InputVector);
 	}
 }
 
