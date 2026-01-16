@@ -6,6 +6,12 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "CarMovementComponent.generated.h"
 
+enum ECarMode : int
+{
+	CARMODE_Drive,
+	CARMODE_Slide
+};
+
 /**
  * 
  */
@@ -15,6 +21,12 @@ class SPINNINGWHEELS_API UCarMovementComponent : public UPawnMovementComponent
 	GENERATED_BODY()
 
 private:
+
+	TEnumAsByte<ECarMode> CarMode = ECarMode::CARMODE_Drive;
+	void SetMode(ECarMode NewMode);
+
+	void StartDrive();
+	void StartSlide();
 
 	float Speed = 0.f;									// Current speed
 	float Acceleration = 0.f;							// Current acceleration
@@ -28,6 +40,7 @@ private:
 	float BrakeStartTime = 0.f;
 	float BrakeHoldTime = 0.f;
 
+	void CalcVelocity(float DeltaTime);
 	void CalcAcceleration(float DeltaTime);
 	void CalcBrakeDeceleration(float DeltaTime);
 	void CalcSpeed(float DeltaTime);
@@ -41,6 +54,9 @@ private:
 	void ResetTurnInputValue();
 
 	bool IsSpeedZero();
+	bool IsAccelerating();
+	bool IsBraking();
+	bool IsTurning();
 
 protected:
 
@@ -73,11 +89,27 @@ public:
 	UPROPERTY(Category=Turn, EditAnywhere, BlueprintReadOnly)
 	float AngularSpeed;
 
+	UPROPERTY(Category=Slide, EditAnywhere, BlueprintReadOnly, meta=(Units="%"))
+	float MinSpeedToSlide;
+
+	UPROPERTY(Category=Slide, EditAnywhere, BlueprintReadOnly)
+	float SlideAngularSpeedMultiplier;
+
+	UPROPERTY(Category=Slide, EditAnywhere, BlueprintReadOnly)
+	float SlideLerpSpeed;
+	
 	UPROPERTY(Category=Forces, EditAnywhere, BlueprintReadOnly)
 	float GroundFriction;
+
+	ECarMode GetCarMode() const { return CarMode; }
 	
-	float GetCurrentSpeed() const { return Speed; }
-	float GetCurrentAcceleration() const { return Acceleration; }
+	float GetSpeed() const { return Speed; }
+	float GetAcceleration() const { return Acceleration; }
+	float GetBrakeDeceleration() const { return BrakeDeceleration; }
+	FRotator GetAngularVelocity() const { return AngularVelocity; }
+	
 	float GetDriveInputValue() const { return DriveInputValue; }
+	float GetBrakeInputValue() const { return BrakeInputValue; }
+	float GetTurnInputValue() const { return TurnInputValue; }
 	
 };

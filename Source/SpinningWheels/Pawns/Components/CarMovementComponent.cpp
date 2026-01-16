@@ -3,6 +3,52 @@
 
 #include "CarMovementComponent.h"
 
+void UCarMovementComponent::SetMode(ECarMode NewMode)
+{
+	CarMode = NewMode;
+	switch (CarMode)
+	{
+	default:
+	case ECarMode::CARMODE_Drive:
+		StartDrive();
+		break;
+	case ECarMode::CARMODE_Slide:
+		StartSlide();
+		break;
+	}
+}
+
+void UCarMovementComponent::StartDrive()
+{
+}
+
+void UCarMovementComponent::StartSlide()
+{
+}
+
+void UCarMovementComponent::CalcVelocity(float DeltaTime)
+{
+	switch (CarMode)
+	{
+	default:
+	case ECarMode::CARMODE_Drive:
+		Velocity = UpdatedComponent->GetComponentRotation().Vector().GetSafeNormal() * Speed;
+		break;
+		
+	case ECarMode::CARMODE_Slide:
+
+		FVector TargetDirection = UpdatedComponent->GetComponentRotation().Vector().GetSafeNormal();
+		FVector CurrentDirection = Velocity.GetSafeNormal();
+		const float Alpha = SlideLerpSpeed * DeltaTime;
+
+		FVector NewDirection = FMath::Lerp(CurrentDirection, TargetDirection, Alpha);
+
+		Velocity = NewDirection * Speed;
+		break;
+	}
+	
+}
+
 void UCarMovementComponent::CalcAcceleration(float DeltaTime)
 {
 	if (AccelerationCurve == nullptr)
@@ -57,7 +103,24 @@ void UCarMovementComponent::CalcSpeed(float DeltaTime)
 
 void UCarMovementComponent::CalcRotation()
 {
-	AngularVelocity = FRotator(0.f, TurnInputValue * AngularSpeed, 0.f);
+	// Avoid to rotate car when not moving
+	if (IsSpeedZero())
+	{
+		AngularVelocity = FRotator::ZeroRotator;
+		return;
+	}
+
+	switch (CarMode)
+	{
+	default:
+	case ECarMode::CARMODE_Drive:
+		AngularVelocity = FRotator(0.f, TurnInputValue * AngularSpeed, 0.f);
+		break;
+
+	case ECarMode::CARMODE_Slide:
+		AngularVelocity = FRotator(0.f, TurnInputValue * AngularSpeed * SlideAngularSpeedMultiplier, 0.f);
+		break;
+	}
 }
 
 void UCarMovementComponent::ApplyForces(float DeltaTime)
@@ -88,6 +151,21 @@ bool UCarMovementComponent::IsSpeedZero()
 	return FMath::IsNearlyZero(Speed, 0.0002f);
 }
 
+bool UCarMovementComponent::IsAccelerating()
+{
+	return Acceleration > 0.f;
+}
+
+bool UCarMovementComponent::IsBraking()
+{
+	return BrakeInputValue > 0.f;
+}
+
+bool UCarMovementComponent::IsTurning()
+{
+	return TurnInputValue != 0.f;
+}
+
 void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
                                           FActorComponentTickFunction* ThisTickFunction)
 {
@@ -96,6 +174,11 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 	if (DeltaTime < 1e-6f)
 	{
 		return;
+	}
+
+	if (CarMode == CARMODE_Drive && IsTurning() && IsBraking())
+	{
+		SetMode(ECarMode::CARMODE_Slide);
 	}
 
 	CalcAcceleration(DeltaTime);
@@ -108,7 +191,9 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 
 	if (UpdatedComponent)
 	{
-		Velocity = UpdatedComponent->GetComponentRotation().Vector().GetSafeNormal() * Speed;
+
+		CalcVelocity(DeltaTime);
+		
 		UpdatedComponent->MoveComponent(
 			Velocity * DeltaTime,
 			UpdatedComponent->GetComponentRotation() + (AngularVelocity * DeltaTime),
@@ -129,15 +214,6 @@ void UCarMovementComponent::Drive()
 void UCarMovementComponent::Turn(FVector2D InputVector)
 {
 	TurnInputValue = InputVector.Y;
-
-	// if (UpdatedComponent)
-	// {
-	// 	// InputVector.Y is always -1 or 1 (at the moment)
-	// 	// todo: handle zeroes values
-	// 	// todo: does grip influence how much i can turn? (i think so) (at any speed?)
-	// 	UpdatedComponent->
-	// 		SetWorldRotation(UpdatedComponent->GetComponentRotation() + FRotator(0.f, InputVector.Y, 0.f));
-	// }
 }
 
 void UCarMovementComponent::Brake()

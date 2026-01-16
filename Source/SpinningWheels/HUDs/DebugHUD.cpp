@@ -14,13 +14,9 @@ void ADebugHUD::BeginPlay()
 
 	if (Car.IsValid())
 	{
-		if (UCarMovementComponent* CarMovementComponent = Car->GetCarMovementComponent())
-		{
-			const TSharedRef<SDebugOverlay> DebugOverlay = SNew(SDebugOverlay)
-				.CarMovementComponent(CarMovementComponent);
-		
-			GEngine->GameViewport->AddViewportWidgetContent(DebugOverlay);
-		}
+		const TSharedRef<SDebugOverlay> DebugOverlay = SNew(SDebugOverlay)
+			.Car(Car);
+
+		GEngine->GameViewport->AddViewportWidgetContent(DebugOverlay);
 	}
-	
 }
