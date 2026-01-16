@@ -18,12 +18,22 @@ private:
 
 	float Speed = 0.f;					// Current speed
 	float Acceleration = 0.f;			// Current acceleration
+	float BrakeDeceleration = 0.f;		// Current deceleration given by break
 
 	float DriveInputValue = 0.f;		// Is player pushing the drive button (float to handle decimal values in future?)
+	float BrakeInputValue = 0.f;		// Is player pushing the brake button
+
+	float BrakeStartTime = 0.f;
+	float BrakeHoldTime = 0.f;
 
 	void CalcAcceleration(float DeltaTime);
+	void CalcBrakeDeceleration(float DeltaTime);
 	void CalcSpeed();
+
+	void ApplyForces(float DeltaTime);
+	
 	void ResetDriveInputValue();
+	void ResetBrakeInputvalue();
 
 	bool IsSpeedZero();
 
@@ -35,6 +45,7 @@ public:
 
 	void Drive();
 	void Turn(FVector2D InputVector);
+	void Brake();
 
 	UPROPERTY(Category=Drive, EditAnywhere, BlueprintReadOnly)
 	float MaxSpeed;
@@ -44,6 +55,18 @@ public:
 
 	UPROPERTY(Category=Drive, EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UCurveFloat> AccelerationCurve;
+
+	UPROPERTY(Category=Brake, EditAnywhere, BlueprintReadOnly)
+	float MaxBrakeDeceleration;
+
+	UPROPERTY(Category=Brake, EditAnywhere, BlueprintReadOnly, meta=(ToolTip="Time in X axis in brake deceleration curve field."))
+	float MaxBrakeHoldTime;
+
+	UPROPERTY(Category=Brake, EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UCurveFloat> BrakeDecelerationCurve;
+
+	UPROPERTY(Category=Forces, EditAnywhere, BlueprintReadOnly)
+	float GroundFriction;
 	
 	float GetCurrentSpeed() const { return Speed; }
 	float GetCurrentAcceleration() const { return Acceleration; }

@@ -84,10 +84,10 @@ void ACar::Drive()
 
 void ACar::Brake()
 {
-	// if (CarMovementComponent)
-	// {
-	// 	CarMovementComponent->Brake();
-	// }
+	if (CarMovementComponent)
+	{
+		CarMovementComponent->Brake();
+	}
 }
 
 void ACar::Turn(FVector2D InputVector)

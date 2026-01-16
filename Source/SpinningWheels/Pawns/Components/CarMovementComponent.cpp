@@ -11,24 +11,66 @@ void UCarMovementComponent::CalcAcceleration(float DeltaTime)
 		return;
 	}
 
-	const float Alpha = FMath::IsNearlyZero(Speed, 0.002f) ? 0.f : Speed / MaxSpeed;
-	const float CurveMultiplier = AccelerationCurve->GetFloatValue(Alpha);
+	if (DriveInputValue > 0.f)
+	{
+		const float Alpha = IsSpeedZero() ? 0.f : Speed / MaxSpeed;
+		const float CurveMultiplier = AccelerationCurve->GetFloatValue(Alpha);
 
-	Acceleration = MaxAcceleration * CurveMultiplier * DriveInputValue * DeltaTime;
-	UE_LOG(LogTemp, Warning, TEXT("a %f maxa %f cm %f div %f"), Acceleration, MaxAcceleration, CurveMultiplier, DriveInputValue);
-	
+		Acceleration = MaxAcceleration * CurveMultiplier * DriveInputValue * DeltaTime;
+	}
+	else
+	{
+		Acceleration = 0.f;
+	}
+}
+
+void UCarMovementComponent::CalcBrakeDeceleration(float DeltaTime)
+{
+	if (BrakeDecelerationCurve == nullptr)
+	{
+		UE_LOG(LogTemp, Error,
+		       TEXT("UCarMovementComponent::CalcBrakeDeceleration() - No brake deceleration curve was provided"));
+		return;
+	}
+
+	if (BrakeInputValue > 0.f)
+	{
+		BrakeHoldTime += DeltaTime;
+		const float Alpha = BrakeHoldTime >= MaxBrakeHoldTime ? 1.f : BrakeHoldTime / MaxBrakeHoldTime;
+		const float CurveMultiplier = BrakeDecelerationCurve->GetFloatValue(Alpha);
+
+		BrakeDeceleration = MaxBrakeDeceleration * CurveMultiplier * BrakeInputValue * DeltaTime;
+	}
+	else
+	{
+		BrakeHoldTime = 0.f;
+		BrakeDeceleration = 0.f;
+	}
 }
 
 void UCarMovementComponent::CalcSpeed()
 {
 	Speed += Acceleration;
+	Speed -= BrakeDeceleration;
 	Speed = FMath::Clamp(Speed, 0.f, MaxSpeed);
+}
+
+void UCarMovementComponent::ApplyForces(float DeltaTime)
+{
+	if (IsSpeedZero() == false)
+	{
+		Speed -= GroundFriction * DeltaTime;
+	}
 }
 
 void UCarMovementComponent::ResetDriveInputValue()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ResetDriveInputValue()"));
 	DriveInputValue = 0.f;
+}
+
+void UCarMovementComponent::ResetBrakeInputvalue()
+{
+	BrakeInputValue = 0.f;
 }
 
 bool UCarMovementComponent::IsSpeedZero()
@@ -45,15 +87,13 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 	{
 		return;
 	}
-	
+
 	CalcAcceleration(DeltaTime);
+	CalcBrakeDeceleration(DeltaTime);
 	CalcSpeed();
-	
-	// Apply drag
-	if (IsSpeedZero() == false)
-	{
-		// Speed -= 1.f; // simple drag to slow down moving car
-	}
+
+
+	ApplyForces(DeltaTime);
 
 	if (UpdatedComponent)
 	{
@@ -61,8 +101,8 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 		UpdatedComponent->MoveComponent(Velocity * DeltaTime, UpdatedComponent->GetComponentRotation(), true);
 	}
 
-	// ResetDriveInputValue();
-	
+	ResetDriveInputValue();
+	ResetBrakeInputvalue();
 }
 
 void UCarMovementComponent::Drive()
@@ -77,12 +117,18 @@ void UCarMovementComponent::Turn(FVector2D InputVector)
 	{
 		return;
 	}
-	
+
 	if (UpdatedComponent)
 	{
 		// InputVector.Y is always -1 or 1 (at the moment)
 		// todo: handle zeroes values
 		// todo: does grip influence how much i can turn? (i think so) (at any speed?)
-		UpdatedComponent->SetWorldRotation(UpdatedComponent->GetComponentRotation() + FRotator(0.f, InputVector.Y, 0.f));
+		UpdatedComponent->
+			SetWorldRotation(UpdatedComponent->GetComponentRotation() + FRotator(0.f, InputVector.Y, 0.f));
 	}
+}
+
+void UCarMovementComponent::Brake()
+{
+	BrakeInputValue = 1.f;
 }
