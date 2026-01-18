@@ -34,7 +34,7 @@ void UCarMovementComponent::CalcVelocity(float DeltaTime)
 	case ECarMode::CARMODE_Drive:
 		Velocity = UpdatedComponent->GetComponentRotation().Vector().GetSafeNormal() * Speed;
 		break;
-		
+
 	case ECarMode::CARMODE_Slide:
 
 		FVector TargetDirection = UpdatedComponent->GetComponentRotation().Vector().GetSafeNormal();
@@ -46,7 +46,6 @@ void UCarMovementComponent::CalcVelocity(float DeltaTime)
 		Velocity = NewDirection * Speed;
 		break;
 	}
-	
 }
 
 void UCarMovementComponent::CalcAcceleration(float DeltaTime)
@@ -114,20 +113,56 @@ void UCarMovementComponent::CalcRotation()
 	{
 	default:
 	case ECarMode::CARMODE_Drive:
-		AngularVelocity = FRotator(0.f, TurnInputValue * AngularSpeed, 0.f);
+		CalcRotationDrive();
 		break;
 
 	case ECarMode::CARMODE_Slide:
-		AngularVelocity = FRotator(0.f, TurnInputValue * AngularSpeed * SlideAngularSpeedMultiplier, 0.f);
+		CalcRotationSlide();
 		break;
 	}
 }
 
+void UCarMovementComponent::CalcRotationDrive()
+{
+	float CurveMultiplier = 1.f; // Default
+	if (AngularSpeedCurve)
+	{
+		const float Alpha = IsSpeedZero() ? 0.f : Speed / MaxSpeed;
+		CurveMultiplier = AngularSpeedCurve->GetFloatValue(Alpha);
+	}
+
+	AngularVelocity = FRotator(0.f, TurnInputValue * AngularSpeedMultiplier * CurveMultiplier, 0.f);
+}
+
+void UCarMovementComponent::CalcRotationSlide()
+{
+	float CurveMultiplier = 1.f; // Default
+	if (AngularSpeedCurve)
+	{
+		const float Alpha = IsSpeedZero() ? 0.f : Speed / MaxSpeed;
+		CurveMultiplier = AngularSpeedCurve->GetFloatValue(Alpha);
+	}
+	
+	AngularVelocity = FRotator(0.f, TurnInputValue * AngularSpeedMultiplier * SlideAngularSpeedMultiplier * CurveMultiplier, 0.f);
+}
+
 void UCarMovementComponent::ApplyForces(float DeltaTime)
 {
-	if (IsSpeedZero() == false)
+	if (IsSpeedZero())
 	{
+		return;
+	}
+
+	switch (CarMode)
+	{
+	default:
+	case ECarMode::CARMODE_Drive:
 		Speed -= GroundFriction * DeltaTime;
+		break;
+
+	case ECarMode::CARMODE_Slide:
+		Speed -= GroundFriction * SlideGroundFrictionMultiplier * DeltaTime;
+		break;
 	}
 }
 
@@ -176,9 +211,22 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 		return;
 	}
 
-	if (CarMode == CARMODE_Drive && IsTurning() && IsBraking())
+	if (CarMode == CARMODE_Drive)
 	{
-		SetMode(ECarMode::CARMODE_Slide);
+		if (IsTurning() && IsBraking())
+		{
+			SetMode(ECarMode::CARMODE_Slide);
+		}
+	}
+	else if (CarMode == ECarMode::CARMODE_Slide)
+	{
+		const FVector Difference = UpdatedComponent->GetComponentRotation().Vector().GetSafeNormal() - Velocity.
+			GetSafeNormal();
+
+		if (IsBraking() == false && Difference.IsNearlyZero(0.1f))
+		{
+			SetMode(ECarMode::CARMODE_Drive);
+		}
 	}
 
 	CalcAcceleration(DeltaTime);
@@ -191,9 +239,8 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 
 	if (UpdatedComponent)
 	{
-
 		CalcVelocity(DeltaTime);
-		
+
 		UpdatedComponent->MoveComponent(
 			Velocity * DeltaTime,
 			UpdatedComponent->GetComponentRotation() + (AngularVelocity * DeltaTime),

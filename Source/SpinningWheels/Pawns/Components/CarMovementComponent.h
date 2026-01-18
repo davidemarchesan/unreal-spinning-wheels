@@ -46,6 +46,8 @@ private:
 	void CalcSpeed(float DeltaTime);
 
 	void CalcRotation();
+	void CalcRotationDrive();
+	void CalcRotationSlide();
 
 	void ApplyForces(float DeltaTime);
 	
@@ -87,13 +89,19 @@ public:
 	TObjectPtr<UCurveFloat> BrakeDecelerationCurve;
 
 	UPROPERTY(Category=Turn, EditAnywhere, BlueprintReadOnly)
-	float AngularSpeed;
+	float AngularSpeedMultiplier;
+
+	UPROPERTY(Category=Turn, EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UCurveFloat> AngularSpeedCurve;
 
 	UPROPERTY(Category=Slide, EditAnywhere, BlueprintReadOnly, meta=(Units="%"))
 	float MinSpeedToSlide;
 
 	UPROPERTY(Category=Slide, EditAnywhere, BlueprintReadOnly)
 	float SlideAngularSpeedMultiplier;
+
+	UPROPERTY(Category=Slide, EditAnywhere, BlueprintReadOnly)
+	float SlideGroundFrictionMultiplier;
 
 	UPROPERTY(Category=Slide, EditAnywhere, BlueprintReadOnly)
 	float SlideLerpSpeed;
