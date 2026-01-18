@@ -142,8 +142,9 @@ void UCarMovementComponent::CalcRotationSlide()
 		const float Alpha = IsSpeedZero() ? 0.f : Speed / MaxSpeed;
 		CurveMultiplier = AngularSpeedCurve->GetFloatValue(Alpha);
 	}
-	
-	AngularVelocity = FRotator(0.f, TurnInputValue * AngularSpeedMultiplier * SlideAngularSpeedMultiplier * CurveMultiplier, 0.f);
+
+	AngularVelocity = FRotator(
+		0.f, TurnInputValue * AngularSpeedMultiplier * SlideAngularSpeedMultiplier * CurveMultiplier, 0.f);
 }
 
 void UCarMovementComponent::ApplyForces(float DeltaTime)
@@ -241,11 +242,48 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 	{
 		CalcVelocity(DeltaTime);
 
+		FHitResult Hit;
+
 		UpdatedComponent->MoveComponent(
 			Velocity * DeltaTime,
 			UpdatedComponent->GetComponentRotation() + (AngularVelocity * DeltaTime),
-			true
+			true,
+			&Hit
 		);
+
+		if (Hit.Time < 1.f)
+		{
+			// UE_LOG(LogTemp, Log, TEXT("Impact point: %s | Impact normal: %s"), *Hit.ImpactPoint.ToString(),
+			//        *Hit.ImpactNormal.ToString());
+			DrawDebugSphere(GetWorld(), Hit.ImpactPoint, 10.f, 12, FColor::Red);
+			DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + Hit.ImpactNormal * 1000.f, FColor::Blue);
+
+			FVector WallSlideVector = ComputeSlideVector(Velocity * DeltaTime, (1.f - Hit.Time), Hit.ImpactNormal, Hit);
+			DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + WallSlideVector * 1000.f, FColor::Green);
+
+			FVector VelocityNormalized = Velocity.GetSafeNormal();
+			const float Dot = FVector::DotProduct(WallSlideVector, VelocityNormalized);
+			const float Angle = FMath::RadiansToDegrees(FMath::Atan(FMath::Abs(Dot)));
+
+			FVector WallSlideVelocity = WallSlideVector.GetSafeNormal() * Velocity.Length(); // todo: velocity should be impacted
+			// UE_LOG(LogTemp, Log, TEXT("Velocity: %s | SlideVector: %s | Dot %f | Angle: %f"), *VelocityNormalized.ToString(), *WallSlideVector.GetSafeNormal().ToString(), Dot, Angle);
+			UE_LOG(LogTemp, Log, TEXT("Angle: %f"), Angle);
+
+			if (Angle < 45.f)
+			{
+				AngularVelocity = FRotator(0.f, 1.f, 0.f);
+			}
+			else
+			{
+				AngularVelocity = FRotator(0.f, -1.f, 0.f);
+			}
+			
+			UpdatedComponent->MoveComponent(
+				WallSlideVector.GetSafeNormal() * Velocity.Length() * DeltaTime,
+				UpdatedComponent->GetComponentRotation() + (AngularVelocity * DeltaTime),
+				true
+			);
+		}
 	}
 
 	ResetDriveInputValue();
