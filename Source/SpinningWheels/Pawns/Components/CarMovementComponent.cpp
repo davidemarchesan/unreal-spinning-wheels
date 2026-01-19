@@ -115,7 +115,7 @@ void UCarMovementComponent::CalcBrakeDeceleration(float DeltaTime)
 	}
 }
 
-void UCarMovementComponent::CalcRotation()
+void UCarMovementComponent::CalcRotation(float DeltaTime)
 {
 	// Avoid to rotate car when not moving
 	if (IsSpeedZero())
@@ -136,7 +136,9 @@ void UCarMovementComponent::CalcRotation()
 		break;
 
 	case ECarMode::CARMODE_Crash:
-
+		float N = FMath::Lerp(AngularVelocity.Yaw, 0.f, 0.8f * DeltaTime);
+		AngularVelocity.Yaw = N;
+		// todo: retake control of the car?
 		break;
 	}
 }
@@ -223,8 +225,6 @@ void UCarMovementComponent::HandleCrash(float DeltaTime, FHitResult& Hit)
 	FVector BounceVector = VelocityNormalized - 2.f * FVector::DotProduct(
 			VelocityNormalized, Hit.ImpactNormal) * Hit.
 		ImpactNormal;
-
-	// BounceVector.Z = 0.f; // Temporary, avoid to go up or down
 	
 	Velocity = BounceVector * Velocity.Length() * WallsBounceForce;
 	UE_LOG(LogTemp, Warning, TEXT("Velocity after bounce %s"), *Velocity.ToString());
@@ -239,23 +239,19 @@ void UCarMovementComponent::HandleCrash(float DeltaTime, FHitResult& Hit)
 	const float RightVectorDot = FVector::DotProduct(ImpactVector, GetOwner()->GetActorRightVector());
 	
 	// Initiate spin; +1 = Clockwise
-	// if (RightVectorDot > 0.f)
-	// {
-	// 	// Right
-	// 	AngularVelocity = FRotator(0.f, 1.f * Velocity.Length() * CrashSpinMultiplier, 0.f);
-	// }
-	// else
-	// {
-	// 	// Left
-	// 	AngularVelocity = FRotator(0.f, -1.f * Velocity.Length() * CrashSpinMultiplier, 0.f);
-	// }
+	if (RightVectorDot > 0.f)
+	{
+		// Right
+		AngularVelocity = FRotator(0.f, 1.f * Velocity.Length() * CrashSpinMultiplier, 0.f);
+	}
+	else
+	{
+		// Left
+		AngularVelocity = FRotator(0.f, -1.f * Velocity.Length() * CrashSpinMultiplier, 0.f);
+	}
 
-	// UpdatedComponent->MoveComponent(
-	// 	Velocity * DeltaTime,
-	// 	UpdatedComponent->GetComponentRotation() + (AngularVelocity * DeltaTime),
-	// 	true
-	// );
-
+	UE_LOG(LogTemp, Warning, TEXT("Angular Velocity after bounce %s"), *AngularVelocity.ToString());
+	
 	SetMode(ECarMode::CARMODE_Crash);
 
 }
@@ -290,7 +286,7 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 
 	CalcAcceleration(DeltaTime);
 	CalcBrakeDeceleration(DeltaTime);
-	CalcRotation();
+	CalcRotation(DeltaTime);
 
 	if (UpdatedComponent)
 	{
@@ -311,39 +307,16 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 
 		if (Hit.bBlockingHit)
 		{
-			
-
 			// todo: refactor ground when we do ramps, jump, and flying
-			// START Test moving on the ground
 			if (FMath::IsNearlyZero(1.f - Hit.ImpactNormal.Z, 0.002f))
 			{
-
-				UE_LOG(LogTemp, Warning, TEXT("Hit the floor"));
-
+				
 				if (CarMode == CARMODE_Fly)
 				{
 					SetMode(ECarMode::CARMODE_Drive);
 				}
 				
-				// UE_LOG(LogTemp, Warning, TEXT("Hit normal %s"), *Hit.ImpactNormal.ToString());
-				// const FVector VelocityNormalized = Velocity.GetSafeNormal();
-				// FVector SlideVector = VelocityNormalized - FVector::DotProduct(
-				// 	VelocityNormalized, Hit.ImpactNormal) * Hit.
-				// ImpactNormal;
-				//
-				// Velocity = SlideVector * Velocity.Length();
-				//
-				//
-				//
-				// UE_LOG(LogTemp, Warning, TEXT("SlideVector %s Velocity %s"), *SlideVector.ToString(), *Velocity.ToString());
-				//
-				// UpdatedComponent->MoveComponent(
-				// 	Velocity * DeltaTime,
-				// 	UpdatedComponent->GetComponentRotation() + (AngularVelocity * DeltaTime),
-				// 	true
-				// );
 			}
-			// END Test moving on the ground
 			else
 			{
 				HandleCrash(DeltaTime, Hit);

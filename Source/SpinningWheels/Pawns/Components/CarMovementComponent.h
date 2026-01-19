@@ -50,7 +50,7 @@ private:
 	void CalcAcceleration(float DeltaTime);
 	void CalcBrakeDeceleration(float DeltaTime);
 
-	void CalcRotation();
+	void CalcRotation(float DeltaTime);
 	void CalcRotationDrive();
 	void CalcRotationSlide();
 	
