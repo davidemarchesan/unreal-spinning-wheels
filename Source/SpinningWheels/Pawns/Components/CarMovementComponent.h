@@ -9,7 +9,10 @@
 enum ECarMode : int
 {
 	CARMODE_Drive,
-	CARMODE_Slide
+	CARMODE_Slide,
+	CARMODE_Reverse,
+	CARMODE_Crash,
+	CARMODE_Fly
 };
 
 /**
@@ -22,13 +25,13 @@ class SPINNINGWHEELS_API UCarMovementComponent : public UPawnMovementComponent
 
 private:
 
-	TEnumAsByte<ECarMode> CarMode = ECarMode::CARMODE_Drive;
+	TEnumAsByte<ECarMode> CarMode = ECarMode::CARMODE_Fly;
 	void SetMode(ECarMode NewMode);
 
 	void StartDrive();
 	void StartSlide();
 
-	float Speed = 0.f;									// Current speed
+	float Speed = 0.f;									// Current speed (Deprecated)
 	float Acceleration = 0.f;							// Current acceleration
 	float BrakeDeceleration = 0.f;						// Current deceleration given by break
 	FRotator AngularVelocity = FRotator::ZeroRotator;	// Current rotation angular velocity (turning)
@@ -40,25 +43,29 @@ private:
 	float BrakeStartTime = 0.f;
 	float BrakeHoldTime = 0.f;
 
+	const float Gravity = 9.8f;
+	bool bGrounded = false;
+
 	void CalcVelocity(float DeltaTime);
 	void CalcAcceleration(float DeltaTime);
 	void CalcBrakeDeceleration(float DeltaTime);
-	void CalcSpeed(float DeltaTime);
 
 	void CalcRotation();
 	void CalcRotationDrive();
 	void CalcRotationSlide();
-
-	void ApplyForces(float DeltaTime);
 	
 	void ResetDriveInputValue();
-	void ResetBrakeInputvalue();
+	void ResetBrakeInputValue();
 	void ResetTurnInputValue();
 
 	bool IsSpeedZero();
 	bool IsAccelerating();
 	bool IsBraking();
 	bool IsTurning();
+
+	bool IsGrounded() const { return bGrounded; }
+
+	void HandleCrash(float DeltaTime, FHitResult& Hit);
 
 protected:
 
@@ -109,9 +116,19 @@ public:
 	UPROPERTY(Category=Forces, EditAnywhere, BlueprintReadOnly)
 	float GroundFriction;
 
+	UPROPERTY(Category=Forces, EditAnywhere, BlueprintReadOnly)
+	float WallsBounceForce;
+
+	UPROPERTY(Category=Forces, EditAnywhere, BlueprintReadOnly)
+	float CrashSpinMultiplier;
+
+	UPROPERTY(Category=Forces, EditAnywhere, BlueprintReadOnly)
+	float GravityScale;
+
 	ECarMode GetCarMode() const { return CarMode; }
 	
 	float GetSpeed() const { return Speed; }
+	FVector GetVelocity() const { return Velocity; }
 	float GetAcceleration() const { return Acceleration; }
 	float GetBrakeDeceleration() const { return BrakeDeceleration; }
 	FRotator GetAngularVelocity() const { return AngularVelocity; }

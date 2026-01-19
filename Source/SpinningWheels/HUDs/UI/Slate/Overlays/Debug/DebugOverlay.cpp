@@ -160,9 +160,9 @@ void SDebugOverlay::Tick(const FGeometry& AllottedGeometry, const double InCurre
 	if (StatsTextBlock.IsValid())
 	{
 		StatsTextBlock->SetText(FText::Format(
-			FText::FromString("Mode: {0}\nSpeed: {1}\n Acceleration: {2}\nBrake Deceleration: {3}\nAngular Velocity: {4}"),
+			FText::FromString("Mode: {0}\nVelocity Length: {1}\n Acceleration: {2}\nBrake Deceleration: {3}\nAngular Velocity: {4}"),
 			CarMovementComponent->GetCarMode(),
-			FText::AsNumber(CarMovementComponent->GetSpeed()),
+			FText::AsNumber(CarMovementComponent->GetVelocity().Length()),
 			FText::AsNumber(CarMovementComponent->GetAcceleration()),
 			FText::AsNumber(CarMovementComponent->GetBrakeDeceleration()),
 			FText::FromString(CarMovementComponent->GetAngularVelocity().ToString())
@@ -171,7 +171,7 @@ void SDebugOverlay::Tick(const FGeometry& AllottedGeometry, const double InCurre
 
 	if (Velocity2DViewer.IsValid())
 	{
-		FVector Velocity = CarMovementComponent->Velocity.GetSafeNormal();
+		FVector Velocity = CarMovementComponent->GetVelocity().GetSafeNormal();
 		FVector2D Velocity2D = FVector2D(Velocity.X, Velocity.Y);
 
 		Velocity2DViewer->SetRenderTransform(

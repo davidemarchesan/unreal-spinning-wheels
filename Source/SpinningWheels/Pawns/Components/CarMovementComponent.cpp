@@ -20,6 +20,7 @@ void UCarMovementComponent::SetMode(ECarMode NewMode)
 
 void UCarMovementComponent::StartDrive()
 {
+	// Velocity = FVector::ZeroVector;
 }
 
 void UCarMovementComponent::StartSlide()
@@ -28,23 +29,44 @@ void UCarMovementComponent::StartSlide()
 
 void UCarMovementComponent::CalcVelocity(float DeltaTime)
 {
+	float VelocitySpeed = Velocity.Length() + (Acceleration * DeltaTime) - (BrakeDeceleration * DeltaTime) - (
+		GroundFriction * DeltaTime);
+	VelocitySpeed = FMath::Clamp(VelocitySpeed, 0.f, MaxSpeed);
+
 	switch (CarMode)
 	{
 	default:
 	case ECarMode::CARMODE_Drive:
-		Velocity = UpdatedComponent->GetComponentRotation().Vector().GetSafeNormal() * Speed;
-		break;
+		{
+			Velocity = UpdatedComponent->GetComponentRotation().Vector().GetSafeNormal() * VelocitySpeed;
+			break;
+		}
 
 	case ECarMode::CARMODE_Slide:
+		{
+			FVector TargetDirection = UpdatedComponent->GetComponentRotation().Vector().GetSafeNormal();
+			FVector CurrentDirection = Velocity.GetSafeNormal();
+			const float Alpha = SlideLerpSpeed * DeltaTime;
 
-		FVector TargetDirection = UpdatedComponent->GetComponentRotation().Vector().GetSafeNormal();
-		FVector CurrentDirection = Velocity.GetSafeNormal();
-		const float Alpha = SlideLerpSpeed * DeltaTime;
+			FVector NewDirection = FMath::Lerp(CurrentDirection, TargetDirection, Alpha);
 
-		FVector NewDirection = FMath::Lerp(CurrentDirection, TargetDirection, Alpha);
+			VelocitySpeed -= (GroundFriction * SlideGroundFrictionMultiplier * DeltaTime);
 
-		Velocity = NewDirection * Speed;
-		break;
+			Velocity = NewDirection * VelocitySpeed;
+			break;
+		}
+
+	case ECarMode::CARMODE_Crash:
+		{
+			VelocitySpeed = Velocity.Length() - (GroundFriction * DeltaTime);
+			Velocity = Velocity.GetSafeNormal() * VelocitySpeed;
+			break;
+		}
+	case ECarMode::CARMODE_Fly:
+		{
+			Velocity = FVector::DownVector * Gravity * GravityScale;
+			break;
+		}
 	}
 }
 
@@ -58,7 +80,7 @@ void UCarMovementComponent::CalcAcceleration(float DeltaTime)
 
 	if (DriveInputValue > 0.f)
 	{
-		const float Alpha = IsSpeedZero() ? 0.f : Speed / MaxSpeed;
+		const float Alpha = IsSpeedZero() ? 0.f : Velocity.Length() / MaxSpeed;
 		const float CurveMultiplier = AccelerationCurve->GetFloatValue(Alpha);
 
 		Acceleration = MaxAcceleration * CurveMultiplier * DriveInputValue;
@@ -93,13 +115,6 @@ void UCarMovementComponent::CalcBrakeDeceleration(float DeltaTime)
 	}
 }
 
-void UCarMovementComponent::CalcSpeed(float DeltaTime)
-{
-	Speed += Acceleration * DeltaTime;
-	Speed -= BrakeDeceleration * DeltaTime;
-	Speed = FMath::Clamp(Speed, 0.f, MaxSpeed);
-}
-
 void UCarMovementComponent::CalcRotation()
 {
 	// Avoid to rotate car when not moving
@@ -119,6 +134,10 @@ void UCarMovementComponent::CalcRotation()
 	case ECarMode::CARMODE_Slide:
 		CalcRotationSlide();
 		break;
+
+	case ECarMode::CARMODE_Crash:
+
+		break;
 	}
 }
 
@@ -127,7 +146,7 @@ void UCarMovementComponent::CalcRotationDrive()
 	float CurveMultiplier = 1.f; // Default
 	if (AngularSpeedCurve)
 	{
-		const float Alpha = IsSpeedZero() ? 0.f : Speed / MaxSpeed;
+		const float Alpha = IsSpeedZero() ? 0.f : Velocity.Length() / MaxSpeed;
 		CurveMultiplier = AngularSpeedCurve->GetFloatValue(Alpha);
 	}
 
@@ -139,7 +158,7 @@ void UCarMovementComponent::CalcRotationSlide()
 	float CurveMultiplier = 1.f; // Default
 	if (AngularSpeedCurve)
 	{
-		const float Alpha = IsSpeedZero() ? 0.f : Speed / MaxSpeed;
+		const float Alpha = IsSpeedZero() ? 0.f : Velocity.Length() / MaxSpeed;
 		CurveMultiplier = AngularSpeedCurve->GetFloatValue(Alpha);
 	}
 
@@ -147,32 +166,12 @@ void UCarMovementComponent::CalcRotationSlide()
 		0.f, TurnInputValue * AngularSpeedMultiplier * SlideAngularSpeedMultiplier * CurveMultiplier, 0.f);
 }
 
-void UCarMovementComponent::ApplyForces(float DeltaTime)
-{
-	if (IsSpeedZero())
-	{
-		return;
-	}
-
-	switch (CarMode)
-	{
-	default:
-	case ECarMode::CARMODE_Drive:
-		Speed -= GroundFriction * DeltaTime;
-		break;
-
-	case ECarMode::CARMODE_Slide:
-		Speed -= GroundFriction * SlideGroundFrictionMultiplier * DeltaTime;
-		break;
-	}
-}
-
 void UCarMovementComponent::ResetDriveInputValue()
 {
 	DriveInputValue = 0.f;
 }
 
-void UCarMovementComponent::ResetBrakeInputvalue()
+void UCarMovementComponent::ResetBrakeInputValue()
 {
 	BrakeInputValue = 0.f;
 }
@@ -184,7 +183,8 @@ void UCarMovementComponent::ResetTurnInputValue()
 
 bool UCarMovementComponent::IsSpeedZero()
 {
-	return FMath::IsNearlyZero(Speed, 0.0002f);
+	// return FMath::IsNearlyZero(Speed, 0.0002f);
+	return FMath::IsNearlyZero(Velocity.Length(), 0.0002f);
 }
 
 bool UCarMovementComponent::IsAccelerating()
@@ -200,6 +200,64 @@ bool UCarMovementComponent::IsBraking()
 bool UCarMovementComponent::IsTurning()
 {
 	return TurnInputValue != 0.f;
+}
+
+void UCarMovementComponent::HandleCrash(float DeltaTime, FHitResult& Hit)
+{
+
+	// Angle between normal and velocity
+	// Dont need it but leave it here
+	// const FVector VelocityNormalized = Velocity.GetSafeNormal();
+	//
+	// const float Dot = FVector::DotProduct(Hit.ImpactNormal, -VelocityNormalized);
+	// const float ImpactAngle = FMath::RadiansToDegrees(FMath::Acos(Dot));
+	// UE_LOG(LogTemp, Warning, TEXT("Dot %f | Angle: %f"), Dot, ImpactAngle);
+	//
+	// const float MinSpeedToCrash = 800.f;
+	// const float MaxSlideAngle = 15.f;
+	//
+	// const float Diff = 90.f - ImpactAngle;
+	// END Angle between normal and velocity
+
+	const FVector VelocityNormalized = Velocity.GetSafeNormal();
+	FVector BounceVector = VelocityNormalized - 2.f * FVector::DotProduct(
+			VelocityNormalized, Hit.ImpactNormal) * Hit.
+		ImpactNormal;
+
+	// BounceVector.Z = 0.f; // Temporary, avoid to go up or down
+	
+	Velocity = BounceVector * Velocity.Length() * WallsBounceForce;
+	UE_LOG(LogTemp, Warning, TEXT("Velocity after bounce %s"), *Velocity.ToString());
+
+	// Rotation impulse
+	// Detect side of the impact
+	FVector ImpactVector = Hit.ImpactPoint - GetActorLocation();
+	ImpactVector.Normalize();
+
+	// We use Dot product to detect where the impact has been relative to car center (Front or Behind? Left or Right?)
+	const float ForwardVectorDot = FVector::DotProduct(ImpactVector, GetForwardVector());
+	const float RightVectorDot = FVector::DotProduct(ImpactVector, GetOwner()->GetActorRightVector());
+	
+	// Initiate spin; +1 = Clockwise
+	// if (RightVectorDot > 0.f)
+	// {
+	// 	// Right
+	// 	AngularVelocity = FRotator(0.f, 1.f * Velocity.Length() * CrashSpinMultiplier, 0.f);
+	// }
+	// else
+	// {
+	// 	// Left
+	// 	AngularVelocity = FRotator(0.f, -1.f * Velocity.Length() * CrashSpinMultiplier, 0.f);
+	// }
+
+	// UpdatedComponent->MoveComponent(
+	// 	Velocity * DeltaTime,
+	// 	UpdatedComponent->GetComponentRotation() + (AngularVelocity * DeltaTime),
+	// 	true
+	// );
+
+	SetMode(ECarMode::CARMODE_Crash);
+
 }
 
 void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
@@ -232,18 +290,13 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 
 	CalcAcceleration(DeltaTime);
 	CalcBrakeDeceleration(DeltaTime);
-	CalcSpeed(DeltaTime);
-
 	CalcRotation();
-
-	ApplyForces(DeltaTime);
 
 	if (UpdatedComponent)
 	{
 		CalcVelocity(DeltaTime);
 
 		FHitResult Hit;
-
 		UpdatedComponent->MoveComponent(
 			Velocity * DeltaTime,
 			UpdatedComponent->GetComponentRotation() + (AngularVelocity * DeltaTime),
@@ -251,43 +304,55 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 			&Hit
 		);
 
-		if (Hit.Time < 1.f)
+		if (Hit.bStartPenetrating)
 		{
-			// UE_LOG(LogTemp, Log, TEXT("Impact point: %s | Impact normal: %s"), *Hit.ImpactPoint.ToString(),
-			//        *Hit.ImpactNormal.ToString());
-			DrawDebugSphere(GetWorld(), Hit.ImpactPoint, 10.f, 12, FColor::Red);
-			DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + Hit.ImpactNormal * 1000.f, FColor::Blue);
+			UE_LOG(LogTemp, Warning, TEXT("Hit StartPenetrating"));
+		}
 
-			FVector WallSlideVector = ComputeSlideVector(Velocity * DeltaTime, (1.f - Hit.Time), Hit.ImpactNormal, Hit);
-			DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + WallSlideVector * 1000.f, FColor::Green);
+		if (Hit.bBlockingHit)
+		{
+			
 
-			FVector VelocityNormalized = Velocity.GetSafeNormal();
-			const float Dot = FVector::DotProduct(WallSlideVector, VelocityNormalized);
-			const float Angle = FMath::RadiansToDegrees(FMath::Atan(FMath::Abs(Dot)));
-
-			FVector WallSlideVelocity = WallSlideVector.GetSafeNormal() * Velocity.Length(); // todo: velocity should be impacted
-			// UE_LOG(LogTemp, Log, TEXT("Velocity: %s | SlideVector: %s | Dot %f | Angle: %f"), *VelocityNormalized.ToString(), *WallSlideVector.GetSafeNormal().ToString(), Dot, Angle);
-			UE_LOG(LogTemp, Log, TEXT("Angle: %f"), Angle);
-
-			if (Angle < 45.f)
+			// todo: refactor ground when we do ramps, jump, and flying
+			// START Test moving on the ground
+			if (FMath::IsNearlyZero(1.f - Hit.ImpactNormal.Z, 0.002f))
 			{
-				AngularVelocity = FRotator(0.f, 1.f, 0.f);
+
+				UE_LOG(LogTemp, Warning, TEXT("Hit the floor"));
+
+				if (CarMode == CARMODE_Fly)
+				{
+					SetMode(ECarMode::CARMODE_Drive);
+				}
+				
+				// UE_LOG(LogTemp, Warning, TEXT("Hit normal %s"), *Hit.ImpactNormal.ToString());
+				// const FVector VelocityNormalized = Velocity.GetSafeNormal();
+				// FVector SlideVector = VelocityNormalized - FVector::DotProduct(
+				// 	VelocityNormalized, Hit.ImpactNormal) * Hit.
+				// ImpactNormal;
+				//
+				// Velocity = SlideVector * Velocity.Length();
+				//
+				//
+				//
+				// UE_LOG(LogTemp, Warning, TEXT("SlideVector %s Velocity %s"), *SlideVector.ToString(), *Velocity.ToString());
+				//
+				// UpdatedComponent->MoveComponent(
+				// 	Velocity * DeltaTime,
+				// 	UpdatedComponent->GetComponentRotation() + (AngularVelocity * DeltaTime),
+				// 	true
+				// );
 			}
+			// END Test moving on the ground
 			else
 			{
-				AngularVelocity = FRotator(0.f, -1.f, 0.f);
+				HandleCrash(DeltaTime, Hit);
 			}
-			
-			UpdatedComponent->MoveComponent(
-				WallSlideVector.GetSafeNormal() * Velocity.Length() * DeltaTime,
-				UpdatedComponent->GetComponentRotation() + (AngularVelocity * DeltaTime),
-				true
-			);
 		}
 	}
 
 	ResetDriveInputValue();
-	ResetBrakeInputvalue();
+	ResetBrakeInputValue();
 	ResetTurnInputValue();
 }
 
