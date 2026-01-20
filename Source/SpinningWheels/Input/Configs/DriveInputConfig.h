@@ -21,5 +21,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Drive; // Accelerate
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Brake;
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Turn;
+	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Turbo;
 	
 };

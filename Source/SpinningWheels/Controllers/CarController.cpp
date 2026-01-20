@@ -34,6 +34,7 @@ void ACarController::SetupInputComponent()
 			EnhancedInput->BindAction(InputConfig->IA_Drive, ETriggerEvent::Triggered, this, &ACarController::Drive);
 			EnhancedInput->BindAction(InputConfig->IA_Brake, ETriggerEvent::Triggered, this, &ACarController::Brake);
 			EnhancedInput->BindAction(InputConfig->IA_Turn, ETriggerEvent::Triggered, this, &ACarController::Turn);
+			EnhancedInput->BindAction(InputConfig->IA_Turbo, ETriggerEvent::Triggered, this, &ACarController::Turbo);
 		}
 	}
 }
@@ -63,10 +64,17 @@ void ACarController::Brake()
 
 void ACarController::Turn(const FInputActionValue& Value)
 {
-
 	FVector2D InputVector = Value.Get<FVector2D>();
 	if (Car)
 	{
 		Car->Turn(InputVector);
+	}
+}
+
+void ACarController::Turbo()
+{
+	if (Car)
+	{
+		Car->Turbo();
 	}
 }

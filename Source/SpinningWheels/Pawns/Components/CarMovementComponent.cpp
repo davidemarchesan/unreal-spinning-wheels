@@ -84,6 +84,11 @@ void UCarMovementComponent::CalcAcceleration(float DeltaTime)
 		const float CurveMultiplier = AccelerationCurve->GetFloatValue(Alpha);
 
 		Acceleration = MaxAcceleration * CurveMultiplier * DriveInputValue;
+
+		if (IsUsingTurbo() == true)
+		{
+			Acceleration += TurboAcceleration;
+		}
 	}
 	else
 	{
@@ -183,9 +188,13 @@ void UCarMovementComponent::ResetTurnInputValue()
 	TurnInputValue = 0.f;
 }
 
+void UCarMovementComponent::ResetTurboInputValue()
+{
+	TurboInputValue = 0.f;
+}
+
 bool UCarMovementComponent::IsSpeedZero()
 {
-	// return FMath::IsNearlyZero(Speed, 0.0002f);
 	return FMath::IsNearlyZero(Velocity.Length(), 0.0002f);
 }
 
@@ -202,6 +211,11 @@ bool UCarMovementComponent::IsBraking()
 bool UCarMovementComponent::IsTurning()
 {
 	return TurnInputValue != 0.f;
+}
+
+bool UCarMovementComponent::IsUsingTurbo()
+{
+	return TurboInputValue > 0.f;
 }
 
 void UCarMovementComponent::HandleCrash(float DeltaTime, FHitResult& Hit)
@@ -327,6 +341,7 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 	ResetDriveInputValue();
 	ResetBrakeInputValue();
 	ResetTurnInputValue();
+	ResetTurboInputValue();
 }
 
 void UCarMovementComponent::Drive()
@@ -342,4 +357,9 @@ void UCarMovementComponent::Turn(FVector2D InputVector)
 void UCarMovementComponent::Brake()
 {
 	BrakeInputValue = 1.f;
+}
+
+void UCarMovementComponent::Turbo()
+{
+	TurboInputValue = 1.f;
 }

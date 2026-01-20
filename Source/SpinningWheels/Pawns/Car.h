@@ -62,4 +62,5 @@ public:
 	void Drive();
 	void Brake();
 	void Turn(FVector2D InputVector);
+	void Turbo();
 };

@@ -31,7 +31,7 @@ private:
 	void StartDrive();
 	void StartSlide();
 
-	float Speed = 0.f;									// Current speed (Deprecated)
+	float Speed = 0.f;									// (Deprecated: use velocity.length) Current speed
 	float Acceleration = 0.f;							// Current acceleration
 	float BrakeDeceleration = 0.f;						// Current deceleration given by break
 	FRotator AngularVelocity = FRotator::ZeroRotator;	// Current rotation angular velocity (turning)
@@ -39,6 +39,7 @@ private:
 	float DriveInputValue = 0.f;						// Is player pushing the drive button (float to handle decimal values in future?)
 	float BrakeInputValue = 0.f;						// Is player pushing the brake button
 	float TurnInputValue = 0.f;							// Is player turning (usually between -1 and 1)
+	float TurboInputValue = 0.f;						// Is player pushing the turbo button
 
 	float BrakeStartTime = 0.f;
 	float BrakeHoldTime = 0.f;
@@ -57,11 +58,13 @@ private:
 	void ResetDriveInputValue();
 	void ResetBrakeInputValue();
 	void ResetTurnInputValue();
+	void ResetTurboInputValue();
 
 	bool IsSpeedZero();
 	bool IsAccelerating();
 	bool IsBraking();
 	bool IsTurning();
+	bool IsUsingTurbo();
 
 	bool IsGrounded() const { return bGrounded; }
 
@@ -76,6 +79,7 @@ public:
 	void Drive();
 	void Turn(FVector2D InputVector);
 	void Brake();
+	void Turbo();
 
 	UPROPERTY(Category=Drive, EditAnywhere, BlueprintReadOnly)
 	float MaxSpeed;
@@ -85,6 +89,9 @@ public:
 
 	UPROPERTY(Category=Drive, EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UCurveFloat> AccelerationCurve;
+
+	UPROPERTY(Category=Drive, EditAnywhere, BlueprintReadOnly)
+	float TurboAcceleration;
 
 	UPROPERTY(Category=Brake, EditAnywhere, BlueprintReadOnly)
 	float MaxBrakeDeceleration;
