@@ -1,10 +1,8 @@
 #include "Car.h"
 
-#include "Camera/CameraComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CarMovementComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 
 ACar::ACar(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -35,18 +33,19 @@ ACar::ACar(const FObjectInitializer& ObjectInitializer)
 		SkeletalMeshComponent->SetupAttachment(RootComponent);
 	}
 
-	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("Camera Arm");
-	if (SpringArmComponent)
-	{
-		SpringArmComponent->SetupAttachment(RootComponent);
-		SpringArmComponent->SetRelativeLocation(FVector(-250.f, 0.f, 100.f));
-
-		CameraComponent = CreateDefaultSubobject<UCameraComponent>("Camera");
-		if (CameraComponent)
-		{
-			CameraComponent->SetupAttachment(SpringArmComponent);
-		}
-	}
+	// Camera inside pawn deprecated
+	// SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("Camera Arm");
+	// if (SpringArmComponent)
+	// {
+	// 	SpringArmComponent->SetupAttachment(RootComponent);
+	// 	SpringArmComponent->SetRelativeLocation(FVector(-250.f, 0.f, 100.f));
+	//
+	// 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("Camera");
+	// 	if (CameraComponent)
+	// 	{
+	// 		CameraComponent->SetupAttachment(SpringArmComponent);
+	// 	}
+	// }
 
 	CarMovementComponent = CreateDefaultSubobject<UCarMovementComponent>("Movement");
 	if (CarMovementComponent)

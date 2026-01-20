@@ -132,8 +132,10 @@ public:
 
 	ECarMode GetCarMode() const { return CarMode; }
 	
-	float GetSpeed() const { return Speed; }
 	FVector GetVelocity() const { return Velocity; }
+	float GetVelocityMagnitude() const { return Velocity.Size(); }
+	float GetVelocityRatio() const { return Velocity.Length() / MaxSpeed; }
+	
 	float GetAcceleration() const { return Acceleration; }
 	float GetBrakeDeceleration() const { return BrakeDeceleration; }
 	FRotator GetAngularVelocity() const { return AngularVelocity; }

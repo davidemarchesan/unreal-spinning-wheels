@@ -34,12 +34,6 @@ private:
 	UPROPERTY(Category=Car, VisibleAnywhere, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<USkeletalMeshComponent> SkeletalMeshComponent;
 
-	UPROPERTY(Category=Car, VisibleAnywhere, meta=(AllowPrivateAccess="true"))
-	TObjectPtr<USpringArmComponent> SpringArmComponent;
-
-	UPROPERTY(Category=Car, VisibleAnywhere, meta=(AllowPrivateAccess="true"))
-	TObjectPtr<UCameraComponent> CameraComponent;
-
 	UPROPERTY(Category=Car, VisibleDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UCarMovementComponent> CarMovementComponent;
 

@@ -10,6 +10,7 @@
 class UInputMappingContext;
 class UDriveInputConfig;
 class ACar;
+class AMainCamera;
 
 /**
  * Debug use only
@@ -27,7 +28,13 @@ private:
 	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UDriveInputConfig> InputConfig;
 
-	ACar* Car;
+	UPROPERTY(Category=Camera, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	TSubclassOf<AMainCamera> CameraClass;
+
+	TWeakObjectPtr<ACar> Car;
+	TWeakObjectPtr<AMainCamera> MainCamera;
+
+	void SetupCamera();
 
 	/** Input Actions handler */
 	void StartDrive();
