@@ -10,20 +10,20 @@ void UCarMovementComponent::SetMode(ECarMode NewMode)
 	{
 	default:
 	case ECarMode::CARMODE_Drive:
-		StartDrive();
+		StartDrivePhysics();
 		break;
 	case ECarMode::CARMODE_Slide:
-		StartSlide();
+		StartSlidePhysics();
 		break;
 	}
 }
 
-void UCarMovementComponent::StartDrive()
+void UCarMovementComponent::StartDrivePhysics()
 {
 	// Velocity = FVector::ZeroVector;
 }
 
-void UCarMovementComponent::StartSlide()
+void UCarMovementComponent::StartSlidePhysics()
 {
 }
 
@@ -173,24 +173,9 @@ void UCarMovementComponent::CalcRotationSlide()
 		0.f, TurnInputValue * AngularSpeedMultiplier * SlideAngularSpeedMultiplier * CurveMultiplier, 0.f);
 }
 
-void UCarMovementComponent::ResetDriveInputValue()
-{
-	DriveInputValue = 0.f;
-}
-
-void UCarMovementComponent::ResetBrakeInputValue()
-{
-	BrakeInputValue = 0.f;
-}
-
 void UCarMovementComponent::ResetTurnInputValue()
 {
 	TurnInputValue = 0.f;
-}
-
-void UCarMovementComponent::ResetTurboInputValue()
-{
-	TurboInputValue = 0.f;
 }
 
 bool UCarMovementComponent::IsSpeedZero()
@@ -338,15 +323,20 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 		}
 	}
 
-	ResetDriveInputValue();
-	ResetBrakeInputValue();
+	// ResetDriveInputValue();
+	// ResetBrakeInputValue();
 	ResetTurnInputValue();
-	ResetTurboInputValue();
+	// ResetTurboInputValue();
 }
 
-void UCarMovementComponent::Drive()
+void UCarMovementComponent::StartDrive()
 {
 	DriveInputValue = 1.f;
+}
+
+void UCarMovementComponent::StopDrive()
+{
+	DriveInputValue = 0.f;
 }
 
 void UCarMovementComponent::Turn(FVector2D InputVector)
@@ -354,12 +344,22 @@ void UCarMovementComponent::Turn(FVector2D InputVector)
 	TurnInputValue = InputVector.Y;
 }
 
-void UCarMovementComponent::Brake()
+void UCarMovementComponent::StartBrake()
 {
 	BrakeInputValue = 1.f;
 }
 
-void UCarMovementComponent::Turbo()
+void UCarMovementComponent::StopBrake()
+{
+	BrakeInputValue = 0.f;
+}
+
+void UCarMovementComponent::StartTurbo()
 {
 	TurboInputValue = 1.f;
+}
+
+void UCarMovementComponent::StopTurbo()
+{
+	TurboInputValue = 0.f;
 }

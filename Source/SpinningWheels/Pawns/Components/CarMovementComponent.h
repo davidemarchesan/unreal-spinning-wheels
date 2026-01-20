@@ -28,10 +28,9 @@ private:
 	TEnumAsByte<ECarMode> CarMode = ECarMode::CARMODE_Fly;
 	void SetMode(ECarMode NewMode);
 
-	void StartDrive();
-	void StartSlide();
+	void StartDrivePhysics();
+	void StartSlidePhysics();
 
-	float Speed = 0.f;									// (Deprecated: use velocity.length) Current speed
 	float Acceleration = 0.f;							// Current acceleration
 	float BrakeDeceleration = 0.f;						// Current deceleration given by break
 	FRotator AngularVelocity = FRotator::ZeroRotator;	// Current rotation angular velocity (turning)
@@ -41,7 +40,6 @@ private:
 	float TurnInputValue = 0.f;							// Is player turning (usually between -1 and 1)
 	float TurboInputValue = 0.f;						// Is player pushing the turbo button
 
-	float BrakeStartTime = 0.f;
 	float BrakeHoldTime = 0.f;
 
 	const float Gravity = 9.8f;
@@ -55,10 +53,7 @@ private:
 	void CalcRotationDrive();
 	void CalcRotationSlide();
 	
-	void ResetDriveInputValue();
-	void ResetBrakeInputValue();
 	void ResetTurnInputValue();
-	void ResetTurboInputValue();
 
 	bool IsSpeedZero();
 	bool IsAccelerating();
@@ -76,10 +71,13 @@ public:
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void Drive();
+	void StartDrive();
+	void StopDrive();
 	void Turn(FVector2D InputVector);
-	void Brake();
-	void Turbo();
+	void StartBrake();
+	void StopBrake();
+	void StartTurbo();
+	void StopTurbo();
 
 	UPROPERTY(Category=Drive, EditAnywhere, BlueprintReadOnly)
 	float MaxSpeed;

@@ -43,6 +43,24 @@ private:
 	UPROPERTY(Category=Car, VisibleDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UCarMovementComponent> CarMovementComponent;
 
+	bool bDrive = false;
+	bool bBrake = false;
+	bool bTurn = false;
+	bool bTurbo = false;
+	
+	float TurboMaxBattery = 1.f;
+	float TurboCurrentBattery = 1.f;
+
+	void ConsumeTurbo(float DeltaTime);
+	
+
+	TWeakObjectPtr<UMaterialInstanceDynamic> DynamicMaterialLights;
+	
+	static const int32 MaterialIndexLights = 6;
+
+	void UpdateLightsBehavior(float InIntensity, FLinearColor InColor, float InFlashing);
+	void StopLights();
+
 #if WITH_EDITORONLY_DATA
 	
 	UPROPERTY()
@@ -59,8 +77,41 @@ public:
 
 	UCarMovementComponent* GetCarMovementComponent() const { return CarMovementComponent; }
 
-	void Drive();
-	void Brake();
+	void StartDrive();
+	void StopDrive();
+	void StartBrake();
+	void StopBrake();
 	void Turn(FVector2D InputVector);
-	void Turbo();
+	void StartTurbo();
+	void StopTurbo();
+	void ToggleTurbo();
+
+	UPROPERTY(Category=Turbo, EditAnywhere)
+	float TurboConsumption;
+
+	UPROPERTY(Category=Lights, EditAnywhere)
+	FLinearColor LightsColorOnTurbo;
+	
+	UPROPERTY(Category=Lights, EditAnywhere)
+	float LightsFlashingOnTurbo;
+
+	UPROPERTY(Category=Lights, EditAnywhere)
+	FLinearColor LightsColorOnBrake;
+	
+	UPROPERTY(Category=Lights, EditAnywhere)
+	float LightsFlashingOnBrake;
+
+	UPROPERTY(Category=Lights, EditAnywhere)
+	FLinearColor LightsColorOnCrash;
+
+	UPROPERTY(Category=Lights, EditAnywhere)
+	float LightsFlashingOnCrash;
+
+	float GetTurboCurrentBattery() const { return TurboCurrentBattery; }
+
+	bool IsDriving() const { return bDrive; }
+	bool IsBraking() const { return bBrake; }
+	bool IsTurning() const { return bTurn; }
+	bool IsUsingTurbo() const { return bTurbo; }
+	
 };

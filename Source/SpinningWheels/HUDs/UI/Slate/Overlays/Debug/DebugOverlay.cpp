@@ -160,12 +160,13 @@ void SDebugOverlay::Tick(const FGeometry& AllottedGeometry, const double InCurre
 	if (StatsTextBlock.IsValid())
 	{
 		StatsTextBlock->SetText(FText::Format(
-			FText::FromString("Mode: {0}\nVelocity Length: {1}\n Acceleration: {2}\nBrake Deceleration: {3}\nAngular Velocity: {4}"),
+			FText::FromString("Mode: {0}\nVelocity Length: {1}\n Acceleration: {2}\nBrake Deceleration: {3}\nAngular Velocity: {4}\nTurbo: {5}"),
 			CarMovementComponent->GetCarMode(),
 			FText::AsNumber(CarMovementComponent->GetVelocity().Length()),
 			FText::AsNumber(CarMovementComponent->GetAcceleration()),
 			FText::AsNumber(CarMovementComponent->GetBrakeDeceleration()),
-			FText::FromString(CarMovementComponent->GetAngularVelocity().ToString())
+			FText::FromString(CarMovementComponent->GetAngularVelocity().ToString()),
+			FText::AsNumber(Car->GetTurboCurrentBattery())
 		));
 	}
 

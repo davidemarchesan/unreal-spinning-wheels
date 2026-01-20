@@ -30,10 +30,13 @@ private:
 	ACar* Car;
 
 	/** Input Actions handler */
-	void Drive();
-	void Brake();
+	void StartDrive();
+	void StopDrive();
+	void StartBrake();
+	void StopBrake();
 	void Turn(const FInputActionValue& Value);
-	void Turbo();
+	void StartTurbo();
+	void StopTurbo();
 
 protected:
 

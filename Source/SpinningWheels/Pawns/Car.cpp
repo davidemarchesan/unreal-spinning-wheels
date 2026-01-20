@@ -69,24 +69,86 @@ ACar::ACar(const FObjectInitializer& ObjectInitializer)
 #endif
 }
 
-void ACar::BeginPlay()
+void ACar::ConsumeTurbo(float DeltaTime)
 {
-	Super::BeginPlay();
-}
-
-void ACar::Drive()
-{
-	if (CarMovementComponent)
+	if (bTurbo == true)
 	{
-		CarMovementComponent->Drive();
+		TurboCurrentBattery = FMath::Clamp(TurboCurrentBattery - (TurboConsumption * DeltaTime), 0.f, TurboMaxBattery);
+		if (TurboCurrentBattery <= 0.f)
+		{
+			StopTurbo();
+		}
 	}
 }
 
-void ACar::Brake()
+void ACar::UpdateLightsBehavior(float InIntensity, FLinearColor InColor, float InFlashing)
 {
+	if (DynamicMaterialLights.IsValid())
+	{
+		DynamicMaterialLights->SetVectorParameterValue("LightColor", InColor);
+		DynamicMaterialLights->SetScalarParameterValue("Flashing", InFlashing);
+		DynamicMaterialLights->SetScalarParameterValue("Intensity", InIntensity);
+	}
+}
+
+void ACar::StopLights()
+{
+	if (DynamicMaterialLights.IsValid())
+	{
+		DynamicMaterialLights->SetScalarParameterValue("Intensity", 0.f);
+	}
+}
+
+void ACar::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (SkeletalMeshComponent)
+	{
+		DynamicMaterialLights = SkeletalMeshComponent->CreateDynamicMaterialInstance(ACar::MaterialIndexLights);
+	}
+}
+
+void ACar::StartDrive()
+{
+	bDrive = true;
+	
 	if (CarMovementComponent)
 	{
-		CarMovementComponent->Brake();
+		CarMovementComponent->StartDrive();
+	}
+}
+
+void ACar::StopDrive()
+{
+	bDrive = false;
+	
+	if (CarMovementComponent)
+	{
+		CarMovementComponent->StopDrive();
+	}
+}
+
+void ACar::StartBrake()
+{
+	StopTurbo();
+	UpdateLightsBehavior(1.0f, LightsColorOnBrake, LightsFlashingOnBrake);
+	bBrake = true;
+
+	if (CarMovementComponent)
+	{
+		CarMovementComponent->StartBrake();
+	}
+}
+
+void ACar::StopBrake()
+{
+	StopLights();
+	bBrake = false;
+
+	if (CarMovementComponent)
+	{
+		CarMovementComponent->StopBrake();
 	}
 }
 
@@ -98,17 +160,40 @@ void ACar::Turn(FVector2D InputVector)
 	}
 }
 
-void ACar::Turbo()
+void ACar::StartTurbo()
 {
+	if (TurboCurrentBattery > 0.f)
+	{
+		UpdateLightsBehavior(1.0f, LightsColorOnTurbo, LightsFlashingOnTurbo);
+		bTurbo = true;
+
+		if (CarMovementComponent)
+		{
+			CarMovementComponent->StartTurbo();
+		}
+	}
+}
+
+void ACar::StopTurbo()
+{
+	StopLights();
+	bTurbo = false;
+
 	if (CarMovementComponent)
 	{
-		CarMovementComponent->Turbo();
+		CarMovementComponent->StopTurbo();
 	}
+}
+
+void ACar::ToggleTurbo()
+{
 }
 
 void ACar::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	ConsumeTurbo(DeltaTime);
 }
 
 void ACar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

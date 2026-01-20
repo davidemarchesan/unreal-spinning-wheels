@@ -31,10 +31,16 @@ void ACarController::SetupInputComponent()
 	{
 		if (InputConfig)
 		{
-			EnhancedInput->BindAction(InputConfig->IA_Drive, ETriggerEvent::Triggered, this, &ACarController::Drive);
-			EnhancedInput->BindAction(InputConfig->IA_Brake, ETriggerEvent::Triggered, this, &ACarController::Brake);
+			EnhancedInput->BindAction(InputConfig->IA_Drive, ETriggerEvent::Started, this, &ACarController::StartDrive);
+			EnhancedInput->BindAction(InputConfig->IA_Drive, ETriggerEvent::Completed, this, &ACarController::StopDrive);
+			
+			EnhancedInput->BindAction(InputConfig->IA_Brake, ETriggerEvent::Started, this, &ACarController::StartBrake);
+			EnhancedInput->BindAction(InputConfig->IA_Brake, ETriggerEvent::Completed, this, &ACarController::StopBrake);
+			
 			EnhancedInput->BindAction(InputConfig->IA_Turn, ETriggerEvent::Triggered, this, &ACarController::Turn);
-			EnhancedInput->BindAction(InputConfig->IA_Turbo, ETriggerEvent::Triggered, this, &ACarController::Turbo);
+			
+			EnhancedInput->BindAction(InputConfig->IA_Turbo, ETriggerEvent::Started, this, &ACarController::StartTurbo);
+			EnhancedInput->BindAction(InputConfig->IA_Turbo, ETriggerEvent::Completed, this, &ACarController::StopTurbo);
 		}
 	}
 }
@@ -46,19 +52,35 @@ void ACarController::SetPawn(APawn* InPawn)
 	Car = Cast<ACar>(InPawn);
 }
 
-void ACarController::Drive()
+void ACarController::StartDrive()
 {
 	if (Car)
 	{
-		Car->Drive();
+		Car->StartDrive();
 	}
 }
 
-void ACarController::Brake()
+void ACarController::StopDrive()
 {
 	if (Car)
 	{
-		Car->Brake();
+		Car->StopDrive();
+	}
+}
+
+void ACarController::StartBrake()
+{
+	if (Car)
+	{
+		Car->StartBrake();
+	}
+}
+
+void ACarController::StopBrake()
+{
+	if (Car)
+	{
+		Car->StopBrake();
 	}
 }
 
@@ -71,10 +93,18 @@ void ACarController::Turn(const FInputActionValue& Value)
 	}
 }
 
-void ACarController::Turbo()
+void ACarController::StartTurbo()
 {
 	if (Car)
 	{
-		Car->Turbo();
+		Car->StartTurbo();
+	}
+}
+
+void ACarController::StopTurbo()
+{
+	if (Car)
+	{
+		Car->StopTurbo();
 	}
 }
