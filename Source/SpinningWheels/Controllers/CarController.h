@@ -33,6 +33,7 @@ private:
 	void Drive();
 	void Brake();
 	void Turn(const FInputActionValue& Value);
+	void Turbo();
 
 protected:
 

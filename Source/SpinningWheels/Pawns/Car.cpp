@@ -98,6 +98,14 @@ void ACar::Turn(FVector2D InputVector)
 	}
 }
 
+void ACar::Turbo()
+{
+	if (CarMovementComponent)
+	{
+		CarMovementComponent->Turbo();
+	}
+}
+
 void ACar::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
