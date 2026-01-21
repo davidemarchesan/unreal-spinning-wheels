@@ -26,6 +26,8 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
 private:
 
 	UPROPERTY(Category=Car, VisibleAnywhere, meta=(AllowPrivateAccess="true"))
@@ -37,10 +39,14 @@ private:
 	UPROPERTY(Category=Car, VisibleDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UCarMovementComponent> CarMovementComponent;
 
-	bool bDrive = false;
-	bool bBrake = false;
-	bool bTurn = false;
-	bool bTurbo = false;
+	UPROPERTY(Replicated) bool bDrive = false;
+	UPROPERTY(Replicated) bool bTurn = false;
+	
+	UPROPERTY(ReplicatedUsing=OnRep_BrakeUpdate) bool bBrake = false;
+	UFUNCTION() void OnRep_BrakeUpdate();
+	
+	UPROPERTY(ReplicatedUsing=OnRep_TurboUpdate) bool bTurbo = false;
+	UFUNCTION() void OnRep_TurboUpdate();
 	
 	float TurboMaxBattery = 1.f;
 	float TurboCurrentBattery = 1.f;
@@ -71,13 +77,36 @@ public:
 
 	UCarMovementComponent* GetCarMovementComponent() const { return CarMovementComponent; }
 
-	void StartDrive();
-	void StopDrive();
-	void StartBrake();
-	void StopBrake();
-	void Turn(FVector2D InputVector);
-	void StartTurbo();
-	void StopTurbo();
+	void LocalStartDrive();
+	void InputStartDrive();
+	UFUNCTION(Server, Reliable) void ServerStartDrive();
+
+	void LocalStopDrive();
+	void InputStopDrive();
+	UFUNCTION(Server, Reliable) void ServerStopDrive();
+
+	void LocalStartBrake();
+	void InputStartBrake();
+	UFUNCTION(Server, Reliable) void ServerStartBrake();
+	void LocalBrakeLights();
+
+	void LocalStopBrake();
+	void InputStopBrake();
+	UFUNCTION(Server, Reliable) void ServerStopBrake();
+
+	void LocalTurn(FVector2D InputVector);
+	void InputTurn(FVector2D InputVector);
+	UFUNCTION(Server, Unreliable) void ServerTurn(FVector2D InputVector);
+
+	void LocalStartTurbo();
+	void InputStartTurbo();
+	UFUNCTION(Server, Reliable) void ServerStartTurbo();
+	void LocalTurboLights();
+
+	void LocalStopTurbo();
+	void InputStopTurbo();
+	UFUNCTION(Server, Reliable) void ServerStopTurbo();
+	
 	void ToggleTurbo();
 
 	UPROPERTY(Category=Turbo, EditAnywhere)

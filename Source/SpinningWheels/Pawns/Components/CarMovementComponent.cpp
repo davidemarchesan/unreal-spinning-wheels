@@ -312,6 +312,7 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 				
 				if (CarMode == CARMODE_Fly)
 				{
+					Velocity = FVector::ZeroVector;
 					SetMode(ECarMode::CARMODE_Drive);
 				}
 				
@@ -323,10 +324,7 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 		}
 	}
 
-	// ResetDriveInputValue();
-	// ResetBrakeInputValue();
 	ResetTurnInputValue();
-	// ResetTurboInputValue();
 }
 
 void UCarMovementComponent::StartDrive()

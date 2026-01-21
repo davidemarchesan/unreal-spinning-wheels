@@ -101,7 +101,7 @@ void ARaceController::StartDrive()
 {
 	if (Car.IsValid())
 	{
-		Car->StartDrive();
+		Car->InputStartDrive();
 	}
 }
 
@@ -109,7 +109,7 @@ void ARaceController::StopDrive()
 {
 	if (Car.IsValid())
 	{
-		Car->StopDrive();
+		Car->InputStopDrive();
 	}
 }
 
@@ -117,7 +117,7 @@ void ARaceController::StartBrake()
 {
 	if (Car.IsValid())
 	{
-		Car->StartBrake();
+		Car->InputStartBrake();
 	}
 }
 
@@ -125,7 +125,7 @@ void ARaceController::StopBrake()
 {
 	if (Car.IsValid())
 	{
-		Car->StopBrake();
+		Car->InputStopBrake();
 	}
 }
 
@@ -134,7 +134,7 @@ void ARaceController::Turn(const FInputActionValue& Value)
 	FVector2D InputVector = Value.Get<FVector2D>();
 	if (Car.IsValid())
 	{
-		Car->Turn(InputVector);
+		Car->InputTurn(InputVector);
 	}
 }
 
@@ -142,7 +142,7 @@ void ARaceController::StartTurbo()
 {
 	if (Car.IsValid())
 	{
-		Car->StartTurbo();
+		Car->InputStartTurbo();
 	}
 }
 
@@ -150,6 +150,6 @@ void ARaceController::StopTurbo()
 {
 	if (Car.IsValid())
 	{
-		Car->StopTurbo();
+		Car->InputStopTurbo();
 	}
 }

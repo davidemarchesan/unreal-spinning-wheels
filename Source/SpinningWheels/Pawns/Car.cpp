@@ -3,10 +3,13 @@
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CarMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 
 ACar::ACar(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	bReplicates = true;
+
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>("Box");
 	if (BoxComponent)
 	{
@@ -69,6 +72,50 @@ ACar::ACar(const FObjectInitializer& ObjectInitializer)
 #endif
 }
 
+void ACar::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	ConsumeTurbo(DeltaTime);
+}
+
+void ACar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+void ACar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(ACar, bBrake, COND_SkipOwner);
+	DOREPLIFETIME_CONDITION(ACar, bTurbo, COND_SkipOwner);
+}
+
+void ACar::OnRep_BrakeUpdate()
+{
+	if (bBrake == true)
+	{
+		LocalBrakeLights();
+	}
+	else
+	{
+		StopLights();
+	}
+}
+
+void ACar::OnRep_TurboUpdate()
+{
+	if (bTurbo == true)
+	{
+		LocalTurboLights();
+	}
+	else
+	{
+		StopLights();
+	}
+}
+
 void ACar::ConsumeTurbo(float DeltaTime)
 {
 	if (bTurbo == true)
@@ -76,7 +123,7 @@ void ACar::ConsumeTurbo(float DeltaTime)
 		TurboCurrentBattery = FMath::Clamp(TurboCurrentBattery - (TurboConsumption * DeltaTime), 0.f, TurboMaxBattery);
 		if (TurboCurrentBattery <= 0.f)
 		{
-			StopTurbo();
+			InputStopTurbo();
 		}
 	}
 }
@@ -109,30 +156,67 @@ void ACar::BeginPlay()
 	}
 }
 
-void ACar::StartDrive()
+void ACar::LocalStartDrive()
 {
 	bDrive = true;
-	
+
 	if (CarMovementComponent)
 	{
 		CarMovementComponent->StartDrive();
 	}
 }
 
-void ACar::StopDrive()
+void ACar::InputStartDrive()
+{
+	if (GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		LocalStartDrive();
+		ServerStartDrive();
+	}
+
+	if (HasAuthority() && IsLocallyControlled())
+	{
+		LocalStartDrive();
+	}
+}
+
+void ACar::ServerStartDrive_Implementation()
+{
+	LocalStartDrive();
+}
+
+void ACar::LocalStopDrive()
 {
 	bDrive = false;
-	
+
 	if (CarMovementComponent)
 	{
 		CarMovementComponent->StopDrive();
 	}
 }
 
-void ACar::StartBrake()
+void ACar::InputStopDrive()
 {
-	StopTurbo();
-	UpdateLightsBehavior(1.0f, LightsColorOnBrake, LightsFlashingOnBrake);
+	if (GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		LocalStopDrive();
+		ServerStopDrive();
+	}
+
+	if (HasAuthority() && IsLocallyControlled())
+	{
+		LocalStopDrive();
+	}
+}
+
+void ACar::ServerStopDrive_Implementation()
+{
+	LocalStopDrive();
+}
+
+void ACar::LocalStartBrake()
+{
+	InputStopTurbo();
 	bBrake = true;
 
 	if (CarMovementComponent)
@@ -141,9 +225,36 @@ void ACar::StartBrake()
 	}
 }
 
-void ACar::StopBrake()
+void ACar::InputStartBrake()
 {
-	StopLights();
+	if (GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		LocalStartBrake();
+		ServerStartBrake();
+		
+		OnRep_BrakeUpdate();
+	}
+
+	if (HasAuthority() && IsLocallyControlled())
+	{
+		LocalStartBrake();
+		OnRep_BrakeUpdate();
+	}
+}
+
+void ACar::ServerStartBrake_Implementation()
+{
+	LocalStartBrake();
+	OnRep_BrakeUpdate();
+}
+
+void ACar::LocalBrakeLights()
+{
+	UpdateLightsBehavior(1.0f, LightsColorOnBrake, LightsFlashingOnBrake);
+}
+
+void ACar::LocalStopBrake()
+{
 	bBrake = false;
 
 	if (CarMovementComponent)
@@ -152,7 +263,30 @@ void ACar::StopBrake()
 	}
 }
 
-void ACar::Turn(FVector2D InputVector)
+void ACar::InputStopBrake()
+{
+	if (GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		LocalStopBrake();
+		ServerStopBrake();
+		
+		OnRep_BrakeUpdate();
+	}
+
+	if (HasAuthority() && IsLocallyControlled())
+	{
+		LocalStopBrake();
+		OnRep_BrakeUpdate();
+	}
+}
+
+void ACar::ServerStopBrake_Implementation()
+{
+	LocalStopBrake();
+	OnRep_BrakeUpdate();
+}
+
+void ACar::LocalTurn(FVector2D InputVector)
 {
 	if (CarMovementComponent)
 	{
@@ -160,11 +294,29 @@ void ACar::Turn(FVector2D InputVector)
 	}
 }
 
-void ACar::StartTurbo()
+void ACar::InputTurn(FVector2D InputVector)
+{
+	if (GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		LocalTurn(InputVector);
+		ServerTurn(InputVector);
+	}
+
+	if (HasAuthority() && IsLocallyControlled())
+	{
+		LocalTurn(InputVector);
+	}
+}
+
+void ACar::ServerTurn_Implementation(FVector2D InputVector)
+{
+	LocalTurn(InputVector);
+}
+
+void ACar::LocalStartTurbo()
 {
 	if (TurboCurrentBattery > 0.f)
 	{
-		UpdateLightsBehavior(1.0f, LightsColorOnTurbo, LightsFlashingOnTurbo);
 		bTurbo = true;
 
 		if (CarMovementComponent)
@@ -174,9 +326,36 @@ void ACar::StartTurbo()
 	}
 }
 
-void ACar::StopTurbo()
+void ACar::InputStartTurbo()
 {
-	StopLights();
+	if (GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		LocalStartTurbo();
+		ServerStartTurbo();
+
+		OnRep_TurboUpdate();
+	}
+
+	if (HasAuthority() && IsLocallyControlled())
+	{
+		LocalStartTurbo();
+		OnRep_TurboUpdate();
+	}
+}
+
+void ACar::ServerStartTurbo_Implementation()
+{
+	LocalStartTurbo();
+	OnRep_TurboUpdate();
+}
+
+void ACar::LocalTurboLights()
+{
+	UpdateLightsBehavior(1.0f, LightsColorOnTurbo, LightsFlashingOnTurbo);
+}
+
+void ACar::LocalStopTurbo()
+{
 	bTurbo = false;
 
 	if (CarMovementComponent)
@@ -185,18 +364,29 @@ void ACar::StopTurbo()
 	}
 }
 
+void ACar::InputStopTurbo()
+{
+	if (GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		LocalStopTurbo();
+		ServerStopTurbo();
+
+		OnRep_TurboUpdate();
+	}
+
+	if (HasAuthority() && IsLocallyControlled())
+	{
+		LocalStopTurbo();
+		OnRep_TurboUpdate();
+	}
+}
+
+void ACar::ServerStopTurbo_Implementation()
+{
+	LocalStopTurbo();
+	OnRep_TurboUpdate();
+}
+
 void ACar::ToggleTurbo()
 {
-}
-
-void ACar::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	ConsumeTurbo(DeltaTime);
-}
-
-void ACar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
