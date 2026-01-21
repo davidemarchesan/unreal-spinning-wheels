@@ -4,6 +4,7 @@
 #include "MainCamera.h"
 
 #include "Camera/CameraComponent.h"
+#include "SpinningWheels/Pawns/EditorPawn.h"
 
 AMainCamera::AMainCamera()
 {
@@ -27,6 +28,15 @@ void AMainCamera::SetupForCar()
 	}
 }
 
+void AMainCamera::SetupForEditor()
+{
+	FollowingEditor = Cast<AEditorPawn>(FollowingPawn);
+	if (FollowingEditor.IsValid())
+	{
+		CameraMode = ECameraMode::CAMERAMODE_Editor;
+	}
+}
+
 void AMainCamera::UpdateCamera(float DeltaSeconds)
 {
 	switch (CameraMode)
@@ -38,6 +48,10 @@ void AMainCamera::UpdateCamera(float DeltaSeconds)
 	case ECameraMode::CAMERAMODE_Car:
 		UpdateCameraForCar(DeltaSeconds);
 		break;
+
+	case ECameraMode::CAMERAMODE_Editor:
+		UpdateCameraForEditor(DeltaSeconds);
+		break;
 	}
 }
 
@@ -45,19 +59,17 @@ void AMainCamera::UpdateCameraForCar(float DeltaSeconds)
 {
 	if (FollowingCar.IsValid() == false || CarMovementComponent.IsValid() == false)
 	{
-		// todo: what are we going to do?
-		UE_LOG(LogTemp, Warning, TEXT("AMainCamera::UpdateCameraForCar car or mov are null"));
 		return;
 	}
 
 	const float VelocityRatio = CarMovementComponent->GetVelocityRatio();
-	
+
 	/** LOCATION */
 	SetActorLocation(FollowingCar->GetActorLocation()); // Pivot
 	if (UCameraComponent* Camera = GetCameraComponent())
 	{
 		FVector RelativeLocation = -FVector::ForwardVector * OffsetFromCar.X;
-		RelativeLocation.X -= VelocityRatio * OffsetFromCarVelocityMultiplier; 
+		RelativeLocation.X -= VelocityRatio * OffsetFromCarVelocityMultiplier;
 		RelativeLocation.Z = OffsetFromCar.Z;
 		Camera->SetRelativeLocation(RelativeLocation);
 	}
@@ -68,7 +80,24 @@ void AMainCamera::UpdateCameraForCar(float DeltaSeconds)
 	/** ROTATION */
 	const FRotator NewRotation = FMath::Lerp(CurrentRotation, TargetRotation, RotationLerpSpeed * VelocityRatio);
 	SetActorRotation(NewRotation);
-	
+}
+
+void AMainCamera::UpdateCameraForEditor(float DeltaSeconds)
+{
+	if (FollowingEditor.IsValid() == false)
+	{
+		return;
+	}
+
+	SetActorLocation(FollowingEditor->GetActorLocation());
+	if (UCameraComponent* Camera = GetCameraComponent())
+	{
+		FVector RelativeLocation = -FVector::ForwardVector * OffsetFromEditor.X;
+		RelativeLocation.Z = OffsetFromEditor.Z;
+		Camera->SetRelativeLocation(RelativeLocation);
+	}
+
+	SetActorRotation(FollowingEditor->GetActorRotation());
 }
 
 void AMainCamera::SetPawn(APawn* InPawn)
@@ -80,6 +109,11 @@ void AMainCamera::SetPawn(APawn* InPawn)
 		if (FollowingPawn->IsA(ACar::StaticClass()))
 		{
 			SetupForCar();
+		}
+
+		if (FollowingPawn->IsA(AEditorPawn::StaticClass()))
+		{
+			SetupForEditor();
 		}
 	}
 }

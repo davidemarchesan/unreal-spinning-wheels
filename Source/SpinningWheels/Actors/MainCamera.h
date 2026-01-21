@@ -11,10 +11,13 @@
 class ACar;
 class UCarMovementComponent;
 
+class AEditorPawn;
+
 enum ECameraMode : int
 {
 	CAMERAMODE_None,
-	CAMERAMODE_Car
+	CAMERAMODE_Car,
+	CAMERAMODE_Editor
 };
 
 /**
@@ -41,8 +44,12 @@ private:
 	TWeakObjectPtr<ACar> FollowingCar;
 	TWeakObjectPtr<UCarMovementComponent> CarMovementComponent;
 
+	void SetupForEditor();
+	TWeakObjectPtr<AEditorPawn> FollowingEditor;
+
 	void UpdateCamera(float DeltaSeconds);
 	void UpdateCameraForCar(float DeltaSeconds);
+	void UpdateCameraForEditor(float DeltaSeconds);
 
 protected:
 
@@ -58,5 +65,8 @@ public:
 
 	UPROPERTY(Category=Car, EditAnywhere)
 	float RotationLerpSpeed;
+
+	UPROPERTY(Category = Editor, EditAnywhere)
+	FVector OffsetFromEditor;
 	
 };

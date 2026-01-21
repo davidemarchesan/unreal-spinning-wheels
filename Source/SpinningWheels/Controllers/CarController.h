@@ -9,7 +9,9 @@
 
 class UInputMappingContext;
 class UDriveInputConfig;
+class UEditorInputConfig;
 class ACar;
+class AEditorPawn;
 class AMainCamera;
 
 /**
@@ -23,20 +25,33 @@ class SPINNINGWHEELS_API ACarController : public APlayerController
 private:
 
 	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
-	TObjectPtr<UInputMappingContext> MappingContext;
+	TObjectPtr<UInputMappingContext> DriveMappingContext;
 
 	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
-	TObjectPtr<UDriveInputConfig> InputConfig;
+	TObjectPtr<UDriveInputConfig> DriveInputConfig;
 
-	UPROPERTY(Category=Camera, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UInputMappingContext> EditorMappingContext;
+
+	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UEditorInputConfig> EditorInputConfig;
+
+	UPROPERTY(Category=Classes, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	TSubclassOf<ACar> CarClass;
+	
+	UPROPERTY(Category=Classes, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	TSubclassOf<AEditorPawn> EditorClass;
+	
+	UPROPERTY(Category=Classes, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TSubclassOf<AMainCamera> CameraClass;
 
 	TWeakObjectPtr<ACar> Car;
+	TWeakObjectPtr<AEditorPawn> Editor;
 	TWeakObjectPtr<AMainCamera> MainCamera;
 
 	void SetupCamera();
 
-	/** Input Actions handler */
+	/** Input Actions handler - Drive */
 	void StartDrive();
 	void StopDrive();
 	void StartBrake();
@@ -44,6 +59,12 @@ private:
 	void Turn(const FInputActionValue& Value);
 	void StartTurbo();
 	void StopTurbo();
+	void SwitchToEditor();
+	
+	/** Input Actions handler - Editor */
+	void MoveCamera(const FInputActionValue& Value);
+	void RotateCamera(const FInputActionValue& Value);
+	void SwitchToDrive();
 
 protected:
 
