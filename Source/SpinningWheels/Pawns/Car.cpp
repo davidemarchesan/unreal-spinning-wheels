@@ -14,6 +14,7 @@ ACar::ACar(const FObjectInitializer& ObjectInitializer)
 		BoxComponent->SetShouldUpdatePhysicsVolume(true);
 		BoxComponent->SetCanEverAffectNavigation(false);
 		BoxComponent->SetBoxExtent(FVector(183.f, 97.f, 48.f));
+		BoxComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 		RootComponent = BoxComponent;
 	}
 

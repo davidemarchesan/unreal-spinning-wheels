@@ -39,6 +39,11 @@ void AMainCamera::SetupForEditor()
 
 void AMainCamera::UpdateCamera(float DeltaSeconds)
 {
+	if (HasAuthority() == false)
+	{
+		return;
+	}
+	
 	switch (CameraMode)
 	{
 	default:
