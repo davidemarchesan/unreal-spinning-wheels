@@ -6,6 +6,8 @@
 #include "GameFramework/GameState.h"
 #include "RaceGameState.generated.h"
 
+class ARacePlayerState;
+
 /**
  *	Leaderboard row:
  *	- id
@@ -14,6 +16,8 @@
  *	- time (with sectors) ?
  *	- last time ?
  */
+
+DECLARE_MULTICAST_DELEGATE(FOnLeaderboardUpdateSignature)
 
 /**
  * 
@@ -25,10 +29,22 @@ class SPINNINGWHEELS_API ARaceGameState : public AGameState
 
 private:
 
-	TArray<FString> Leaderboard;
+	UPROPERTY(ReplicatedUsing=OnRep_Leaderboard)
+	TArray<float> Leaderboard;
+
+	UFUNCTION()
+	void OnRep_Leaderboard();
 
 protected:
 
 public:
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void OnFinishLap(ARacePlayerState* PlayerState, float LapTime);
+
+	FOnLeaderboardUpdateSignature OnLeaderboardUpdate;
+
+	TArray<float> GetLeaderboard() const { return Leaderboard; };
 	
 };

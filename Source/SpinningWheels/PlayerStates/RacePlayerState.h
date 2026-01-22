@@ -16,12 +16,17 @@ class SPINNINGWHEELS_API ARacePlayerState : public APlayerState
 
 private:
 
+	// UPROPERTY(Replicated) // todo: replicate using
 	int8 LeaderboardPosition;
 
-	// Current lap timing
+	float LapStartTime = 0.f;
 
 protected:
 
 public:
+
+	void OnStartLap();
+	void OnCheckpoint();
+	void OnFinishLap();
 	
 };
