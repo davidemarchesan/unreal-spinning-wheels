@@ -7,11 +7,28 @@
 #include "RaceGameState.generated.h"
 
 /**
+ *	Leaderboard row:
+ *	- id
+ *	- name
+ *	- position ?
+ *	- time (with sectors) ?
+ *	- last time ?
+ */
+
+/**
  * 
  */
 UCLASS()
 class SPINNINGWHEELS_API ARaceGameState : public AGameState
 {
 	GENERATED_BODY()
+
+private:
+
+	TArray<FString> Leaderboard;
+
+protected:
+
+public:
 	
 };

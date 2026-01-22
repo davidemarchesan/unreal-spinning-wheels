@@ -13,5 +13,15 @@ UCLASS()
 class SPINNINGWHEELS_API ARacePlayerState : public APlayerState
 {
 	GENERATED_BODY()
+
+private:
+
+	int8 LeaderboardPosition;
+
+	// Current lap timing
+
+protected:
+
+public:
 	
 };
