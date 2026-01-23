@@ -3,13 +3,7 @@
 
 #include "RaceGameMode.h"
 
-void ARaceGameMode::CancelLap(APlayerController* Controller)
+void ARaceGameMode::CancelLap(ARaceController* Controller)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ARaceGameMode::CancelLap"));
 
-	/**
-	 * A player asked to cancel lap, what am i going to do?
-	 * tell player state to cancel lap
-	 * tell controller to spawn the car at starting point
-	 */
 }

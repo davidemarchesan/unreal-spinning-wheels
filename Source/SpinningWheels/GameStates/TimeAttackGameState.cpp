@@ -3,3 +3,26 @@
 
 
 #include "TimeAttackGameState.h"
+
+#include "Net/UnrealNetwork.h"
+#include "SpinningWheels/PlayerStates/TimeAttackPlayerState.h"
+
+void ATimeAttackGameState::OnRep_Leaderboard()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Broadcasting leaderboard update"));
+	OnLeaderboardUpdate.Broadcast();
+}
+
+void ATimeAttackGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ATimeAttackGameState, Leaderboard);
+}
+
+void ATimeAttackGameState::OnNewBestLap(ATimeAttackPlayerState* PlayerState, FRaceLap Lap)
+{
+	UE_LOG(LogTemp, Warning, TEXT("ATimeAttackGameState leaderboard update"));
+	Leaderboard.Add(FTimeAttackLeaderboardRow(PlayerState->GetPlayerId(), PlayerState->GetPlayerName(), Lap));
+	OnLeaderboardUpdate.Broadcast();
+}

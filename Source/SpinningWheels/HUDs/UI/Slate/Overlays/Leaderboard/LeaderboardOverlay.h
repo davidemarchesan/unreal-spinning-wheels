@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SpinningWheels/Core/Leaderboard.h"
 #include "Widgets/SCompoundWidget.h"
 
 class SLeaderboardOverlay : public SCompoundWidget
@@ -19,7 +20,7 @@ private:
 
 public:
 
-	void UpdateLeaderboard(TArray<float> NewLeaderboard);
+	void UpdateLeaderboard(TArray<FTimeAttackLeaderboardRow> NewLeaderboard);
 	void Show();
 	void Hide();
 

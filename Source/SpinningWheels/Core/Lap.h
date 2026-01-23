@@ -1,7 +1,12 @@
 #pragma once
 
+#include "Lap.generated.h"
+
+USTRUCT()
 struct FRaceLap
 {
+	GENERATED_BODY()
+	
 private:
 	float StartTime = 0.f;
 	float EndTime = 0.f;
@@ -16,7 +21,7 @@ public:
 	 * Add a sector to the lap.
 	 * @param Time Time of the sector.
 	 */
-	FORCEINLINE void Sector(const float Time)
+	FORCEINLINE void AddSector(const float Time)
 	{
 		if (bClosed == true)
 		{
@@ -37,10 +42,12 @@ public:
 			return;
 		}
 
-		bClosed = true;
+		AddSector(Time);
 
 		EndTime = Time;
 		LapTime = EndTime - StartTime;
+		
+		bClosed = true;
 	}
 
 	/**
@@ -52,6 +59,7 @@ public:
 	}
 	FORCEINLINE bool operator<(const FRaceLap& RL) const
 	{
+		if (RL.LapTime == 0.f || RL.bClosed == false) return true;
 		return LapTime < RL.LapTime;
 	}
 

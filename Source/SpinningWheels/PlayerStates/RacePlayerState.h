@@ -16,6 +16,8 @@ private:
 	
 	TArray<FRaceLap> Laps;
 	FRaceLap CurrentLap;
+	FRaceLap LastLap;
+	FRaceLap BestLap;
 
 	// UPROPERTY(Replicated) // todo: replicate using
 	int8 LeaderboardPosition;
@@ -23,6 +25,8 @@ private:
 	float LapStartTime = 0.f;
 
 protected:
+
+	virtual void OnNewBestLap(FRaceLap Lap);
 
 public:
 	void OnStartLap();

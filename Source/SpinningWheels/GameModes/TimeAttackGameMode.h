@@ -13,5 +13,13 @@ UCLASS()
 class SPINNINGWHEELS_API ATimeAttackGameMode : public ARaceGameMode
 {
 	GENERATED_BODY()
+
+private:
+
+protected:
+
+public:
+
+	virtual void CancelLap(ARaceController* Controller) override;
 	
 };

@@ -4,19 +4,16 @@
 #include "RaceHUD.h"
 
 #include "SpinningWheels/GameStates/RaceGameState.h"
+#include "SpinningWheels/GameStates/TimeAttackGameState.h"
 #include "UI/Slate/Overlays/Leaderboard/LeaderboardOverlay.h"
 
 void ARaceHUD::OnLeaderboardUpdate()
 {
-	if (const UWorld* World = GetWorld())
+	if (ATimeAttackGameState* GS = GetWorld()->GetGameState<ATimeAttackGameState>())
 	{
-		if (ARaceGameState* GS = Cast<ARaceGameState>(World->GetGameState()))
+		if (LeaderboardOverlay.IsValid())
 		{
-			TArray<float> Leaderboard = GS->GetLeaderboard();
-			if (LeaderboardOverlay.IsValid())
-			{
-				LeaderboardOverlay->UpdateLeaderboard(Leaderboard);
-			}
+			LeaderboardOverlay->UpdateLeaderboard(GS->GetLeaderboard());
 		}
 	}
 }
@@ -34,7 +31,7 @@ void ARaceHUD::BeginPlay()
 
 	if (const UWorld* World = GetWorld())
 	{
-		if (ARaceGameState* GS = Cast<ARaceGameState>(World->GetGameState()))
+		if (ATimeAttackGameState* GS = GetWorld()->GetGameState<ATimeAttackGameState>())
 		{
 			OnLeaderboardUpdate();
 			GS->OnLeaderboardUpdate.AddDynamic(this, &ARaceHUD::OnLeaderboardUpdate);

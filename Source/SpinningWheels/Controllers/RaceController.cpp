@@ -100,30 +100,30 @@ void ARaceController::SetupDriveInputBindings()
 			EnhancedInput->ClearActionBindings();
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_Drive, ETriggerEvent::Started, this,
-			                          &ARaceController::StartDrive);
+			                          &ARaceController::InputStartDrive);
 			EnhancedInput->BindAction(DriveInputConfig->IA_Drive, ETriggerEvent::Completed, this,
-			                          &ARaceController::StopDrive);
+			                          &ARaceController::InputStopDrive);
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_Brake, ETriggerEvent::Started, this,
-			                          &ARaceController::StartBrake);
+			                          &ARaceController::InputStartBrake);
 			EnhancedInput->BindAction(DriveInputConfig->IA_Brake, ETriggerEvent::Completed, this,
-			                          &ARaceController::StopBrake);
+			                          &ARaceController::InputStopBrake);
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_Turn, ETriggerEvent::Triggered, this,
-			                          &ARaceController::Turn);
+			                          &ARaceController::InputTurn);
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_CancelLap, ETriggerEvent::Triggered, this,
-									  &ARaceController::CancelLap);
+									  &ARaceController::InputCancelLap);
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_Turbo, ETriggerEvent::Started, this,
-			                          &ARaceController::StartTurbo);
+			                          &ARaceController::InputStartTurbo);
 			EnhancedInput->BindAction(DriveInputConfig->IA_Turbo, ETriggerEvent::Completed, this,
-			                          &ARaceController::StopTurbo);
+			                          &ARaceController::InputStopTurbo);
 		}
 	}
 }
 
-void ARaceController::StartDrive()
+void ARaceController::InputStartDrive()
 {
 	if (Car.IsValid())
 	{
@@ -131,7 +131,7 @@ void ARaceController::StartDrive()
 	}
 }
 
-void ARaceController::StopDrive()
+void ARaceController::InputStopDrive()
 {
 	if (Car.IsValid())
 	{
@@ -139,7 +139,7 @@ void ARaceController::StopDrive()
 	}
 }
 
-void ARaceController::StartBrake()
+void ARaceController::InputStartBrake()
 {
 	if (Car.IsValid())
 	{
@@ -147,7 +147,7 @@ void ARaceController::StartBrake()
 	}
 }
 
-void ARaceController::StopBrake()
+void ARaceController::InputStopBrake()
 {
 	if (Car.IsValid())
 	{
@@ -155,7 +155,7 @@ void ARaceController::StopBrake()
 	}
 }
 
-void ARaceController::Turn(const FInputActionValue& Value)
+void ARaceController::InputTurn(const FInputActionValue& Value)
 {
 	FVector2D InputVector = Value.Get<FVector2D>();
 	if (Car.IsValid())
@@ -164,7 +164,7 @@ void ARaceController::Turn(const FInputActionValue& Value)
 	}
 }
 
-void ARaceController::StartTurbo()
+void ARaceController::InputStartTurbo()
 {
 	if (Car.IsValid())
 	{
@@ -172,7 +172,7 @@ void ARaceController::StartTurbo()
 	}
 }
 
-void ARaceController::StopTurbo()
+void ARaceController::InputStopTurbo()
 {
 	if (Car.IsValid())
 	{
@@ -180,11 +180,16 @@ void ARaceController::StopTurbo()
 	}
 }
 
-void ARaceController::CancelLap()
+void ARaceController::InputCancelLap()
 {
+	// if (IsLocalController() && HasAuthority() == false)
+	// {
+	// 	ServerCancelLap();
+	// }
 	// Ask the server to start a new lap
 	// ServerCancelLap();
-	
+
+	// todo: Testing
 	if (ARacePlayerState* PS = GetRacePlayerState())
 	{
 		PS->OnStartLap();

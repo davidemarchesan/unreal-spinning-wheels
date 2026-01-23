@@ -28,18 +28,24 @@ void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 	];
 }
 
-void SLeaderboardOverlay::UpdateLeaderboard(TArray<float> NewLeaderboard)
+void SLeaderboardOverlay::UpdateLeaderboard(TArray<FTimeAttackLeaderboardRow> NewLeaderboard)
 {
 	if (LeaderboardVerticalBox.IsValid())
 	{
 		LeaderboardVerticalBox->ClearChildren();
 
-		for (int i = 0; i < NewLeaderboard.Num(); i++)
+		for (FTimeAttackLeaderboardRow& Row : NewLeaderboard)
 		{
 			LeaderboardVerticalBox->AddSlot()
 			[
 				SNew(STextBlock)
-				.Text(FText::AsNumber(NewLeaderboard[i]))
+				.Text(FText::FromString(FString::Printf(
+					TEXT("%d | %d | %s | %f"),
+					Row.Position,
+					Row.PlayerId,
+					*Row.PlayerName,
+					Row.BestLap.GetLapTime()
+				)))
 			];
 		}
 	}

@@ -42,10 +42,6 @@ private:
 	UPROPERTY(Category=Classes, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TSubclassOf<AMainCamera> CameraClass;
 
-	ARaceGameMode* GetRaceGameMode();
-	ARaceGameState* GetRaceGameState();
-	ARacePlayerState* GetRacePlayerState();
-
 	TWeakObjectPtr<ACar> Car;
 	TWeakObjectPtr<AMainCamera> MainCamera;
 
@@ -55,15 +51,15 @@ private:
 	bool bCameraInitialized = false;
 
 	/** Input Actions handler - Drive */
-	void StartDrive();
-	void StopDrive();
-	void StartBrake();
-	void StopBrake();
-	void Turn(const FInputActionValue& Value);
-	void StartTurbo();
-	void StopTurbo();
+	void InputStartDrive();
+	void InputStopDrive();
+	void InputStartBrake();
+	void InputStopBrake();
+	void InputTurn(const FInputActionValue& Value);
+	void InputStartTurbo();
+	void InputStopTurbo();
 
-	void CancelLap();
+	void InputCancelLap();
 
 	UFUNCTION(Server, Reliable)
 	void ServerCancelLap();
@@ -71,9 +67,13 @@ private:
 protected:
 
 	virtual void BeginPlay() override;
-	
 	virtual void SetupInputComponent() override;
-
 	virtual void SetPawn(APawn* InPawn) override;
+	
+public:
+
+	ARaceGameMode* GetRaceGameMode();
+	ARaceGameState* GetRaceGameState();
+	ARacePlayerState* GetRacePlayerState();
 	
 };

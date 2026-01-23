@@ -8,17 +8,6 @@
 
 class ARacePlayerState;
 
-/**
- *	Leaderboard row:
- *	- id
- *	- name
- *	- position ?
- *	- time (with sectors) ?
- *	- last time ?
- */
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeaderboardUpdateSignature);
-
 UCLASS()
 class SPINNINGWHEELS_API ARaceGameState : public AGameState
 {
@@ -26,22 +15,10 @@ class SPINNINGWHEELS_API ARaceGameState : public AGameState
 
 private:
 
-	UPROPERTY(ReplicatedUsing=OnRep_Leaderboard)
-	TArray<float> Leaderboard;
-
-	UFUNCTION()
-	void OnRep_Leaderboard();
-
 protected:
 
 public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	void OnFinishLap(ARacePlayerState* PlayerState, float LapTime);
-
-	FOnLeaderboardUpdateSignature OnLeaderboardUpdate;
-
-	TArray<float> GetLeaderboard() const { return Leaderboard; };
 	
 };

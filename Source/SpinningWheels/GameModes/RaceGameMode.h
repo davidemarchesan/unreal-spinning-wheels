@@ -6,9 +6,8 @@
 #include "GameFramework/GameMode.h"
 #include "RaceGameMode.generated.h"
 
-/**
- * 
- */
+class ARaceController;
+
 UCLASS()
 class SPINNINGWHEELS_API ARaceGameMode : public AGameMode
 {
@@ -20,5 +19,5 @@ protected:
 
 public:
 
-	void CancelLap(APlayerController* Controller);
+	virtual void CancelLap(ARaceController* Controller);
 };
