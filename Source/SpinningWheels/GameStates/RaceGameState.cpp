@@ -7,7 +7,7 @@
 
 void ARaceGameState::OnRep_Leaderboard()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::leaderboard has changed!  (role %d)"), GetLocalRole());
+	// UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::leaderboard has changed!  (role %d)"), GetLocalRole());
 	OnLeaderboardUpdate.Broadcast();
 }
 
@@ -22,7 +22,7 @@ void ARaceGameState::OnFinishLap(ARacePlayerState* PlayerState, float LapTime)
 {
 	if (HasAuthority())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::OnFinishLap received %f"), LapTime);
+		// UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::OnFinishLap received %f"), LapTime);
 		Leaderboard.Add(LapTime);
 	}
 }

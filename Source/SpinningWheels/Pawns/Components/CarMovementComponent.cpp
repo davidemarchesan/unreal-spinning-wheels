@@ -226,7 +226,7 @@ void UCarMovementComponent::HandleCrash(float DeltaTime, FHitResult& Hit)
 		ImpactNormal;
 	
 	Velocity = BounceVector * Velocity.Length() * WallsBounceForce;
-	UE_LOG(LogTemp, Warning, TEXT("Velocity after bounce %s"), *Velocity.ToString());
+	// UE_LOG(LogTemp, Warning, TEXT("Velocity after bounce %s"), *Velocity.ToString());
 
 	// Rotation impulse
 	// Detect side of the impact
@@ -249,7 +249,7 @@ void UCarMovementComponent::HandleCrash(float DeltaTime, FHitResult& Hit)
 		AngularVelocity = FRotator(0.f, -1.f * Velocity.Length() * CrashSpinMultiplier, 0.f);
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Angular Velocity after bounce %s"), *AngularVelocity.ToString());
+	// UE_LOG(LogTemp, Warning, TEXT("Angular Velocity after bounce %s"), *AngularVelocity.ToString());
 	
 	SetMode(ECarMode::CARMODE_Crash);
 

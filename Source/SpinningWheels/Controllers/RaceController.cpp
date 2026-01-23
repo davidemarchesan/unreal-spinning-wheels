@@ -5,12 +5,35 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "SpinningWheels/Actors/MainCamera.h"
+#include "SpinningWheels/GameModes/RaceGameMode.h"
+#include "SpinningWheels/GameStates/RaceGameState.h"
 #include "SpinningWheels/Input/Configs/DriveInputConfig.h"
 #include "SpinningWheels/Pawns/Car.h"
+#include "SpinningWheels/PlayerStates/RacePlayerState.h"
 
 ARaceController::ARaceController()
 {
 	bAutoManageActiveCameraTarget = false;
+}
+
+ARaceGameMode* ARaceController::GetRaceGameMode()
+{
+	if (HasAuthority() == false)
+	{
+		return nullptr;
+	}
+	
+	return GetWorld()->GetAuthGameMode<ARaceGameMode>();
+}
+
+ARaceGameState* ARaceController::GetRaceGameState()
+{
+	return GetWorld()->GetGameState<ARaceGameState>();
+}
+
+ARacePlayerState* ARaceController::GetRacePlayerState()
+{
+	return GetPlayerState<ARacePlayerState>();
 }
 
 void ARaceController::BeginPlay()
@@ -89,6 +112,9 @@ void ARaceController::SetupDriveInputBindings()
 			EnhancedInput->BindAction(DriveInputConfig->IA_Turn, ETriggerEvent::Triggered, this,
 			                          &ARaceController::Turn);
 
+			EnhancedInput->BindAction(DriveInputConfig->IA_CancelLap, ETriggerEvent::Triggered, this,
+									  &ARaceController::CancelLap);
+
 			EnhancedInput->BindAction(DriveInputConfig->IA_Turbo, ETriggerEvent::Started, this,
 			                          &ARaceController::StartTurbo);
 			EnhancedInput->BindAction(DriveInputConfig->IA_Turbo, ETriggerEvent::Completed, this,
@@ -151,5 +177,24 @@ void ARaceController::StopTurbo()
 	if (Car.IsValid())
 	{
 		Car->InputStopTurbo();
+	}
+}
+
+void ARaceController::CancelLap()
+{
+	// Ask the server to start a new lap
+	// ServerCancelLap();
+	
+	if (ARacePlayerState* PS = GetRacePlayerState())
+	{
+		PS->OnStartLap();
+	}
+}
+
+void ARaceController::ServerCancelLap_Implementation()
+{
+	if (ARaceGameMode* GM = GetRaceGameMode())
+	{
+		GM->CancelLap(this);
 	}
 }

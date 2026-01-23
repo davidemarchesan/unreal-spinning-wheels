@@ -13,5 +13,12 @@ UCLASS()
 class SPINNINGWHEELS_API ARaceGameMode : public AGameMode
 {
 	GENERATED_BODY()
-	
+
+private:
+
+protected:
+
+public:
+
+	void CancelLap(APlayerController* Controller);
 };

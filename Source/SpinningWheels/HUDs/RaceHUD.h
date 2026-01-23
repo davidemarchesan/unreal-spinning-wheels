@@ -18,6 +18,7 @@ class SPINNINGWHEELS_API ARaceHUD : public AHUD
 
 private:
 
+	UFUNCTION()
 	void OnLeaderboardUpdate();
 
 	TSharedPtr<SLeaderboardOverlay> LeaderboardOverlay;

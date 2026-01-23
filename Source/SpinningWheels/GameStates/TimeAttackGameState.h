@@ -19,7 +19,5 @@ private:
 protected:
 
 public:
-
-	virtual void AddPlayerState(APlayerState* PlayerState) override;
 	
 };

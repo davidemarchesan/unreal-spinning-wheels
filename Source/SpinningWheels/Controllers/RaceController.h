@@ -12,6 +12,10 @@ class UDriveInputConfig;
 class ACar;
 class AMainCamera;
 
+class ARaceGameMode;
+class ARaceGameState;
+class ARacePlayerState;
+
 /**
  * 
  */
@@ -38,6 +42,10 @@ private:
 	UPROPERTY(Category=Classes, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TSubclassOf<AMainCamera> CameraClass;
 
+	ARaceGameMode* GetRaceGameMode();
+	ARaceGameState* GetRaceGameState();
+	ARacePlayerState* GetRacePlayerState();
+
 	TWeakObjectPtr<ACar> Car;
 	TWeakObjectPtr<AMainCamera> MainCamera;
 
@@ -54,6 +62,11 @@ private:
 	void Turn(const FInputActionValue& Value);
 	void StartTurbo();
 	void StopTurbo();
+
+	void CancelLap();
+
+	UFUNCTION(Server, Reliable)
+	void ServerCancelLap();
 
 protected:
 

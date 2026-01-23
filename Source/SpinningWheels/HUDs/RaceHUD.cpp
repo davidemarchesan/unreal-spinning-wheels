@@ -37,7 +37,7 @@ void ARaceHUD::BeginPlay()
 		if (ARaceGameState* GS = Cast<ARaceGameState>(World->GetGameState()))
 		{
 			OnLeaderboardUpdate();
-			GS->OnLeaderboardUpdate.AddUObject(this, &ARaceHUD::OnLeaderboardUpdate);
+			GS->OnLeaderboardUpdate.AddDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
 		}
 	}
 }

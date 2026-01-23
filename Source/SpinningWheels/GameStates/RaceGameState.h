@@ -17,11 +17,8 @@ class ARacePlayerState;
  *	- last time ?
  */
 
-DECLARE_MULTICAST_DELEGATE(FOnLeaderboardUpdateSignature)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeaderboardUpdateSignature);
 
-/**
- * 
- */
 UCLASS()
 class SPINNINGWHEELS_API ARaceGameState : public AGameState
 {
