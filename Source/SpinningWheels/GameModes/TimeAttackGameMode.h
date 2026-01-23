@@ -20,6 +20,6 @@ protected:
 
 public:
 
-	virtual void CancelLap(ARaceController* Controller) override;
+	virtual void CancelLap(AController* Controller) override;
 	
 };

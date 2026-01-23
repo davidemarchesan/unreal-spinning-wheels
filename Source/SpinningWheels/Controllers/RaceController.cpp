@@ -22,7 +22,7 @@ ARaceGameMode* ARaceController::GetRaceGameMode()
 	{
 		return nullptr;
 	}
-	
+
 	return GetWorld()->GetAuthGameMode<ARaceGameMode>();
 }
 
@@ -40,10 +40,18 @@ void ARaceController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	DisableInput(this); // GameMode will enable me when map and players are ready
+
 	SetupDriveInputBindings();
-	
+
 	SetupCamera();
-	
+
+
+	// if (PlayerState)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("ARaceController: beginplay! (role %d) (pid %d)"), GetLocalRole(),
+	// 	       PlayerState->GetPlayerId());
+	// }
 }
 
 void ARaceController::SetupInputComponent()
@@ -57,6 +65,12 @@ void ARaceController::SetPawn(APawn* InPawn)
 	Car = Cast<ACar>(InPawn);
 
 	SetupCamera();
+
+	// if (PlayerState && InPawn)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("ARaceController: set pawn! (role %d) (pid %d) (pawn class %s"), GetLocalRole(),
+	// 		   PlayerState->GetPlayerId(), *InPawn->GetClass()->GetName());
+	// }
 }
 
 void ARaceController::SetupCamera()
@@ -65,7 +79,7 @@ void ARaceController::SetupCamera()
 	{
 		return;
 	}
-	
+
 	if (IsLocalController() && CameraClass)
 	{
 		MainCamera = GetWorld()->SpawnActor<AMainCamera>(CameraClass, FVector::ZeroVector, FRotator::ZeroRotator);
@@ -113,7 +127,7 @@ void ARaceController::SetupDriveInputBindings()
 			                          &ARaceController::InputTurn);
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_CancelLap, ETriggerEvent::Triggered, this,
-									  &ARaceController::InputCancelLap);
+			                          &ARaceController::InputCancelLap);
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_Turbo, ETriggerEvent::Started, this,
 			                          &ARaceController::InputStartTurbo);
@@ -182,18 +196,20 @@ void ARaceController::InputStopTurbo()
 
 void ARaceController::InputCancelLap()
 {
-	// if (IsLocalController() && HasAuthority() == false)
-	// {
-	// 	ServerCancelLap();
-	// }
+	// Ask the server to restart me
+	if (IsLocalController() && HasAuthority() == false)
+	{
+		ServerCancelLap();
+	}
+
 	// Ask the server to start a new lap
 	// ServerCancelLap();
 
 	// todo: Testing
-	if (ARacePlayerState* PS = GetRacePlayerState())
-	{
-		PS->OnStartLap();
-	}
+	// if (ARacePlayerState* PS = GetRacePlayerState())
+	// {
+	// 	PS->OnStartLap();
+	// }
 }
 
 void ARaceController::ServerCancelLap_Implementation()

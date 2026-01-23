@@ -15,6 +15,11 @@ class SPINNINGWHEELS_API ARaceGameState : public AGameState
 
 private:
 
+	FTimerHandle WaitingForPlayersTimer;
+
+	void StartWaitingForPlayers();
+	void StopWaitingForPlayers();
+
 protected:
 
 public:

@@ -6,11 +6,11 @@
 #include "SpinningWheels/Controllers/RaceController.h"
 #include "SpinningWheels/PlayerStates/RacePlayerState.h"
 
-void ATimeAttackGameMode::CancelLap(ARaceController* Controller)
+void ATimeAttackGameMode::CancelLap(AController* Controller)
 {
 	Super::CancelLap(Controller);
 
-	if (ARacePlayerState* PS = Controller->GetRacePlayerState())
+	if (ARacePlayerState* PS = Controller->GetPlayerState<ARacePlayerState>())
 	{
 		PS->OnCancelLap();
 	}
