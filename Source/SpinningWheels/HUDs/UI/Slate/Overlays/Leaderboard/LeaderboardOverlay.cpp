@@ -1,5 +1,7 @@
 #include "LeaderboardOverlay.h"
 
+#include "SpinningWheels/HUDs/UI/Slate/Styles/MainStyle.h"
+
 void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 {
 	ChildSlot[
@@ -17,13 +19,22 @@ void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 			[
 				SNew(STextBlock)
 				.Text(FText::FromString("P1 | 6.123"))
+				.Font(FMainStyle::Get().GetFontStyle("Roboto.Regular.h1"))
 			]
 
 			+ SVerticalBox::Slot()
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString("P2 | 7.652"))
+				.Text(FText::FromString("P1 | 6.123"))
+				.Font(FMainStyle::Get().GetFontStyle("Lato.Bold.h1"))
 			]
+
+			+ SVerticalBox::Slot()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString("P1 | 6.123"))
+			]
+			
 		]
 	];
 }
@@ -32,7 +43,7 @@ void SLeaderboardOverlay::UpdateLeaderboard(TArray<FTimeAttackLeaderboardRow> Ne
 {
 	if (LeaderboardVerticalBox.IsValid())
 	{
-		LeaderboardVerticalBox->ClearChildren();
+		// LeaderboardVerticalBox->ClearChildren();
 
 		for (FTimeAttackLeaderboardRow& Row : NewLeaderboard)
 		{

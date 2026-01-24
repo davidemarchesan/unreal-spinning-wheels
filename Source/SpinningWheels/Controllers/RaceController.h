@@ -58,11 +58,13 @@ private:
 	void InputTurn(const FInputActionValue& Value);
 	void InputStartTurbo();
 	void InputStopTurbo();
-
 	void InputCancelLap();
 
 	UFUNCTION(Server, Reliable)
 	void ServerCancelLap();
+
+	/** Debug */
+	void Debug();
 
 protected:
 

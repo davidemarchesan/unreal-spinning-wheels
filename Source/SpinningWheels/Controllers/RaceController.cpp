@@ -7,6 +7,7 @@
 #include "SpinningWheels/Actors/MainCamera.h"
 #include "SpinningWheels/GameModes/RaceGameMode.h"
 #include "SpinningWheels/GameStates/RaceGameState.h"
+#include "SpinningWheels/HUDs/UI/Slate/Styles/MainStyle.h"
 #include "SpinningWheels/Input/Configs/DriveInputConfig.h"
 #include "SpinningWheels/Pawns/Car.h"
 #include "SpinningWheels/PlayerStates/RacePlayerState.h"
@@ -133,6 +134,9 @@ void ARaceController::SetupDriveInputBindings()
 			                          &ARaceController::InputStartTurbo);
 			EnhancedInput->BindAction(DriveInputConfig->IA_Turbo, ETriggerEvent::Completed, this,
 			                          &ARaceController::InputStopTurbo);
+
+			EnhancedInput->BindAction(DriveInputConfig->IA_Debug, ETriggerEvent::Triggered, this,
+									  &ARaceController::Debug);
 		}
 	}
 }
@@ -218,4 +222,10 @@ void ARaceController::ServerCancelLap_Implementation()
 	{
 		GM->CancelLap(this);
 	}
+}
+
+void ARaceController::Debug()
+{
+	FMainStyle::Shutdown();
+	FMainStyle::Initialize();
 }

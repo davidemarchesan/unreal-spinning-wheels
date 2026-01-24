@@ -3,4 +3,4 @@
 #include "SpinningWheels.h"
 #include "Modules/ModuleManager.h"
 
-IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, SpinningWheels, "SpinningWheels" );
+IMPLEMENT_PRIMARY_GAME_MODULE( FSpinningWheelsSlateStylesImpl, SpinningWheels, "SpinningWheels" );
