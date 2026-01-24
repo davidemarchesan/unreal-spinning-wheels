@@ -30,6 +30,12 @@ private:
 
 protected:
 
+	virtual void OnNewRaceMatchState();
+
+	virtual void HandleRaceMatchStateWaitingForPlayers();
+	virtual void HandleRaceMatchStateRacing();
+	virtual void HandleRaceMatchStatePodium();
+
 public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

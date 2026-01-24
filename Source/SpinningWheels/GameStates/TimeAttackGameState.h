@@ -24,9 +24,9 @@ private:
 	UFUNCTION()
 	void OnRep_Leaderboard();
 
-	
-
 protected:
+
+	virtual void HandleRaceMatchStateRacing() override;
 
 public:
 

@@ -50,6 +50,9 @@ private:
 
 	bool bCameraInitialized = false;
 
+	UPROPERTY(Replicated)
+	bool bCanDrive = false;
+
 	/** Input Actions handler - Drive */
 	void InputStartDrive();
 	void InputStopDrive();
@@ -74,6 +77,10 @@ protected:
 	
 public:
 
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void SetCanDrive(bool bInCanDrive);
+	
 	ARaceGameMode* GetRaceGameMode();
 	ARaceGameState* GetRaceGameState();
 	ARacePlayerState* GetRacePlayerState();

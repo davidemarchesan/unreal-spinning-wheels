@@ -4,6 +4,7 @@
 #include "RaceController.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "SpinningWheels/Actors/MainCamera.h"
 #include "SpinningWheels/GameModes/RaceGameMode.h"
 #include "SpinningWheels/GameStates/RaceGameState.h"
@@ -41,18 +42,9 @@ void ARaceController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// DisableInput(this); // GameMode will enable me when map and players are ready
-
 	SetupDriveInputBindings();
-
 	SetupCamera();
 
-
-	// if (PlayerState)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("ARaceController: beginplay! (role %d) (pid %d)"), GetLocalRole(),
-	// 	       PlayerState->GetPlayerId());
-	// }
 }
 
 void ARaceController::SetupInputComponent()
@@ -72,6 +64,23 @@ void ARaceController::SetPawn(APawn* InPawn)
 	// 	UE_LOG(LogTemp, Warning, TEXT("ARaceController: set pawn! (role %d) (pid %d) (pawn class %s"), GetLocalRole(),
 	// 		   PlayerState->GetPlayerId(), *InPawn->GetClass()->GetName());
 	// }
+}
+
+void ARaceController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ARaceController, bCanDrive);
+}
+
+void ARaceController::SetCanDrive(bool bInCanDrive)
+{
+	if (HasAuthority() == false)
+	{
+		return;
+	}
+
+	bCanDrive = bInCanDrive;
 }
 
 void ARaceController::SetupCamera()
@@ -143,7 +152,7 @@ void ARaceController::SetupDriveInputBindings()
 
 void ARaceController::InputStartDrive()
 {
-	if (Car.IsValid())
+	if (Car.IsValid() && bCanDrive)
 	{
 		Car->InputStartDrive();
 	}
@@ -151,7 +160,7 @@ void ARaceController::InputStartDrive()
 
 void ARaceController::InputStopDrive()
 {
-	if (Car.IsValid())
+	if (Car.IsValid() && bCanDrive)
 	{
 		Car->InputStopDrive();
 	}
@@ -159,7 +168,7 @@ void ARaceController::InputStopDrive()
 
 void ARaceController::InputStartBrake()
 {
-	if (Car.IsValid())
+	if (Car.IsValid() && bCanDrive)
 	{
 		Car->InputStartBrake();
 	}
@@ -167,7 +176,7 @@ void ARaceController::InputStartBrake()
 
 void ARaceController::InputStopBrake()
 {
-	if (Car.IsValid())
+	if (Car.IsValid() && bCanDrive)
 	{
 		Car->InputStopBrake();
 	}
@@ -184,7 +193,7 @@ void ARaceController::InputTurn(const FInputActionValue& Value)
 
 void ARaceController::InputStartTurbo()
 {
-	if (Car.IsValid())
+	if (Car.IsValid() && bCanDrive)
 	{
 		Car->InputStartTurbo();
 	}
@@ -192,7 +201,7 @@ void ARaceController::InputStartTurbo()
 
 void ARaceController::InputStopTurbo()
 {
-	if (Car.IsValid())
+	if (Car.IsValid() && bCanDrive)
 	{
 		Car->InputStopTurbo();
 	}
@@ -200,20 +209,25 @@ void ARaceController::InputStopTurbo()
 
 void ARaceController::InputCancelLap()
 {
-	// Ask the server to restart me
-	if (IsLocalController() && HasAuthority() == false)
+	if (bCanDrive == false)
 	{
+		return;
+	}
+	
+	if (IsLocalController() && HasAuthority() == true)
+	{
+		// Server player only
+		if (ARaceGameMode* GM = GetRaceGameMode())
+		{
+			GM->CancelLap(this);
+		}
+	}
+	else
+	{
+		// Ask the server to restart me
 		ServerCancelLap();
 	}
-
-	// Ask the server to start a new lap
-	// ServerCancelLap();
-
-	// todo: Testing
-	// if (ARacePlayerState* PS = GetRacePlayerState())
-	// {
-	// 	PS->OnStartLap();
-	// }
+	
 }
 
 void ARaceController::ServerCancelLap_Implementation()

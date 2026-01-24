@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
+#include "SpinningWheels/Core/Match.h"
 #include "RaceGameMode.generated.h"
 
 class ARaceController;
@@ -14,10 +15,16 @@ class SPINNINGWHEELS_API ARaceGameMode : public AGameMode
 	GENERATED_BODY()
 
 private:
+
+	ERaceMatchState RaceMatchState;
 	
 	void StartWaitingForPlayers();
 
+	TWeakObjectPtr<class AStartBlock> StartBlock;
+
 protected:
+
+	virtual void PrepareControllerForNewLap(AController* Controller);
 
 	//~ Begin AGameMode Interface
 	virtual void HandleMatchHasStarted() override;
@@ -40,6 +47,7 @@ public:
 	//~ Begin AGameModeBase Interface
 	virtual void RestartPlayer(AController* NewPlayer) override;
 	virtual void RestartPlayerAtTransform(AController* NewPlayer, const FTransform& SpawnTransform) override;
+	virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
 	//~ End AGameModeBase Interface
 
 	virtual void CancelLap(AController* Controller);

@@ -6,8 +6,8 @@ void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 {
 	ChildSlot[
 		SAssignNew(MainOverlay, SOverlay)
-		.Visibility(EVisibility::Visible)
-		// .Visibility(EVisibility::Collapsed)
+		// .Visibility(EVisibility::Visible)
+		.Visibility(EVisibility::Collapsed)
 
 		+ SOverlay::Slot()
 		.VAlign(VAlign_Center)

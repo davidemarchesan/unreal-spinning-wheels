@@ -6,15 +6,22 @@
 #include "EngineUtils.h"
 #include "GameFramework/PlayerState.h"
 #include "SpinningWheels/Actors/Blocks/StartBlock.h"
-#include "SpinningWheels/Core/Match.h"
+#include "SpinningWheels/Controllers/RaceController.h"
 #include "SpinningWheels/GameStates/RaceGameState.h"
 
 void ARaceGameMode::StartWaitingForPlayers()
 {
 	if (ARaceGameState* GS = GetWorld()->GetGameState<ARaceGameState>())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ARaceGameMode: calling auth gamestate to wait for players %f"), TimeWaitingForPlayers);
 		GS->StartWaitingForPlayers(TimeWaitingForPlayers);
+	}
+}
+
+void ARaceGameMode::PrepareControllerForNewLap(AController* Controller)
+{
+	if (RaceMatchState == ERaceMatchState::RMS_WaitingForPlayers)
+	{
+		return;
 	}
 }
 
@@ -31,34 +38,45 @@ void ARaceGameMode::RestartPlayer(AController* NewPlayer)
 		return;
 	}
 
-	UWorld* World = GetWorld();
-	AStartBlock* StartBlock = nullptr;
-
-	for (TActorIterator<AStartBlock> It(World); It; ++It)
+	if (ARaceController* RC = Cast<ARaceController>(NewPlayer))
 	{
-		AStartBlock* Start = *It;
-		if (Start)
+		RC->SetCanDrive(false);
+	}
+	
+	if (StartBlock.IsValid() == false)
+	{
+		if (UWorld* World = GetWorld())
 		{
-			StartBlock = Start;
+			for (TActorIterator<AStartBlock> It(World); It; ++It)
+			{
+				AStartBlock* Start = *It;
+				if (Start)
+				{
+					StartBlock = Start;
+					break;
+				}
+			}
 		}
+	}
+
+	if (StartBlock.IsValid() == false)
+	{
+		// We did not find a start block :(
+		return;
 	}
 
 	FVector OutLocation;
 	FRotator OutRotation;
 	FTransform SpawnTransform;
 
-	if (StartBlock)
+	if (StartBlock.IsValid())
 	{
 		StartBlock->GetStartingPoint(OutLocation, OutRotation);
-		
+
 		SpawnTransform.SetLocation(OutLocation);
 		SpawnTransform.SetRotation(OutRotation.Quaternion());
-	} 
-
-	if (NewPlayer == nullptr)
-	{
-		UE_LOG(LogTemp, Error, TEXT("RestartPlayer controller is null"));
 	}
+
 	RestartPlayerAtTransform(NewPlayer, SpawnTransform);
 }
 
@@ -69,7 +87,8 @@ void ARaceGameMode::RestartPlayerAtTransform(AController* NewPlayer, const FTran
 		return;
 	}
 
-	UE_LOG(LogGameMode, Verbose, TEXT("RestartPlayerAtTransform %s"), (NewPlayer && NewPlayer->PlayerState) ? *NewPlayer->PlayerState->GetPlayerName() : TEXT("Unknown"));
+	UE_LOG(LogGameMode, Verbose, TEXT("RestartPlayerAtTransform %s"),
+	       (NewPlayer && NewPlayer->PlayerState) ? *NewPlayer->PlayerState->GetPlayerName() : TEXT("Unknown"));
 
 	if (MustSpectate(Cast<APlayerController>(NewPlayer)))
 	{
@@ -81,10 +100,8 @@ void ARaceGameMode::RestartPlayerAtTransform(AController* NewPlayer, const FTran
 
 	if (NewPlayer->GetPawn() != nullptr)
 	{
-		// If we have an existing pawn, just use it's rotation
-		// SpawnRotation = NewPlayer->GetPawn()->GetActorRotation();
-		// UE_LOG(LogTemp, Warning, TEXT("RestartPlayerAtTransform %s"), *SpawnTransform.GetLocation().ToString());
 		NewPlayer->GetPawn()->SetActorLocation(SpawnTransform.GetLocation());
+		NewPlayer->GetPawn()->SetActorRotation(SpawnTransform.GetRotation());
 	}
 	else if (GetDefaultPawnClassForController(NewPlayer) != nullptr)
 	{
@@ -103,6 +120,24 @@ void ARaceGameMode::RestartPlayerAtTransform(AController* NewPlayer, const FTran
 	else
 	{
 		FinishRestartPlayer(NewPlayer, SpawnRotation);
+	}
+
+	PrepareControllerForNewLap(NewPlayer);
+}
+
+void ARaceGameMode::FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation)
+{
+	NewPlayer->Possess(NewPlayer->GetPawn());
+
+	// If the Pawn is destroyed as part of possession we have to abort
+	if (!IsValid(NewPlayer->GetPawn()))
+	{
+		FailedToRestartPlayer(NewPlayer);
+	}
+	else
+	{
+		SetPlayerDefaults(NewPlayer->GetPawn());
+		K2_OnRestartPlayer(NewPlayer);
 	}
 }
 
