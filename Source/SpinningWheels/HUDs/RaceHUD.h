@@ -7,8 +7,6 @@
 #include "SpinningWheels/Core/Match.h"
 #include "RaceHUD.generated.h"
 
-class SLeaderboardOverlay;
-
 /**
  * 
  */
@@ -25,12 +23,20 @@ private:
 	UFUNCTION()
 	void OnRaceMatchStateUpdate(ERaceMatchState NewState);
 
-	TSharedPtr<SLeaderboardOverlay> LeaderboardOverlay;
+	void HandleRaceMatchStateWaitingForPlayers();
+	void HandleRaceMatchStateRacing();
+	void HandleRaceMatchStatePodium();
 
 protected:
 
 	virtual void BeginPlay() override;
 
 public:
+
+private:
+
+	/** Pointers to overlays */
+	TSharedPtr<class SLeaderboardOverlay> LeaderboardOverlay;
+	TSharedPtr<class SServerMessagesOverlay> ServerMessagesOverlay;
 	
 };

@@ -13,28 +13,53 @@ void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 		.VAlign(VAlign_Center)
 		.HAlign(HAlign_Center)
 		[
-			SAssignNew(LeaderboardVerticalBox, SVerticalBox)
 
-			+ SVerticalBox::Slot()
+			SNew(SBox)
+			.WidthOverride(600.f)
+			.HeightOverride(400.f)
 			[
-				SNew(STextBlock)
-				.Text(FText::FromString("P1 | 6.123"))
-				.Font(FMainStyle::Get().GetFontStyle("Roboto.Regular.h1"))
+				SNew(SBorder)
+				.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Dark"))
+				[
+					SNew(SVerticalBox)
+					
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					[
+						SNew(STextBlock)
+						.Text(FText::FromString("Leaderboard"))
+						.Font(FMainStyle::Get().GetFontStyle("Font.Roboto.h1"))
+						.ColorAndOpacity(FMainStyle::Get().GetColor("Color.Primary.Light"))
+					]
+
+					+ SVerticalBox::Slot()
+					[
+						SAssignNew(LeaderboardVerticalBox, SVerticalBox)
+
+						+ SVerticalBox::Slot()
+						[
+							SNew(STextBlock)
+							.Text(FText::FromString("P1 | 6.123"))
+							.Font(FMainStyle::Get().GetFontStyle("Roboto.Regular.h1"))
+						]
+
+						+ SVerticalBox::Slot()
+						[
+							SNew(STextBlock)
+							.Text(FText::FromString("P1 | 6.123"))
+							.Font(FMainStyle::Get().GetFontStyle("Lato.Bold.h1"))
+						]
+
+						+ SVerticalBox::Slot()
+						[
+							SNew(STextBlock)
+							.Text(FText::FromString("P1 | 6.123"))
+						]
+					]
+
+				]
 			]
 
-			+ SVerticalBox::Slot()
-			[
-				SNew(STextBlock)
-				.Text(FText::FromString("P1 | 6.123"))
-				.Font(FMainStyle::Get().GetFontStyle("Lato.Bold.h1"))
-			]
-
-			+ SVerticalBox::Slot()
-			[
-				SNew(STextBlock)
-				.Text(FText::FromString("P1 | 6.123"))
-			]
-			
 		]
 	];
 }

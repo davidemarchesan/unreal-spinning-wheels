@@ -13,9 +13,10 @@ public:
 private:
 	static TSharedPtr<FSlateStyleSet> StyleInstance;
 
+	static void InitializeColors();
 	static void InitializeFonts();
 	// static void InitializeIcons();
-	// static void InitializeBrushes();
+	static void InitializeBrushes();
 	// static void InitializeButtons();
 	
 };

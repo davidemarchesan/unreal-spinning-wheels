@@ -23,6 +23,5 @@ public:
 	void UpdateLeaderboard(TArray<FTimeAttackLeaderboardRow> NewLeaderboard);
 	void Show();
 	void Hide();
-
 	
 };

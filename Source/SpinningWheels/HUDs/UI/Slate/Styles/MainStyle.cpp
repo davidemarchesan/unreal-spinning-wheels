@@ -20,9 +20,10 @@ void FMainStyle::Initialize()
 
 	StyleInstance = MakeShareable(new FSlateStyleSet("FacilityBreachStyle"));
 
+	InitializeColors();
 	InitializeFonts();
 	// InitializeIcons();
-	// InitializeBrushes();
+	InitializeBrushes();
 	// InitializeButtons();
 
 	FSlateStyleRegistry::RegisterSlateStyle(*StyleInstance);
@@ -51,7 +52,27 @@ void FMainStyle::Shutdown()
 
 const ISlateStyle& FMainStyle::Get()
 {
+	check(StyleInstance.IsValid());
 	return *StyleInstance;
+}
+
+void FMainStyle::InitializeColors()
+{
+	// https://coolors.co/d8dbe2-a9bcd0-58a4b0-373f51-daa49a
+	const FColor AlabasterGrey = FColor::FromHex("D8DBE2");
+	const FColor PowderBlue = FColor::FromHex("A9BCD0");
+	const FColor PacificBlue = FColor::FromHex("58A4B0");
+	const FColor CharcoalBlue = FColor::FromHex("373F51");
+	const FColor PowderBlush = FColor::FromHex("DAA49A");
+	
+	StyleInstance->Set("Color.AlabasterGrey", FLinearColor(AlabasterGrey));
+	StyleInstance->Set("Color.PowderBlue", FLinearColor(PowderBlue));
+	StyleInstance->Set("Color.PacificBlue", FLinearColor(PacificBlue));
+	StyleInstance->Set("Color.CharcoalBlue", FLinearColor(CharcoalBlue));
+	StyleInstance->Set("Color.PowderBlush", FLinearColor(PowderBlush));
+	
+	StyleInstance->Set("Color.Primary.Light", FLinearColor(FColor::FromHex("F5F5F5")));
+	StyleInstance->Set("Color.Primary.Dark", FLinearColor(FColor::FromHex("333333")));
 }
 
 void FMainStyle::InitializeFonts()
@@ -78,9 +99,9 @@ void FMainStyle::InitializeFonts()
 	const TMap<FString, float> FontSizes = {
 		{"help", 10.f},
 		{"p", 14.f},
-		{"h1", 24.f},
-		{"h2", 22.f},
-		{"h3", 20.f},
+		{"h1", 29.f},
+		{"h2", 25.f},
+		{"h3", 22.f},
 		{"h4", 18.f},
 	};
 
@@ -97,4 +118,10 @@ void FMainStyle::InitializeFonts()
 			}
 		}
 	}
+}
+
+void FMainStyle::InitializeBrushes()
+{
+	StyleInstance->Set("Brush.Background.Light", new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.AlabasterGrey"), 12.f));
+	StyleInstance->Set("Brush.Background.Dark", new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.CharcoalBlue"), 12.f));
 }

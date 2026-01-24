@@ -6,6 +6,7 @@
 #include "SpinningWheels/GameStates/RaceGameState.h"
 #include "SpinningWheels/GameStates/TimeAttackGameState.h"
 #include "UI/Slate/Overlays/Leaderboard/LeaderboardOverlay.h"
+#include "UI/Slate/Overlays/ServerMessages/ServerMessagesOverlay.h"
 
 void ARaceHUD::OnLeaderboardUpdate()
 {
@@ -20,7 +21,41 @@ void ARaceHUD::OnLeaderboardUpdate()
 
 void ARaceHUD::OnRaceMatchStateUpdate(ERaceMatchState NewState)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ARaceHUD::OnRaceMatchStateUpdate %d"), static_cast<uint8>(NewState));
+
+	switch (NewState)
+	{
+	case ERaceMatchState::RMS_WaitingForPlayers:
+		HandleRaceMatchStateWaitingForPlayers();
+		break;
+
+	case ERaceMatchState::RMS_Racing:
+		HandleRaceMatchStateRacing();
+		break;
+
+	case ERaceMatchState::RMS_Podium:
+		HandleRaceMatchStatePodium();
+		break;
+	}
+}
+
+void ARaceHUD::HandleRaceMatchStateWaitingForPlayers()
+{
+	if (ServerMessagesOverlay.IsValid())
+	{
+		ServerMessagesOverlay->Show(FText::FromString("Waiting for players. Match will start soon."));
+	}
+}
+
+void ARaceHUD::HandleRaceMatchStateRacing()
+{
+	if (ServerMessagesOverlay.IsValid())
+	{
+		ServerMessagesOverlay->Hide();
+	}
+}
+
+void ARaceHUD::HandleRaceMatchStatePodium()
+{
 }
 
 void ARaceHUD::BeginPlay()
@@ -28,10 +63,15 @@ void ARaceHUD::BeginPlay()
 	Super::BeginPlay();
 
 	LeaderboardOverlay = SNew(SLeaderboardOverlay);
-
 	if (GEngine && LeaderboardOverlay.IsValid())
 	{
 		GEngine->GameViewport->AddViewportWidgetContent(LeaderboardOverlay.ToSharedRef());
+	}
+
+	ServerMessagesOverlay = SNew(SServerMessagesOverlay);
+	if (GEngine && ServerMessagesOverlay.IsValid())
+	{
+		GEngine->GameViewport->AddViewportWidgetContent(ServerMessagesOverlay.ToSharedRef());
 	}
 
 	if (const UWorld* World = GetWorld())
@@ -44,8 +84,8 @@ void ARaceHUD::BeginPlay()
 
 		if (ARaceGameState* GS = GetWorld()->GetGameState<ARaceGameState>())
 		{
+			OnRaceMatchStateUpdate(GS->GetRaceMatchState());
 			GS->OnRaceMatchStateUpdate.AddDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
-			UE_LOG(LogTemp, Warning, TEXT("HUD: current rgs %d"), static_cast<uint8>(GS->GetRaceMatchState()));
 		}
 	}
 }
