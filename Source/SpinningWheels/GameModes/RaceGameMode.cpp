@@ -7,24 +7,20 @@
 #include "GameFramework/PlayerState.h"
 #include "SpinningWheels/Actors/Blocks/StartBlock.h"
 #include "SpinningWheels/Core/Match.h"
+#include "SpinningWheels/GameStates/RaceGameState.h"
 
 void ARaceGameMode::StartWaitingForPlayers()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ARaceGameMode::StartWaitingForPlayers"));
-	GetWorld()->GetTimerManager().SetTimer(WaitingForPlayersTimer, this, &ARaceGameMode::StopWaitingForPlayers, 5.f, false);
-}
-
-void ARaceGameMode::StopWaitingForPlayers()
-{
-	UE_LOG(LogTemp, Warning, TEXT("ARaceGameMode::StopWaitingForPlayers"));
-	GetWorld()->GetTimerManager().ClearTimer(WaitingForPlayersTimer);
+	if (ARaceGameState* GS = GetWorld()->GetGameState<ARaceGameState>())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ARaceGameMode: calling auth gamestate to wait for players %f"), TimeWaitingForPlayers);
+		GS->StartWaitingForPlayers(TimeWaitingForPlayers);
+	}
 }
 
 void ARaceGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-
-	UE_LOG(LogTemp, Warning, TEXT("ARaceGameMode::HandleMatchHasStarted"));
 	StartWaitingForPlayers();
 }
 

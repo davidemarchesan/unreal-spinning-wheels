@@ -18,6 +18,11 @@ void ARaceHUD::OnLeaderboardUpdate()
 	}
 }
 
+void ARaceHUD::OnRaceMatchStateUpdate(ERaceMatchState NewState)
+{
+	UE_LOG(LogTemp, Warning, TEXT("ARaceHUD::OnRaceMatchStateUpdate %d"), static_cast<uint8>(NewState));
+}
+
 void ARaceHUD::BeginPlay()
 {
 	Super::BeginPlay();
@@ -35,6 +40,12 @@ void ARaceHUD::BeginPlay()
 		{
 			OnLeaderboardUpdate();
 			GS->OnLeaderboardUpdate.AddDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
+		}
+
+		if (ARaceGameState* GS = GetWorld()->GetGameState<ARaceGameState>())
+		{
+			GS->OnRaceMatchStateUpdate.AddDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
+			UE_LOG(LogTemp, Warning, TEXT("HUD: current rgs %d"), static_cast<uint8>(GS->GetRaceMatchState()));
 		}
 	}
 }

@@ -4,9 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
+#include "SpinningWheels/Core/Match.h"
 #include "RaceGameState.generated.h"
 
 class ARacePlayerState;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRaceMatchStateUpdateSignature, ERaceMatchState, NewState);
 
 UCLASS()
 class SPINNINGWHEELS_API ARaceGameState : public AGameState
@@ -14,16 +17,30 @@ class SPINNINGWHEELS_API ARaceGameState : public AGameState
 	GENERATED_BODY()
 
 private:
-
+	
 	FTimerHandle WaitingForPlayersTimer;
 
-	void StartWaitingForPlayers();
-	void StopWaitingForPlayers();
+	UPROPERTY(ReplicatedUsing=OnRep_RaceMatchState)
+	ERaceMatchState RaceMatchState;
+
+	UFUNCTION()
+	void OnRep_RaceMatchState();
+
+	void SetRaceMatchState(ERaceMatchState NewState);
 
 protected:
 
 public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	ERaceMatchState GetRaceMatchState() const { return RaceMatchState; }
+
+	void StartWaitingForPlayers(float Seconds);
+	void StopWaitingForPlayers();
+
+	/** Begin Delegates */
+	FOnRaceMatchStateUpdateSignature OnRaceMatchStateUpdate;
+	/** End Delegates */
 	
 };

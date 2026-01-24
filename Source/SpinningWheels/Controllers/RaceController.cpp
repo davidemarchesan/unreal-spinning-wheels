@@ -40,7 +40,7 @@ void ARaceController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	DisableInput(this); // GameMode will enable me when map and players are ready
+	// DisableInput(this); // GameMode will enable me when map and players are ready
 
 	SetupDriveInputBindings();
 

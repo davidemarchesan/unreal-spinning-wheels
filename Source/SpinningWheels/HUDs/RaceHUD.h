@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "SpinningWheels/Core/Match.h"
 #include "RaceHUD.generated.h"
 
 class SLeaderboardOverlay;
@@ -20,6 +21,9 @@ private:
 
 	UFUNCTION()
 	void OnLeaderboardUpdate();
+
+	UFUNCTION()
+	void OnRaceMatchStateUpdate(ERaceMatchState NewState);
 
 	TSharedPtr<SLeaderboardOverlay> LeaderboardOverlay;
 

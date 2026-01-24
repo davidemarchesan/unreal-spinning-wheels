@@ -8,22 +8,14 @@
 
 class ARaceController;
 
-namespace RaceMatchState
-{
-	const FName WaitingForPlayers;
-}
-
 UCLASS()
 class SPINNINGWHEELS_API ARaceGameMode : public AGameMode
 {
 	GENERATED_BODY()
 
 private:
-
-	FTimerHandle WaitingForPlayersTimer;
-
+	
 	void StartWaitingForPlayers();
-	void StopWaitingForPlayers();
 
 protected:
 
@@ -34,7 +26,13 @@ protected:
 public:
 
 	UPROPERTY(Category=Timers, EditDefaultsOnly)
-	float TimeWaitingForPlayers;
+	float TimeWaitingForPlayers = 10.f;
+
+	UPROPERTY(Category=Timers, EditDefaultsOnly)
+	float TimeRacing = 300.f; // 5 minutes
+
+	UPROPERTY(Category=Timers, EditDefaultsOnly)
+	float TimePodium = 45.f;
 
 	//~ Begin AGameMode Interface
 	//~ End AGameMode Interface
