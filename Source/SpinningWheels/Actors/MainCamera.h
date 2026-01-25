@@ -48,14 +48,26 @@ private:
 	TWeakObjectPtr<AEditorPawn> FollowingEditor;
 
 	void UpdateCamera(float DeltaSeconds);
+	void UpdateCameraIdle(float DeltaSeconds);
 	void UpdateCameraForCar(float DeltaSeconds);
 	void UpdateCameraForEditor(float DeltaSeconds);
 
 protected:
 
+	virtual void BeginPlay() override;
+
 public:
 
 	void SetPawn(APawn* InPawn);
+
+	UPROPERTY(Category=Idle, EditAnywhere)
+	FVector IdleLocation = FVector::ZeroVector;
+
+	UPROPERTY(Category=Idle, EditAnywhere)
+	FVector IdleLocationOffset;
+
+	UPROPERTY(Category=Idle, EditAnywhere)
+	float IdleRotationSpeed;
 
 	UPROPERTY(Category=Car, EditAnywhere)
 	FVector OffsetFromCar;

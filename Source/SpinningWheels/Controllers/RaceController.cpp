@@ -50,7 +50,7 @@ void ARaceController::BeginPlay()
 	Super::BeginPlay();
 
 	SetupDriveInputBindings();
-	SetupCamera();
+	CreateCamera();
 }
 
 void ARaceController::SetupInputComponent()
@@ -61,13 +61,13 @@ void ARaceController::SetupInputComponent()
 void ARaceController::SetPawn(APawn* InPawn)
 {
 	Super::SetPawn(InPawn);
-
+	
 	if (InPawn && InPawn->IsA(ACar::StaticClass()))
 	{
 		Car = Cast<ACar>(InPawn);
-		if (Car.IsValid())
+		if (IsLocalController() && Car.IsValid() && MainCamera.IsValid() && bCameraInitialized == true)
 		{
-			SetupCamera();
+			MainCamera->SetPawn(Car.Get());
 		}
 	}
 }
@@ -95,22 +95,6 @@ void ARaceController::PrepareForNewLap(float InServerStartTime)
 	SetPhase(ERaceControllerPhase::RCP_InStartingProcedure);
 	ServerStartDriveTime = InServerStartTime;
 	
-}
-
-
-void ARaceController::SetupCamera()
-{
-	if (IsLocalController() && CameraClass)
-	{
-		MainCamera = GetWorld()->SpawnActor<AMainCamera>(CameraClass, FVector::ZeroVector, FRotator::ZeroRotator);
-		if (MainCamera.IsValid() && Car.IsValid())
-		{
-			MainCamera->SetPawn(Car.Get());
-			SetViewTarget(MainCamera.Get());
-
-			bCameraInitialized = true;
-		}
-	}
 }
 
 void ARaceController::SetupDriveInputBindings()
@@ -156,6 +140,29 @@ void ARaceController::SetupDriveInputBindings()
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_Debug, ETriggerEvent::Triggered, this,
 			                          &ARaceController::Debug);
+		}
+	}
+}
+
+void ARaceController::CreateCamera()
+{
+	if (IsLocalController() == false)
+	{
+		return;
+	}
+	
+	if (bCameraInitialized == true)
+	{
+		return;
+	}
+
+	if (IsLocalController() && CameraClass)
+	{
+		MainCamera = GetWorld()->SpawnActor<AMainCamera>(CameraClass, FVector::ZeroVector, FRotator::ZeroRotator);
+		if (MainCamera.IsValid())
+		{
+			SetViewTarget(MainCamera.Get());
+			bCameraInitialized = true;
 		}
 	}
 }

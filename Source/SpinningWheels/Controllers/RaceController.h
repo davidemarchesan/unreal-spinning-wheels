@@ -56,8 +56,8 @@ private:
 	TWeakObjectPtr<AMainCamera> MainCamera;
 
 	void SetupDriveInputBindings();
-	void SetupCamera();
 
+	void CreateCamera();
 	bool bCameraInitialized = false;
 
 	UPROPERTY(ReplicatedUsing=OnRep_Phase)
@@ -99,6 +99,9 @@ protected:
 	ARaceGameMode* GetRaceGameMode();
 	ARaceGameState* GetRaceGameState();
 	ARacePlayerState* GetRacePlayerState();
+
+	//~ Begin AActor Interface
+	//~ End AActor Interface
 	
 public:
 
