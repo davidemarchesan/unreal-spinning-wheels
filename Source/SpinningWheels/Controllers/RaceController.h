@@ -16,6 +16,14 @@ class ARaceGameMode;
 class ARaceGameState;
 class ARacePlayerState;
 
+UENUM()
+enum class ERaceControllerPhase : uint8
+{
+	RCP_Respawning,
+	RCP_InStartingProcedure,
+	RCP_Driving,
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartLapCountdownSignature, float, Seconds);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateLapCountdownSignature, int32, Seconds);
 
@@ -53,8 +61,8 @@ private:
 	bool bCameraInitialized = false;
 
 	UPROPERTY(Replicated)
-	bool bCanDrive = false;
-
+	ERaceControllerPhase Phase = ERaceControllerPhase::RCP_Respawning;
+	
 	UPROPERTY(Replicated)
 	float ServerStartDriveTime = 0.f;
 
@@ -92,9 +100,10 @@ protected:
 public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void SetPhase(ERaceControllerPhase NewPhase);
 	
 	void PrepareForNewLap(float InServerStartTime);
-	void SetCanDrive(bool bInCanDrive);
 
 	FOnStartLapCountdownSignature OnStartLapCountdown;
 	FOnUpdateLapCountdownSignature OnUpdateLapCountdown;

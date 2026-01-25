@@ -12,7 +12,7 @@ enum ECarMode : int
 	CARMODE_Slide,
 	CARMODE_Reverse,
 	CARMODE_Crash,
-	CARMODE_Fly
+	CARMODE_Fly,
 };
 
 /**
@@ -27,6 +27,8 @@ private:
 
 	TEnumAsByte<ECarMode> CarMode = ECarMode::CARMODE_Fly;
 	void SetMode(ECarMode NewMode);
+
+	int8 Engine = 0;
 
 	void StartDrivePhysics();
 	void StartSlidePhysics();
@@ -71,6 +73,12 @@ public:
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void StartEngine();
+	bool IsEngineOn() const { return Engine == 1; }
+	void StopEngine();
+	bool IsEngineOff() const { return Engine == 0; }
+
+	
 	void StartDrive();
 	void StopDrive();
 	void Turn(FVector2D InputVector);

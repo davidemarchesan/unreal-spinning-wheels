@@ -94,7 +94,7 @@ void ARaceGameMode::RestartPlayer(AController* NewPlayer)
 
 	if (ARaceController* RC = Cast<ARaceController>(NewPlayer))
 	{
-		RC->SetCanDrive(false);
+		RC->SetPhase(ERaceControllerPhase::RCP_Respawning);
 	}
 
 	if (StartBlock.IsValid() == false)

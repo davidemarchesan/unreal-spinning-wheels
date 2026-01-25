@@ -236,6 +236,41 @@ void ACar::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 	// }
 }
 
+void ACar::LocalStartEngine()
+{
+	if (
+		GetLocalRole() == ROLE_AutonomousProxy
+		|| (HasAuthority() && IsLocallyControlled())
+		)
+	{
+		if (CarMovementComponent)
+		{
+			CarMovementComponent->StartEngine();
+		}
+	}
+
+	if (GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		ServerStartEngine();
+	}
+}
+
+void ACar::ServerStartEngine_Implementation()
+{
+	if (CarMovementComponent)
+	{
+		CarMovementComponent->StartEngine();
+	}
+}
+
+void ACar::LocalStopEngine()
+{
+	if (CarMovementComponent)
+	{
+		CarMovementComponent->StopEngine();
+	}
+}
+
 void ACar::LocalStartDrive()
 {
 	bDrive = true;

@@ -70,26 +70,30 @@ void ARaceController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ARaceController, bCanDrive);
+	DOREPLIFETIME(ARaceController, Phase);
 	DOREPLIFETIME(ARaceController, ServerStartDriveTime);
+}
+
+void ARaceController::SetPhase(ERaceControllerPhase NewPhase)
+{
+	Phase = NewPhase;
 }
 
 void ARaceController::PrepareForNewLap(float InServerStartTime)
 {
-
 	if (HasAuthority() == false)
 	{
 		return;
 	}
 
-	bCanDrive = false;
-	ServerStartDriveTime = InServerStartTime;
+	if (Car.IsValid())
+	{
+		SetPhase(ERaceControllerPhase::RCP_InStartingProcedure);
+		Car->LocalStopEngine();
+		ServerStartDriveTime = InServerStartTime;
+	}
 }
 
-void ARaceController::SetCanDrive(bool bInCanDrive)
-{
-	bCanDrive = bInCanDrive;
-}
 
 void ARaceController::SetupCamera()
 {
@@ -160,23 +164,26 @@ void ARaceController::SetupDriveInputBindings()
 
 void ARaceController::StartDriveProcedure(float DeltaSeconds)
 {
-
-	if (HasAuthority() == true)
+	if (IsLocalController() == false)
 	{
 		return;
 	}
-	
-	if (bCanDrive == true || ServerStartDriveTime == 0.f)
+
+	if (Phase != ERaceControllerPhase::RCP_InStartingProcedure)
+	{
+		return;
+	}
+
+	if (ServerStartDriveTime == 0.f)
 	{
 		return;
 	}
 
 	if (ARaceGameState* RGS = GetRaceGameState())
 	{
-
 		float CurrentServerTime = RGS->GetServerWorldTimeSeconds();
-		
-		if (ServerStartDriveTime <= CurrentServerTime && bCanDrive == false)
+
+		if (ServerStartDriveTime <= CurrentServerTime && Phase == ERaceControllerPhase::RCP_InStartingProcedure)
 		{
 			StartLap();
 			return;
@@ -188,15 +195,20 @@ void ARaceController::StartDriveProcedure(float DeltaSeconds)
 		{
 			StartDriveSecondsRemaining = Diff;
 			OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
-			UE_LOG(LogTemp, Warning, TEXT("(role %d) Remaining seconds %d"), GetLocalRole(), StartDriveSecondsRemaining);
+			UE_LOG(LogTemp, Warning, TEXT("(role %d) Remaining seconds %d"), GetLocalRole(),
+			       StartDriveSecondsRemaining);
 		}
-		
 	}
 }
 
 void ARaceController::InputStartDrive()
 {
-	if (Car.IsValid() && bCanDrive)
+	if (Phase == ERaceControllerPhase::RCP_Respawning)
+	{
+		return;
+	}
+
+	if (Car.IsValid())
 	{
 		Car->InputStartDrive();
 	}
@@ -204,7 +216,12 @@ void ARaceController::InputStartDrive()
 
 void ARaceController::InputStopDrive()
 {
-	if (Car.IsValid() && bCanDrive)
+	if (Phase == ERaceControllerPhase::RCP_Respawning)
+	{
+		return;
+	}
+
+	if (Car.IsValid())
 	{
 		Car->InputStopDrive();
 	}
@@ -212,7 +229,12 @@ void ARaceController::InputStopDrive()
 
 void ARaceController::InputStartBrake()
 {
-	if (Car.IsValid() && bCanDrive)
+	if (Phase == ERaceControllerPhase::RCP_Respawning)
+	{
+		return;
+	}
+
+	if (Car.IsValid())
 	{
 		Car->InputStartBrake();
 	}
@@ -220,7 +242,12 @@ void ARaceController::InputStartBrake()
 
 void ARaceController::InputStopBrake()
 {
-	if (Car.IsValid() && bCanDrive)
+	if (Phase == ERaceControllerPhase::RCP_Respawning)
+	{
+		return;
+	}
+
+	if (Car.IsValid())
 	{
 		Car->InputStopBrake();
 	}
@@ -228,6 +255,11 @@ void ARaceController::InputStopBrake()
 
 void ARaceController::InputTurn(const FInputActionValue& Value)
 {
+	if (Phase == ERaceControllerPhase::RCP_Respawning)
+	{
+		return;
+	}
+
 	FVector2D InputVector = Value.Get<FVector2D>();
 	if (Car.IsValid())
 	{
@@ -237,7 +269,12 @@ void ARaceController::InputTurn(const FInputActionValue& Value)
 
 void ARaceController::InputStartTurbo()
 {
-	if (Car.IsValid() && bCanDrive)
+	if (Phase == ERaceControllerPhase::RCP_Respawning)
+	{
+		return;
+	}
+
+	if (Car.IsValid())
 	{
 		Car->InputStartTurbo();
 	}
@@ -245,7 +282,12 @@ void ARaceController::InputStartTurbo()
 
 void ARaceController::InputStopTurbo()
 {
-	if (Car.IsValid() && bCanDrive)
+	if (Phase == ERaceControllerPhase::RCP_Respawning)
+	{
+		return;
+	}
+
+	if (Car.IsValid())
 	{
 		Car->InputStopTurbo();
 	}
@@ -253,7 +295,7 @@ void ARaceController::InputStopTurbo()
 
 void ARaceController::InputCancelLap()
 {
-	if (bCanDrive == false)
+	if (Phase != ERaceControllerPhase::RCP_Driving)
 	{
 		return;
 	}
@@ -275,11 +317,15 @@ void ARaceController::InputCancelLap()
 
 void ARaceController::StartLap()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ARaceController::StartLap xx"));
-	SetCanDrive(true);
-	
-	StartDriveSecondsRemaining = 0;
-	OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
+	if (Car.IsValid())
+	{
+		Car->LocalStartEngine();
+
+		SetPhase(ERaceControllerPhase::RCP_Driving);
+
+		StartDriveSecondsRemaining = 0;
+		OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
+	}
 }
 
 void ARaceController::ServerCancelLap_Implementation()

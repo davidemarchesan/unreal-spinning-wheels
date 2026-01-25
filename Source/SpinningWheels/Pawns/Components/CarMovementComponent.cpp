@@ -265,6 +265,11 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 		return;
 	}
 
+	if (IsEngineOff())
+	{
+		return;
+	}
+
 	if (CarMode == CARMODE_Drive)
 	{
 		if (IsTurning() && IsBraking())
@@ -325,6 +330,16 @@ void UCarMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 	}
 
 	ResetTurnInputValue();
+}
+
+void UCarMovementComponent::StartEngine()
+{
+	Engine = 1;
+}
+
+void UCarMovementComponent::StopEngine()
+{
+	Engine = 0;
 }
 
 void UCarMovementComponent::StartDrive()

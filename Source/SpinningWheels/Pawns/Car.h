@@ -80,6 +80,10 @@ public:
 
 	UCarMovementComponent* GetCarMovementComponent() const { return CarMovementComponent; }
 
+	void LocalStartEngine();
+	UFUNCTION(Server, Reliable) void ServerStartEngine();
+	void LocalStopEngine();
+
 	void LocalStartDrive();
 	void InputStartDrive();
 	UFUNCTION(Server, Reliable) void ServerStartDrive();
