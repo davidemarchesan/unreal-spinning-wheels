@@ -26,8 +26,10 @@ private:
 
 protected:
 
+	//~ Begin ARaceGameState Interface
 	virtual void HandleRaceMatchStateRacing() override;
-
+	//~ End ARaceGameState Interface
+	
 public:
 
 	FOnLeaderboardUpdateSignature OnLeaderboardUpdate;

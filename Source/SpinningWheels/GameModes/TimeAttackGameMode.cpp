@@ -6,6 +6,17 @@
 #include "SpinningWheels/Controllers/RaceController.h"
 #include "SpinningWheels/PlayerStates/RacePlayerState.h"
 
+void ATimeAttackGameMode::PrepareControllerForNewLap(AController* Controller)
+{
+	if (RaceMatchState == ERaceMatchState::RMS_Racing)
+	{
+		if (ARaceController* RC = Cast<ARaceController>(Controller))
+		{
+			RC->PrepareForNewLap();
+		}
+	}
+}
+
 void ATimeAttackGameMode::CancelLap(AController* Controller)
 {
 	Super::CancelLap(Controller);

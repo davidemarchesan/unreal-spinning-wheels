@@ -18,6 +18,10 @@ private:
 
 protected:
 
+	//~ Begin ARaceGameMode Interface
+	virtual void PrepareControllerForNewLap(AController* Controller) override;
+	//~ End AGameMode Interface
+
 public:
 
 	virtual void CancelLap(AController* Controller) override;

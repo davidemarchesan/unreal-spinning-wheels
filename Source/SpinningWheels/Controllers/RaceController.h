@@ -63,6 +63,8 @@ private:
 	void InputStopTurbo();
 	void InputCancelLap();
 
+	void StartLap();
+	
 	UFUNCTION(Server, Reliable)
 	void ServerCancelLap();
 
@@ -79,7 +81,10 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+	void PrepareForNewLap();
 	void SetCanDrive(bool bInCanDrive);
+
+	FTimerHandle StartLapTimer;
 	
 	ARaceGameMode* GetRaceGameMode();
 	ARaceGameState* GetRaceGameState();

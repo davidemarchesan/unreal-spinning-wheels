@@ -73,6 +73,13 @@ void ARaceController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 	DOREPLIFETIME(ARaceController, bCanDrive);
 }
 
+void ARaceController::PrepareForNewLap()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ARaceController::PrepareForNewLap"));
+	GetWorld()->GetTimerManager().ClearTimer(StartLapTimer);
+	GetWorld()->GetTimerManager().SetTimer(StartLapTimer, this, &ARaceController::StartLap, 4.f, false);
+}
+
 void ARaceController::SetCanDrive(bool bInCanDrive)
 {
 	if (HasAuthority() == false)
@@ -228,6 +235,12 @@ void ARaceController::InputCancelLap()
 		ServerCancelLap();
 	}
 	
+}
+
+void ARaceController::StartLap()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ARaceController::StartLap"));
+	SetCanDrive(true);
 }
 
 void ARaceController::ServerCancelLap_Implementation()

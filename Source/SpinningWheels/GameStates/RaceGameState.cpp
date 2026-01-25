@@ -4,36 +4,12 @@
 #include "RaceGameState.h"
 
 #include "Net/UnrealNetwork.h"
+#include "SpinningWheels/GameModes/RaceGameMode.h"
 
 void ARaceGameState::OnRep_RaceMatchState()
 {
 	OnRaceMatchStateUpdate.Broadcast(RaceMatchState);
-}
 
-void ARaceGameState::SetRaceMatchState(ERaceMatchState NewState)
-{
-	if (HasAuthority() == false)
-	{
-		return;
-	}
-	
-	if (RaceMatchState == NewState)
-	{
-		return;
-	}
-
-	UE_LOG(LogGameState, Log, TEXT("Race Match State switched from %d to %d"), static_cast<uint8>(RaceMatchState), static_cast<uint8>(NewState));
-	
-	RaceMatchState = NewState;
-
-	// Server player only
-	OnRaceMatchStateUpdate.Broadcast(RaceMatchState);
-
-	OnNewRaceMatchState();
-}
-
-void ARaceGameState::OnNewRaceMatchState()
-{
 	switch (RaceMatchState)
 	{
 	case ERaceMatchState::RMS_WaitingForPlayers:
@@ -60,29 +36,30 @@ void ARaceGameState::HandleRaceMatchStatePodium()
 {
 }
 
-void ARaceGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ARaceGameState, RaceMatchState);
-}
-
-void ARaceGameState::StartWaitingForPlayers(float Seconds)
+void ARaceGameState::SetRaceMatchState(ERaceMatchState NewState)
 {
 	if (HasAuthority() == false)
 	{
 		return;
 	}
-	
-	GetWorld()->GetTimerManager().ClearTimer(WaitingForPlayersTimer);
-	GetWorld()->GetTimerManager().SetTimer(WaitingForPlayersTimer, this, &ARaceGameState::StopWaitingForPlayers, Seconds, false);
 
-	SetRaceMatchState(ERaceMatchState::RMS_WaitingForPlayers);
-	
+	if (RaceMatchState == NewState)
+	{
+		return;
+	}
+
+	UE_LOG(LogGameState, Log, TEXT("Race Match State switched from %d to %d"), static_cast<uint8>(RaceMatchState),
+	       static_cast<uint8>(NewState));
+
+	RaceMatchState = NewState;
+
+	// Server player only
+	OnRep_RaceMatchState();
 }
 
-void ARaceGameState::StopWaitingForPlayers()
+void ARaceGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	GetWorld()->GetTimerManager().ClearTimer(WaitingForPlayersTimer);
-	SetRaceMatchState(ERaceMatchState::RMS_Racing);
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ARaceGameState, RaceMatchState);
 }

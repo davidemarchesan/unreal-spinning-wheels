@@ -16,13 +16,20 @@ class SPINNINGWHEELS_API ARaceGameMode : public AGameMode
 
 private:
 
-	ERaceMatchState RaceMatchState;
-	
+	FTimerHandle WaitingForPlayersTimer;
 	void StartWaitingForPlayers();
+	void StopWaitingForPlayers();
 
 	TWeakObjectPtr<class AStartBlock> StartBlock;
 
 protected:
+
+	ERaceMatchState RaceMatchState;
+
+	virtual void OnNewRaceMatchState();
+	virtual void HandleRaceMatchStateWaitingForPlayers();
+	virtual void HandleRaceMatchStateRacing();
+	virtual void HandleRaceMatchStatePodium();
 
 	virtual void PrepareControllerForNewLap(AController* Controller);
 
@@ -31,6 +38,9 @@ protected:
 	//~ End AGameMode Interface
 
 public:
+
+	void SetRaceMatchState(ERaceMatchState NewState);
+	ERaceMatchState GetRaceMatchState() const { return RaceMatchState; }
 
 	UPROPERTY(Category=Timers, EditDefaultsOnly)
 	float TimeWaitingForPlayers = 10.f;

@@ -94,6 +94,14 @@ void FMainStyle::InitializeFonts()
 			"Lato.Bold",
 			"/Game/Assets/Fonts/Lato/Lato-Bold_Font.Lato-Bold_Font"
 		),
+		FStyleFontData(
+			"JetBrains.Regular",
+			"/Game/Assets/Fonts/JetBrainsMono/JetBrainsMono-Regular_Font.JetBrainsMono-Regular_Font"
+		),
+		FStyleFontData(
+			"JetBrains.Bold",
+			"/Game/Assets/Fonts/JetBrainsMono/JetBrainsMono-Bold_Font.JetBrainsMono-Bold_Font"
+		),
 	};
 
 	const TMap<FString, float> FontSizes = {

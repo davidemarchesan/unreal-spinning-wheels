@@ -25,7 +25,7 @@ void ATimeAttackGameState::HandleRaceMatchStateRacing()
 		
 		if (ARaceController* RC = Cast<ARaceController>(PS->GetPlayerController()))
 		{
-			RC->SetCanDrive(true);
+			RC->PrepareForNewLap();
 		}
 	}
 }

@@ -17,20 +17,14 @@ class SPINNINGWHEELS_API ARaceGameState : public AGameState
 	GENERATED_BODY()
 
 private:
-	
-	FTimerHandle WaitingForPlayersTimer;
+
+protected:
 
 	UPROPERTY(ReplicatedUsing=OnRep_RaceMatchState)
 	ERaceMatchState RaceMatchState;
 
 	UFUNCTION()
-	void OnRep_RaceMatchState();
-
-	void SetRaceMatchState(ERaceMatchState NewState);
-
-protected:
-
-	virtual void OnNewRaceMatchState();
+	virtual void OnRep_RaceMatchState();
 
 	virtual void HandleRaceMatchStateWaitingForPlayers();
 	virtual void HandleRaceMatchStateRacing();
@@ -40,10 +34,8 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	void SetRaceMatchState(ERaceMatchState NewState);
 	ERaceMatchState GetRaceMatchState() const { return RaceMatchState; }
-
-	void StartWaitingForPlayers(float Seconds);
-	void StopWaitingForPlayers();
 
 	/** Begin Delegates */
 	FOnRaceMatchStateUpdateSignature OnRaceMatchStateUpdate;

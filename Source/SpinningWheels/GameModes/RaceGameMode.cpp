@@ -11,10 +11,46 @@
 
 void ARaceGameMode::StartWaitingForPlayers()
 {
-	if (ARaceGameState* GS = GetWorld()->GetGameState<ARaceGameState>())
+	GetWorld()->GetTimerManager().ClearTimer(WaitingForPlayersTimer);
+	GetWorld()->GetTimerManager().SetTimer(WaitingForPlayersTimer, this, &ARaceGameMode::StopWaitingForPlayers,
+	                                       TimeWaitingForPlayers, false);
+
+	SetRaceMatchState(ERaceMatchState::RMS_WaitingForPlayers);
+}
+
+void ARaceGameMode::StopWaitingForPlayers()
+{
+	GetWorld()->GetTimerManager().ClearTimer(WaitingForPlayersTimer);
+
+	SetRaceMatchState(ERaceMatchState::RMS_Racing);
+}
+
+void ARaceGameMode::OnNewRaceMatchState()
+{
+	switch (RaceMatchState)
 	{
-		GS->StartWaitingForPlayers(TimeWaitingForPlayers);
+	case ERaceMatchState::RMS_WaitingForPlayers:
+		HandleRaceMatchStateWaitingForPlayers();
+		break;
+	case ERaceMatchState::RMS_Racing:
+		HandleRaceMatchStateRacing();
+		break;
+	case ERaceMatchState::RMS_Podium:
+		HandleRaceMatchStatePodium();
+		break;
 	}
+}
+
+void ARaceGameMode::HandleRaceMatchStateWaitingForPlayers()
+{
+}
+
+void ARaceGameMode::HandleRaceMatchStateRacing()
+{
+}
+
+void ARaceGameMode::HandleRaceMatchStatePodium()
+{
 }
 
 void ARaceGameMode::PrepareControllerForNewLap(AController* Controller)
@@ -31,6 +67,24 @@ void ARaceGameMode::HandleMatchHasStarted()
 	StartWaitingForPlayers();
 }
 
+void ARaceGameMode::SetRaceMatchState(ERaceMatchState NewState)
+{
+	if (RaceMatchState == NewState)
+	{
+		return;
+	}
+
+	UE_LOG(LogGameMode, Warning, TEXT("Race Match State switched from %d to %d"), static_cast<uint8>(RaceMatchState),
+	       static_cast<uint8>(NewState));
+
+	RaceMatchState = NewState;
+
+	if (ARaceGameState* GS = Cast<ARaceGameState>(GetWorld()->GetGameState()))
+	{
+		GS->SetRaceMatchState(RaceMatchState);
+	}
+}
+
 void ARaceGameMode::RestartPlayer(AController* NewPlayer)
 {
 	if (NewPlayer == nullptr || NewPlayer->IsPendingKillPending())
@@ -42,7 +96,7 @@ void ARaceGameMode::RestartPlayer(AController* NewPlayer)
 	{
 		RC->SetCanDrive(false);
 	}
-	
+
 	if (StartBlock.IsValid() == false)
 	{
 		if (UWorld* World = GetWorld())
@@ -62,6 +116,7 @@ void ARaceGameMode::RestartPlayer(AController* NewPlayer)
 	if (StartBlock.IsValid() == false)
 	{
 		// We did not find a start block :(
+		UE_LOG(LogGameMode, Error, TEXT("No start block has been found"));
 		return;
 	}
 
