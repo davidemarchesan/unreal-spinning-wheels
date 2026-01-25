@@ -60,8 +60,11 @@ private:
 
 	bool bCameraInitialized = false;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_Phase)
 	ERaceControllerPhase Phase = ERaceControllerPhase::RCP_Respawning;
+
+	UFUNCTION()
+	void OnRep_Phase();
 	
 	UPROPERTY(Replicated)
 	float ServerStartDriveTime = 0.f;

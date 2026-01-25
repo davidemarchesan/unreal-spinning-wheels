@@ -61,9 +61,15 @@ void ARaceController::SetupInputComponent()
 void ARaceController::SetPawn(APawn* InPawn)
 {
 	Super::SetPawn(InPawn);
-	Car = Cast<ACar>(InPawn);
 
-	SetupCamera();
+	if (InPawn && InPawn->IsA(ACar::StaticClass()))
+	{
+		Car = Cast<ACar>(InPawn);
+		if (Car.IsValid())
+		{
+			SetupCamera();
+		}
+	}
 }
 
 void ARaceController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -85,23 +91,15 @@ void ARaceController::PrepareForNewLap(float InServerStartTime)
 	{
 		return;
 	}
-
-	if (Car.IsValid())
-	{
-		SetPhase(ERaceControllerPhase::RCP_InStartingProcedure);
-		Car->LocalStopEngine();
-		ServerStartDriveTime = InServerStartTime;
-	}
+	
+	SetPhase(ERaceControllerPhase::RCP_InStartingProcedure);
+	ServerStartDriveTime = InServerStartTime;
+	
 }
 
 
 void ARaceController::SetupCamera()
 {
-	if (bCameraInitialized == true)
-	{
-		return;
-	}
-
 	if (IsLocalController() && CameraClass)
 	{
 		MainCamera = GetWorld()->SpawnActor<AMainCamera>(CameraClass, FVector::ZeroVector, FRotator::ZeroRotator);
@@ -162,13 +160,16 @@ void ARaceController::SetupDriveInputBindings()
 	}
 }
 
+void ARaceController::OnRep_Phase()
+{
+	if (Phase == ERaceControllerPhase::RCP_Driving)
+	{
+		StartLap();
+	}
+}
+
 void ARaceController::StartDriveProcedure(float DeltaSeconds)
 {
-	if (IsLocalController() == false)
-	{
-		return;
-	}
-
 	if (Phase != ERaceControllerPhase::RCP_InStartingProcedure)
 	{
 		return;
@@ -189,14 +190,17 @@ void ARaceController::StartDriveProcedure(float DeltaSeconds)
 			return;
 		}
 
-		const float Diff = FMath::CeilToInt(ServerStartDriveTime - CurrentServerTime);
-
-		if (Diff != StartDriveSecondsRemaining)
+        // Update local UI onlye
+		if (IsLocalController() == true)
 		{
-			StartDriveSecondsRemaining = Diff;
-			OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
-			UE_LOG(LogTemp, Warning, TEXT("(role %d) Remaining seconds %d"), GetLocalRole(),
-			       StartDriveSecondsRemaining);
+			const float Diff = FMath::CeilToInt(ServerStartDriveTime - CurrentServerTime);
+
+			if (Diff != StartDriveSecondsRemaining)
+			{
+				StartDriveSecondsRemaining = Diff;
+				OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
+			}
+			
 		}
 	}
 }

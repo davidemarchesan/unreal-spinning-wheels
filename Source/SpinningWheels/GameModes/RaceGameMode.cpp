@@ -198,5 +198,9 @@ void ARaceGameMode::FinishRestartPlayer(AController* NewPlayer, const FRotator& 
 
 void ARaceGameMode::CancelLap(AController* Controller)
 {
+	if (APawn* ControlledPawn = Controller->GetPawn())
+	{
+		ControlledPawn->Destroy();
+	}
 	RestartPlayer(Controller);
 }
