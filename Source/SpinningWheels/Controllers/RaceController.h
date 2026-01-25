@@ -16,9 +16,9 @@ class ARaceGameMode;
 class ARaceGameState;
 class ARacePlayerState;
 
-/**
- * 
- */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartLapCountdownSignature, float, Seconds);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateLapCountdownSignature, int32, Seconds);
+
 UCLASS()
 class SPINNINGWHEELS_API ARaceController : public APlayerController
 {
@@ -27,6 +27,8 @@ class SPINNINGWHEELS_API ARaceController : public APlayerController
 public:
 
 	ARaceController();
+
+	virtual void Tick(float DeltaSeconds) override;
 
 private:
 
@@ -53,6 +55,14 @@ private:
 	UPROPERTY(Replicated)
 	bool bCanDrive = false;
 
+	UPROPERTY(Replicated)
+	float ServerStartDriveTime = 0.f;
+
+	void StartDriveProcedure(float DeltaSeconds);
+	int32 StartDriveSecondsRemaining = 0;
+
+	void StartLap();
+
 	/** Input Actions handler - Drive */
 	void InputStartDrive();
 	void InputStopDrive();
@@ -62,8 +72,6 @@ private:
 	void InputStartTurbo();
 	void InputStopTurbo();
 	void InputCancelLap();
-
-	void StartLap();
 	
 	UFUNCTION(Server, Reliable)
 	void ServerCancelLap();
@@ -76,18 +84,19 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 	virtual void SetPawn(APawn* InPawn) override;
+
+	ARaceGameMode* GetRaceGameMode();
+	ARaceGameState* GetRaceGameState();
+	ARacePlayerState* GetRacePlayerState();
 	
 public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-
-	void PrepareForNewLap();
+	
+	void PrepareForNewLap(float InServerStartTime);
 	void SetCanDrive(bool bInCanDrive);
 
-	FTimerHandle StartLapTimer;
-	
-	ARaceGameMode* GetRaceGameMode();
-	ARaceGameState* GetRaceGameState();
-	ARacePlayerState* GetRacePlayerState();
+	FOnStartLapCountdownSignature OnStartLapCountdown;
+	FOnUpdateLapCountdownSignature OnUpdateLapCountdown;
 	
 };

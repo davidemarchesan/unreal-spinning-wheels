@@ -18,6 +18,13 @@ ARaceController::ARaceController()
 	bAutoManageActiveCameraTarget = false;
 }
 
+void ARaceController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	StartDriveProcedure(DeltaSeconds);
+}
+
 ARaceGameMode* ARaceController::GetRaceGameMode()
 {
 	if (HasAuthority() == false)
@@ -44,7 +51,6 @@ void ARaceController::BeginPlay()
 
 	SetupDriveInputBindings();
 	SetupCamera();
-
 }
 
 void ARaceController::SetupInputComponent()
@@ -58,12 +64,6 @@ void ARaceController::SetPawn(APawn* InPawn)
 	Car = Cast<ACar>(InPawn);
 
 	SetupCamera();
-
-	// if (PlayerState && InPawn)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("ARaceController: set pawn! (role %d) (pid %d) (pawn class %s"), GetLocalRole(),
-	// 		   PlayerState->GetPlayerId(), *InPawn->GetClass()->GetName());
-	// }
 }
 
 void ARaceController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -71,22 +71,23 @@ void ARaceController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ARaceController, bCanDrive);
+	DOREPLIFETIME(ARaceController, ServerStartDriveTime);
 }
 
-void ARaceController::PrepareForNewLap()
+void ARaceController::PrepareForNewLap(float InServerStartTime)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ARaceController::PrepareForNewLap"));
-	GetWorld()->GetTimerManager().ClearTimer(StartLapTimer);
-	GetWorld()->GetTimerManager().SetTimer(StartLapTimer, this, &ARaceController::StartLap, 4.f, false);
-}
 
-void ARaceController::SetCanDrive(bool bInCanDrive)
-{
 	if (HasAuthority() == false)
 	{
 		return;
 	}
 
+	bCanDrive = false;
+	ServerStartDriveTime = InServerStartTime;
+}
+
+void ARaceController::SetCanDrive(bool bInCanDrive)
+{
 	bCanDrive = bInCanDrive;
 }
 
@@ -152,8 +153,44 @@ void ARaceController::SetupDriveInputBindings()
 			                          &ARaceController::InputStopTurbo);
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_Debug, ETriggerEvent::Triggered, this,
-									  &ARaceController::Debug);
+			                          &ARaceController::Debug);
 		}
+	}
+}
+
+void ARaceController::StartDriveProcedure(float DeltaSeconds)
+{
+
+	if (HasAuthority() == true)
+	{
+		return;
+	}
+	
+	if (bCanDrive == true || ServerStartDriveTime == 0.f)
+	{
+		return;
+	}
+
+	if (ARaceGameState* RGS = GetRaceGameState())
+	{
+
+		float CurrentServerTime = RGS->GetServerWorldTimeSeconds();
+		
+		if (ServerStartDriveTime <= CurrentServerTime && bCanDrive == false)
+		{
+			StartLap();
+			return;
+		}
+
+		const float Diff = FMath::CeilToInt(ServerStartDriveTime - CurrentServerTime);
+
+		if (Diff != StartDriveSecondsRemaining)
+		{
+			StartDriveSecondsRemaining = Diff;
+			OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
+			UE_LOG(LogTemp, Warning, TEXT("(role %d) Remaining seconds %d"), GetLocalRole(), StartDriveSecondsRemaining);
+		}
+		
 	}
 }
 
@@ -220,7 +257,7 @@ void ARaceController::InputCancelLap()
 	{
 		return;
 	}
-	
+
 	if (IsLocalController() && HasAuthority() == true)
 	{
 		// Server player only
@@ -234,13 +271,15 @@ void ARaceController::InputCancelLap()
 		// Ask the server to restart me
 		ServerCancelLap();
 	}
-	
 }
 
 void ARaceController::StartLap()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ARaceController::StartLap"));
+	UE_LOG(LogTemp, Warning, TEXT("ARaceController::StartLap xx"));
 	SetCanDrive(true);
+	
+	StartDriveSecondsRemaining = 0;
+	OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
 }
 
 void ARaceController::ServerCancelLap_Implementation()

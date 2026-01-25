@@ -24,6 +24,7 @@ private:
 
 protected:
 
+	void SetRaceMatchState(ERaceMatchState NewState);
 	ERaceMatchState RaceMatchState;
 
 	virtual void OnNewRaceMatchState();
@@ -38,8 +39,7 @@ protected:
 	//~ End AGameMode Interface
 
 public:
-
-	void SetRaceMatchState(ERaceMatchState NewState);
+	
 	ERaceMatchState GetRaceMatchState() const { return RaceMatchState; }
 
 	UPROPERTY(Category=Timers, EditDefaultsOnly)
@@ -50,6 +50,9 @@ public:
 
 	UPROPERTY(Category=Timers, EditDefaultsOnly)
 	float TimePodium = 45.f;
+
+	UPROPERTY(Category=Timers, EditDefaultsOnly)
+	float TimeStartDriveCountdown = 4;
 
 	//~ Begin AGameMode Interface
 	//~ End AGameMode Interface

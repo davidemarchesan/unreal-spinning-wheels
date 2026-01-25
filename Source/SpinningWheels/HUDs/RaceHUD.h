@@ -27,6 +27,9 @@ private:
 	void HandleRaceMatchStateRacing();
 	void HandleRaceMatchStatePodium();
 
+	UFUNCTION()
+	void OnUpdateLapCountdown(int32 Seconds);
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -35,8 +38,12 @@ public:
 
 private:
 
+	void InitializeOverlays();
+	void InitializeDelegates();
+
 	/** Pointers to overlays */
 	TSharedPtr<class SLeaderboardOverlay> LeaderboardOverlay;
 	TSharedPtr<class SServerMessagesOverlay> ServerMessagesOverlay;
+	TSharedPtr<class SCountdownOverlay> CountdownOverlay;
 	
 };

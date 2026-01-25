@@ -23,7 +23,7 @@ void SServerMessagesOverlay::Construct(const FArguments& InArgs)
 					SAssignNew(TextBlock, STextBlock)
 					.Text(FText::FromString("Starting soon..."))
 					.ColorAndOpacity(FMainStyle::Get().GetColor("Color.Primary.Dark"))
-					.Font(FMainStyle::Get().GetFontStyle("Font.Lato.Regular.h2"))
+					.Font(FMainStyle::Get().GetFontStyle("Font.Lato.Regular.p"))
 					.Justification(ETextJustify::Center)
 				]
 			]

@@ -3,8 +3,10 @@
 
 #include "RaceHUD.h"
 
+#include "SpinningWheels/Controllers/RaceController.h"
 #include "SpinningWheels/GameStates/RaceGameState.h"
 #include "SpinningWheels/GameStates/TimeAttackGameState.h"
+#include "UI/Slate/Overlays/Countdown/CountdownOverlay.h"
 #include "UI/Slate/Overlays/Leaderboard/LeaderboardOverlay.h"
 #include "UI/Slate/Overlays/ServerMessages/ServerMessagesOverlay.h"
 
@@ -21,7 +23,6 @@ void ARaceHUD::OnLeaderboardUpdate()
 
 void ARaceHUD::OnRaceMatchStateUpdate(ERaceMatchState NewState)
 {
-
 	switch (NewState)
 	{
 	case ERaceMatchState::RMS_WaitingForPlayers:
@@ -58,34 +59,66 @@ void ARaceHUD::HandleRaceMatchStatePodium()
 {
 }
 
+void ARaceHUD::OnUpdateLapCountdown(int32 Seconds)
+{
+	if (CountdownOverlay.IsValid())
+	{
+		CountdownOverlay->UpdateCountdown(Seconds);
+	}
+}
+
 void ARaceHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
+	InitializeOverlays();
+	InitializeDelegates();
+}
+
+void ARaceHUD::InitializeOverlays()
+{
+	if (GEngine == nullptr)
+	{
+		return;
+	}
 	LeaderboardOverlay = SNew(SLeaderboardOverlay);
-	if (GEngine && LeaderboardOverlay.IsValid())
+	if (LeaderboardOverlay.IsValid())
 	{
 		GEngine->GameViewport->AddViewportWidgetContent(LeaderboardOverlay.ToSharedRef());
 	}
 
 	ServerMessagesOverlay = SNew(SServerMessagesOverlay);
-	if (GEngine && ServerMessagesOverlay.IsValid())
+	if (ServerMessagesOverlay.IsValid())
 	{
 		GEngine->GameViewport->AddViewportWidgetContent(ServerMessagesOverlay.ToSharedRef());
 	}
 
+	CountdownOverlay = SNew(SCountdownOverlay);
+	if (CountdownOverlay.IsValid())
+	{
+		GEngine->GameViewport->AddViewportWidgetContent(CountdownOverlay.ToSharedRef());
+	}
+}
+
+void ARaceHUD::InitializeDelegates()
+{
 	if (const UWorld* World = GetWorld())
 	{
-		if (ATimeAttackGameState* GS = GetWorld()->GetGameState<ATimeAttackGameState>())
+		if (ATimeAttackGameState* TAGS = World->GetGameState<ATimeAttackGameState>())
 		{
 			OnLeaderboardUpdate();
-			GS->OnLeaderboardUpdate.AddDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
+			TAGS->OnLeaderboardUpdate.AddDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
 		}
 
-		if (ARaceGameState* GS = GetWorld()->GetGameState<ARaceGameState>())
+		if (ARaceGameState* RGS = World->GetGameState<ARaceGameState>())
 		{
-			OnRaceMatchStateUpdate(GS->GetRaceMatchState());
-			GS->OnRaceMatchStateUpdate.AddDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
+			OnRaceMatchStateUpdate(RGS->GetRaceMatchState());
+			RGS->OnRaceMatchStateUpdate.AddDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
+		}
+
+		if (ARaceController* RC = Cast<ARaceController>(GetOwningPlayerController()))
+		{
+			RC->OnUpdateLapCountdown.AddDynamic(this, &ARaceHUD::OnUpdateLapCountdown);
 		}
 	}
 }

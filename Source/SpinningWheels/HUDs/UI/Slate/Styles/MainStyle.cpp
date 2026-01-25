@@ -117,7 +117,7 @@ void FMainStyle::InitializeFonts()
 	{
 		for (const TPair<FString, float>& FontSize : FontSizes)
 		{
-			FString StyleFontName = StyleFont.Name + "." + FontSize.Key;
+			FString StyleFontName = "Font." + StyleFont.Name + "." + FontSize.Key;
 			// Example: FB.Font.Regular.sm or FB.Font.Regular.md
 
 			if (UFont* FontAsset = LoadObject<UFont>(nullptr, *StyleFont.Source))

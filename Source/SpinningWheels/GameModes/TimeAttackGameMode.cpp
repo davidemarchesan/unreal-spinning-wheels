@@ -12,7 +12,7 @@ void ATimeAttackGameMode::PrepareControllerForNewLap(AController* Controller)
 	{
 		if (ARaceController* RC = Cast<ARaceController>(Controller))
 		{
-			RC->PrepareForNewLap();
+			RC->PrepareForNewLap(GetWorld()->GetTimeSeconds() + TimeStartDriveCountdown);
 		}
 	}
 }
