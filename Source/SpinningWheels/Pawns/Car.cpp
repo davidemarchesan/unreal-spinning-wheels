@@ -239,16 +239,14 @@ void ACar::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 void ACar::LocalStartEngine()
 {
 	if (
-		GetLocalRole() == ROLE_AutonomousProxy
-		|| (HasAuthority() && IsLocallyControlled())
-		)
+		IsLocallyControlled())
 	{
 		if (CarMovementComponent)
 		{
 			CarMovementComponent->StartEngine();
 		}
 	}
-
+	
 	if (GetLocalRole() == ROLE_AutonomousProxy)
 	{
 		ServerStartEngine();

@@ -40,6 +40,8 @@ public:
 
 private:
 
+	void SetupDriveInputBindings();
+
 	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UInputMappingContext> DriveMappingContext;
 
@@ -54,10 +56,10 @@ private:
 
 	TWeakObjectPtr<ACar> Car;
 	TWeakObjectPtr<AMainCamera> MainCamera;
-
-	void SetupDriveInputBindings();
-
+	
 	void CreateCamera();
+	bool CanCreateCamera() const { return IsLocalController() == true && bCameraInitialized == false && bCameraInitializing == false; }
+	bool bCameraInitializing = false;
 	bool bCameraInitialized = false;
 
 	UPROPERTY(ReplicatedUsing=OnRep_Phase)
@@ -73,6 +75,8 @@ private:
 	int32 StartDriveSecondsRemaining = 0;
 
 	void StartLap();
+	void LocalStartLap();
+	UFUNCTION(Server, Reliable) void ServerStartLap();
 
 	/** Input Actions handler - Drive */
 	void InputStartDrive();

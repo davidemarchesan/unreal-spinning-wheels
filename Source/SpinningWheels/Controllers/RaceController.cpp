@@ -65,6 +65,11 @@ void ARaceController::SetPawn(APawn* InPawn)
 	if (InPawn && InPawn->IsA(ACar::StaticClass()))
 	{
 		Car = Cast<ACar>(InPawn);
+
+		if (MainCamera.IsValid() == false)
+		{
+			CreateCamera();
+		}
 		if (IsLocalController() && Car.IsValid() && MainCamera.IsValid() && bCameraInitialized == true)
 		{
 			MainCamera->SetPawn(Car.Get());
@@ -91,6 +96,7 @@ void ARaceController::PrepareForNewLap(float InServerStartTime)
 	{
 		return;
 	}
+
 	
 	SetPhase(ERaceControllerPhase::RCP_InStartingProcedure);
 	ServerStartDriveTime = InServerStartTime;
@@ -146,17 +152,14 @@ void ARaceController::SetupDriveInputBindings()
 
 void ARaceController::CreateCamera()
 {
-	if (IsLocalController() == false)
-	{
-		return;
-	}
-	
-	if (bCameraInitialized == true)
+	if (CanCreateCamera() == false)
 	{
 		return;
 	}
 
-	if (IsLocalController() && CameraClass)
+	bCameraInitializing = true;
+
+	if (CameraClass)
 	{
 		MainCamera = GetWorld()->SpawnActor<AMainCamera>(CameraClass, FVector::ZeroVector, FRotator::ZeroRotator);
 		if (MainCamera.IsValid())
@@ -165,18 +168,25 @@ void ARaceController::CreateCamera()
 			bCameraInitialized = true;
 		}
 	}
+
+	bCameraInitializing = false;
 }
 
 void ARaceController::OnRep_Phase()
 {
 	if (Phase == ERaceControllerPhase::RCP_Driving)
 	{
-		StartLap();
+		LocalStartLap();
 	}
 }
 
 void ARaceController::StartDriveProcedure(float DeltaSeconds)
 {
+	if (IsLocalController() == false)
+	{
+		return;
+	}
+	
 	if (Phase != ERaceControllerPhase::RCP_InStartingProcedure)
 	{
 		return;
@@ -190,25 +200,23 @@ void ARaceController::StartDriveProcedure(float DeltaSeconds)
 	if (ARaceGameState* RGS = GetRaceGameState())
 	{
 		float CurrentServerTime = RGS->GetServerWorldTimeSeconds();
-
+ 
 		if (ServerStartDriveTime <= CurrentServerTime && Phase == ERaceControllerPhase::RCP_InStartingProcedure)
 		{
-			StartLap();
+			LocalStartLap();
 			return;
 		}
+ 
+		// Update UI
+		const float Diff = FMath::CeilToInt(ServerStartDriveTime - CurrentServerTime);
 
-        // Update local UI onlye
-		if (IsLocalController() == true)
+		if (Diff != StartDriveSecondsRemaining)
 		{
-			const float Diff = FMath::CeilToInt(ServerStartDriveTime - CurrentServerTime);
-
-			if (Diff != StartDriveSecondsRemaining)
-			{
-				StartDriveSecondsRemaining = Diff;
-				OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
-			}
-			
+			StartDriveSecondsRemaining = Diff;
+			OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
 		}
+			
+		
 	}
 }
 
@@ -328,6 +336,21 @@ void ARaceController::InputCancelLap()
 
 void ARaceController::StartLap()
 {
+	if (IsLocalController())
+	{
+		// Server-player or client-predict
+		LocalStartLap();
+	}
+
+	if (GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		// Tells server
+		ServerStartLap(); 
+	}
+}
+
+void ARaceController::LocalStartLap()
+{
 	if (Car.IsValid())
 	{
 		Car->LocalStartEngine();
@@ -337,6 +360,11 @@ void ARaceController::StartLap()
 		StartDriveSecondsRemaining = 0;
 		OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
 	}
+}
+
+void ARaceController::ServerStartLap_Implementation()
+{
+	LocalStartLap();
 }
 
 void ARaceController::ServerCancelLap_Implementation()
