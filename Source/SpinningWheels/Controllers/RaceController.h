@@ -25,6 +25,7 @@ enum class ERaceControllerPhase : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartLapCountdownSignature, float, Seconds);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateLapCountdownSignature, int32, Seconds);
 
 UCLASS()
@@ -33,12 +34,17 @@ class SPINNINGWHEELS_API ARaceController : public APlayerController
 	GENERATED_BODY()
 
 public:
-
 	ARaceController();
 
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
+	// Begin Deterministic physics
+	void SimulatedTick(float DeltaSeconds);
+	float AccSimulationTime = 0.f;
+	float LastSimulationDelta = 0.f;
+	float TotSeconds = 0.f;
+	// End Deterministic physics
 
 	void SetupDriveInputBindings();
 
@@ -47,18 +53,23 @@ private:
 
 	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UDriveInputConfig> DriveInputConfig;
-	
+
 	UPROPERTY(Category=Classes, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TSubclassOf<ACar> CarClass;
-	
+
 	UPROPERTY(Category=Classes, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TSubclassOf<AMainCamera> CameraClass;
 
 	TWeakObjectPtr<ACar> Car;
 	TWeakObjectPtr<AMainCamera> MainCamera;
-	
+
 	void CreateCamera();
-	bool CanCreateCamera() const { return IsLocalController() == true && bCameraInitialized == false && bCameraInitializing == false; }
+
+	bool CanCreateCamera() const
+	{
+		return IsLocalController() == true && bCameraInitialized == false && bCameraInitializing == false;
+	}
+
 	bool bCameraInitializing = false;
 	bool bCameraInitialized = false;
 
@@ -67,7 +78,7 @@ private:
 
 	UFUNCTION()
 	void OnRep_Phase();
-	
+
 	UPROPERTY(Replicated)
 	float ServerStartDriveTime = 0.f;
 
@@ -76,7 +87,8 @@ private:
 
 	void StartLap();
 	void LocalStartLap();
-	UFUNCTION(Server, Reliable) void ServerStartLap();
+	UFUNCTION(Server, Reliable)
+	void ServerStartLap();
 
 	/** Input Actions handler - Drive */
 	void InputStartDrive();
@@ -87,7 +99,12 @@ private:
 	void InputStartTurbo();
 	void InputStopTurbo();
 	void InputCancelLap();
-	
+
+	int8 DriveInputValue = 0;
+	int8 BrakeInputValue = 0;
+	int8 TurnInputValue = 0;
+	int8 TurboInputValue = 0;
+
 	UFUNCTION(Server, Reliable)
 	void ServerCancelLap();
 
@@ -95,27 +112,27 @@ private:
 	void Debug();
 
 protected:
-
 	virtual void BeginPlay() override;
-	virtual void SetupInputComponent() override;
 	virtual void SetPawn(APawn* InPawn) override;
+
+	TWeakObjectPtr<ARacePlayerState> RacePlayerState;
 
 	ARaceGameMode* GetRaceGameMode();
 	ARaceGameState* GetRaceGameState();
 	ARacePlayerState* GetRacePlayerState();
 
-	//~ Begin AActor Interface
-	//~ End AActor Interface
-	
 public:
-
+	
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+	//~ Begin AController Interface
+	virtual void OnRep_PlayerState() override;
+	//~ End AController Interface
+
 	void SetPhase(ERaceControllerPhase NewPhase);
-	
+
 	void PrepareForNewLap(float InServerStartTime);
 
 	FOnStartLapCountdownSignature OnStartLapCountdown;
 	FOnUpdateLapCountdownSignature OnUpdateLapCountdown;
-	
 };

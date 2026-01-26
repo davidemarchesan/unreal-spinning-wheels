@@ -12,6 +12,7 @@ void ARacePlayerState::OnNewBestLap(FRaceLap Lap)
 void ARacePlayerState::OnStartLap()
 {
 	CurrentLap = FRaceLap(GetWorld()->GetTimeSeconds());
+	SimulationFrames.Empty();
 }
 
 void ARacePlayerState::OnCheckpoint()
@@ -23,7 +24,8 @@ void ARacePlayerState::OnFinishLap()
 {
 	
 	CurrentLap.Close(GetWorld()->GetTimeSeconds());
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *CurrentLap.ToString());
+
+	
 
 	// todo: server only: should notify gamestate to check and update leaderboard
 	if (HasAuthority())
@@ -53,4 +55,24 @@ void ARacePlayerState::AddLap(FRaceLap NewLap)
 
 void ARacePlayerState::ResetLaps()
 {
+}
+
+void ARacePlayerState::AddSimulationFrame(const FSimulationFrame Frame)
+{
+	if (GetLocalRole() != ROLE_Authority)
+		UE_LOG(LogTemp, Log, TEXT("ARacePlayerState::AddSimulationFrame Index(%d) %d %d %d %d"), SimulationFrames.Num(), Frame.DriveInputValue, Frame.BrakeInputValue, Frame.TurnInputValue, Frame.TurboInputValue);
+		
+	SimulationFrames.Add(Frame);
+}
+
+TOptional<FSimulationFrame> ARacePlayerState::GetSimulationFrame(uint32 Index)
+{
+	if (SimulationFrames.IsValidIndex(Index))
+	{
+		return SimulationFrames[Index];
+	}
+	else
+	{
+		return TOptional<FSimulationFrame>();
+	}
 }

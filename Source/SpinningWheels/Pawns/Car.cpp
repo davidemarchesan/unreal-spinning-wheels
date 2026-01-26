@@ -41,20 +41,6 @@ ACar::ACar(const FObjectInitializer& ObjectInitializer)
 		SkeletalMeshComponent->SetupAttachment(RootComponent);
 	}
 
-	// Camera inside pawn deprecated
-	// SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("Camera Arm");
-	// if (SpringArmComponent)
-	// {
-	// 	SpringArmComponent->SetupAttachment(RootComponent);
-	// 	SpringArmComponent->SetRelativeLocation(FVector(-250.f, 0.f, 100.f));
-	//
-	// 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("Camera");
-	// 	if (CameraComponent)
-	// 	{
-	// 		CameraComponent->SetupAttachment(SpringArmComponent);
-	// 	}
-	// }
-
 	CarMovementComponent = CreateDefaultSubobject<UCarMovementComponent>("Movement");
 	if (CarMovementComponent)
 	{
@@ -80,12 +66,7 @@ void ACar::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	ConsumeTurbo(DeltaTime);
-}
-
-void ACar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	SimulatedTick(DeltaTime);
 }
 
 void ACar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -94,6 +75,104 @@ void ACar::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifeti
 
 	DOREPLIFETIME_CONDITION(ACar, bBrake, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(ACar, bTurbo, COND_SkipOwner);
+}
+
+void ACar::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (SkeletalMeshComponent)
+	{
+		DynamicMaterialLights = SkeletalMeshComponent->CreateDynamicMaterialInstance(ACar::MaterialIndexLights);
+	}
+
+	if (BoxComponent)
+	{
+		BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ACar::OnComponentBeginOverlap);
+	}
+
+	RacePlayerState = Cast<ARacePlayerState>(GetPlayerState());
+}
+
+void ACar::SimulatedTick(float DeltaTime)
+{
+	if (
+		IsLocallyControlled() == false
+		|| RacePlayerState.IsValid() == false
+		|| CarMovementComponent == nullptr
+	)
+	{
+		return;
+	}
+
+	if (RacePlayerState->IsRacing() == false)
+	{
+		return;
+	}
+
+	AccSimulationTime += DeltaTime;
+	TotSeconds += DeltaTime;
+
+	if (AccSimulationTime >= SimulationConstants::TickFrequency)
+	{
+		int MaxIterations = FMath::Clamp(FMath::FloorToInt(AccSimulationTime / SimulationConstants::TickFrequency), 1,
+		                                 30.f);
+		int Iteration = 0;
+
+		while (Iteration < MaxIterations)
+		{
+			Iteration++;
+
+			TOptional<FSimulationFrame> OptionalFrame = RacePlayerState->GetSimulationFrame(CurrentFrameIndex);
+			if (OptionalFrame.IsSet())
+			{
+				SetSimulationFrame(OptionalFrame.GetValue());
+
+				ConsumeTurbo(SimulationConstants::TickFrequency);
+
+				// Actual physics movement component
+				CarMovementComponent->SimulateMovement(CurrentSimulationFrame);
+			}
+			CurrentFrameIndex++;
+		}
+
+		LastSimulationDelta = AccSimulationTime - SimulationConstants::TickFrequency * MaxIterations;
+		AccSimulationTime = LastSimulationDelta;
+	}
+}
+
+void ACar::SetSimulationFrame(FSimulationFrame NewSimulationFrame)
+{
+	PreviousSimulationFrame = CurrentSimulationFrame;
+	CurrentSimulationFrame = NewSimulationFrame;
+
+	// Begin react to input changes
+
+	if (PreviousSimulationFrame.BrakeInputValue != CurrentSimulationFrame.BrakeInputValue)
+	{
+		// Update lights visuals
+		if (CurrentSimulationFrame.BrakeInputValue == 1)
+		{
+			LocalBrakeLights();
+		}
+		else
+		{
+			StopLights();
+		}
+	}
+
+	if (PreviousSimulationFrame.TurboInputValue != CurrentSimulationFrame.TurboInputValue)
+	{
+		// Update lights visuals
+		if (CurrentSimulationFrame.TurboInputValue == 1)
+		{
+			LocalTurboLights();
+		}
+		else
+		{
+			StopLights();
+		}
+	}
 }
 
 void ACar::OnRep_BrakeUpdate()
@@ -122,7 +201,7 @@ void ACar::OnRep_TurboUpdate()
 
 void ACar::ConsumeTurbo(float DeltaTime)
 {
-	if (bTurbo == true)
+	if (CurrentSimulationFrame.TurboInputValue == 1)
 	{
 		TurboCurrentBattery = FMath::Clamp(TurboCurrentBattery - (TurboConsumption * DeltaTime), 0.f, TurboMaxBattery);
 		if (TurboCurrentBattery <= 0.f)
@@ -147,26 +226,6 @@ void ACar::StopLights()
 	if (DynamicMaterialLights.IsValid())
 	{
 		DynamicMaterialLights->SetScalarParameterValue("Intensity", 0.f);
-	}
-}
-
-void ACar::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (SkeletalMeshComponent)
-	{
-		DynamicMaterialLights = SkeletalMeshComponent->CreateDynamicMaterialInstance(ACar::MaterialIndexLights);
-	}
-
-	if (BoxComponent)
-	{
-		BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ACar::OnComponentBeginOverlap);
-	}
-
-	if (ARacePlayerState* PS = Cast<ARacePlayerState>(GetPlayerState()))
-	{
-		PS->OnStartLap();
 	}
 }
 
@@ -243,10 +302,10 @@ void ACar::LocalStartEngine()
 	{
 		if (CarMovementComponent)
 		{
-			CarMovementComponent->StartEngine();
+			// CarMovementComponent->StartEngine();
 		}
 	}
-	
+
 	if (GetLocalRole() == ROLE_AutonomousProxy)
 	{
 		ServerStartEngine();
@@ -257,7 +316,7 @@ void ACar::ServerStartEngine_Implementation()
 {
 	if (CarMovementComponent)
 	{
-		CarMovementComponent->StartEngine();
+		// CarMovementComponent->StartEngine();
 	}
 }
 
@@ -265,17 +324,17 @@ void ACar::LocalStopEngine()
 {
 	if (CarMovementComponent)
 	{
-		CarMovementComponent->StopEngine();
+		// CarMovementComponent->StopEngine();
 	}
 }
 
 void ACar::LocalStartDrive()
 {
-	bDrive = true;
+	// bDrive = true;
 
 	if (CarMovementComponent)
 	{
-		CarMovementComponent->StartDrive();
+		// CarMovementComponent->StartDrive();
 	}
 }
 
@@ -300,11 +359,11 @@ void ACar::ServerStartDrive_Implementation()
 
 void ACar::LocalStopDrive()
 {
-	bDrive = false;
+	// bDrive = false;
 
 	if (CarMovementComponent)
 	{
-		CarMovementComponent->StopDrive();
+		// CarMovementComponent->StopDrive();
 	}
 }
 
@@ -334,7 +393,7 @@ void ACar::LocalStartBrake()
 
 	if (CarMovementComponent)
 	{
-		CarMovementComponent->StartBrake();
+		// CarMovementComponent->StartBrake();
 	}
 }
 
@@ -372,7 +431,7 @@ void ACar::LocalStopBrake()
 
 	if (CarMovementComponent)
 	{
-		CarMovementComponent->StopBrake();
+		// CarMovementComponent->StopBrake();
 	}
 }
 
@@ -403,7 +462,7 @@ void ACar::LocalTurn(FVector2D InputVector)
 {
 	if (CarMovementComponent)
 	{
-		CarMovementComponent->Turn(InputVector);
+		// CarMovementComponent->Turn(InputVector);
 	}
 }
 
@@ -434,7 +493,7 @@ void ACar::LocalStartTurbo()
 
 		if (CarMovementComponent)
 		{
-			CarMovementComponent->StartTurbo();
+			// CarMovementComponent->StartTurbo();
 		}
 	}
 }
@@ -473,7 +532,7 @@ void ACar::LocalStopTurbo()
 
 	if (CarMovementComponent)
 	{
-		CarMovementComponent->StopTurbo();
+		// CarMovementComponent->StopTurbo();
 	}
 }
 

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
 #include "SpinningWheels/Core/Lap.h"
+#include "SpinningWheels/Core/Simulation.h"
 #include "RacePlayerState.generated.h"
 
 UCLASS()
@@ -24,6 +25,8 @@ private:
 
 	float LapStartTime = 0.f;
 
+	TArray<FSimulationFrame> SimulationFrames;
+
 protected:
 
 	virtual void OnNewBestLap(FRaceLap Lap);
@@ -36,4 +39,8 @@ public:
 
 	void AddLap(FRaceLap NewLap);
 	void ResetLaps();
+
+	void AddSimulationFrame(const FSimulationFrame Frame);
+	TOptional<FSimulationFrame> GetSimulationFrame(uint32 Index);
+	bool IsRacing() const { return SimulationFrames.Num() > 0; } // todo: temp
 };
