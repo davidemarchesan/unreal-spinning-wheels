@@ -97,15 +97,16 @@ void ACar::BeginPlay()
 void ACar::SimulatedTick(float DeltaTime)
 {
 	if (
-		IsLocallyControlled() == false
-		|| RacePlayerState.IsValid() == false
+		// IsLocallyControlled() == false
+		RacePlayerState.IsValid() == false
 		|| CarMovementComponent == nullptr
 	)
 	{
+		// UE_LOG(LogTemp, Warning, TEXT("(role %d) Sim tick failed %d %d"), GetLocalRole(), RacePlayerState.IsValid() == false, CarMovementComponent == nullptr);
 		return;
 	}
 
-	if (RacePlayerState->IsRacing() == false)
+	if (RacePlayerState->IsOnALap() == false)
 	{
 		return;
 	}

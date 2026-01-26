@@ -30,6 +30,11 @@ void ARaceController::Tick(float DeltaSeconds)
 
 void ARaceController::SimulatedTick(float DeltaSeconds)
 {
+	if (IsLocalController() == false)
+	{
+		return;
+	}
+	
 	if (Phase != ERaceControllerPhase::RCP_Driving)
 	{
 		return;
@@ -97,6 +102,7 @@ void ARaceController::BeginPlay()
 	Super::BeginPlay();
 
 	RacePlayerState = GetRacePlayerState();
+	
 	SetupDriveInputBindings();
 	CreateCamera();
 }
@@ -134,6 +140,16 @@ void ARaceController::OnRep_PlayerState()
 	RacePlayerState = GetRacePlayerState();
 
 	if (Car.IsValid())
+	{
+		Car->SetPlayerState(RacePlayerState.Get());
+	}
+}
+
+void ARaceController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	if (Car.IsValid() && RacePlayerState.IsValid())
 	{
 		Car->SetPlayerState(RacePlayerState.Get());
 	}
@@ -361,47 +377,54 @@ void ARaceController::InputCancelLap()
 
 void ARaceController::StartLap()
 {
-
-	SetPhase(ERaceControllerPhase::RCP_Driving);
-
-	StartDriveSecondsRemaining = 0;
-	OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
-	return;
-	// if (IsLocalController())
-	// {
-	// 	// Server-player or client-predict
-	// 	LocalStartLap();
-	// }
-	//
-	// if (GetLocalRole() == ROLE_AutonomousProxy)
-	// {
-	// 	// Tells server
-	// 	ServerStartLap();
-	// }
+	
+	if (IsLocalController())
+	{
+		// Server-player or client-predict
+		LocalStartLap();
+	}
+	
+	if (GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		// Tells server
+		ServerStartLap();
+	}
 }
 
 void ARaceController::LocalStartLap()
 {
-	if (Car.IsValid())
+	SetPhase(ERaceControllerPhase::RCP_Driving);
+	StartDriveSecondsRemaining = 0;
+
+	if (RacePlayerState.IsValid())
 	{
-		Car->LocalStartEngine();
-
-		if (RacePlayerState.IsValid())
-		{
-			RacePlayerState->OnStartLap();
-		}
-
-		// This line will start pushing simulation frames to player state
-		SetPhase(ERaceControllerPhase::RCP_Driving);
-
-		StartDriveSecondsRemaining = 0;
-		OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
+		RacePlayerState->OnStartLap();
 	}
+	
+	OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
+	
+	// if (Car.IsValid())
+	// {
+	// 	Car->LocalStartEngine();
+	//
+	// 	if (RacePlayerState.IsValid())
+	// 	{
+	// 		RacePlayerState->OnStartLap();
+	// 	}
+	//
+	// 	// This line will start pushing simulation frames to player state
+	// 	SetPhase(ERaceControllerPhase::RCP_Driving);
+	//
+	// 	StartDriveSecondsRemaining = 0;
+	// 	OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
+	// }
 }
 
 void ARaceController::ServerStartLap_Implementation()
 {
-	LocalStartLap();
+	// LocalStartLap();
+	SetPhase(ERaceControllerPhase::RCP_Driving);
+	StartDriveSecondsRemaining = 0;
 }
 
 void ARaceController::ServerCancelLap_Implementation()

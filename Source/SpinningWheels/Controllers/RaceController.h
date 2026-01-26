@@ -112,8 +112,11 @@ private:
 	void Debug();
 
 protected:
+
+	//~ Begin AController Interface
 	virtual void BeginPlay() override;
 	virtual void SetPawn(APawn* InPawn) override;
+	//~ End AController Interface
 
 	TWeakObjectPtr<ARacePlayerState> RacePlayerState;
 
@@ -127,6 +130,7 @@ public:
 
 	//~ Begin AController Interface
 	virtual void OnRep_PlayerState() override;
+	virtual void OnPossess(APawn* InPawn) override;
 	//~ End AController Interface
 
 	void SetPhase(ERaceControllerPhase NewPhase);

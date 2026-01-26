@@ -27,6 +27,23 @@ private:
 
 	TArray<FSimulationFrame> SimulationFrames;
 
+	bool bOnALap = false;
+
+	// Sending simulation frames to the network
+	FTimerHandle TimerServerSimulationFramesUpdate;
+
+	void SendFramesToServer();
+	int32 NextFrameToSendToServer = 0;
+	
+	UFUNCTION(Server, Reliable)
+	void ServerAddSimulationFrames(const TArray<FSimulationFrame>& ClientSimulationFrames);
+
+	UFUNCTION(Server, Reliable)
+	void ServerOnStartLap();
+
+	UFUNCTION(Server, Reliable)
+	void ServerOnFinishLap();
+
 protected:
 
 	virtual void OnNewBestLap(FRaceLap Lap);
@@ -42,5 +59,6 @@ public:
 
 	void AddSimulationFrame(const FSimulationFrame Frame);
 	TOptional<FSimulationFrame> GetSimulationFrame(uint32 Index);
-	bool IsRacing() const { return SimulationFrames.Num() > 0; } // todo: temp
+	
+	bool IsOnALap() const { return bOnALap; }
 };
