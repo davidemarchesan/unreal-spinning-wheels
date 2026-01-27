@@ -6,7 +6,9 @@
 #include "SpinningWheels/Controllers/RaceController.h"
 #include "SpinningWheels/GameStates/RaceGameState.h"
 #include "SpinningWheels/GameStates/TimeAttackGameState.h"
+#include "SpinningWheels/PlayerStates/RacePlayerState.h"
 #include "UI/Slate/Overlays/Countdown/CountdownOverlay.h"
+#include "UI/Slate/Overlays/Info/InfoOverlay.h"
 #include "UI/Slate/Overlays/Leaderboard/LeaderboardOverlay.h"
 #include "UI/Slate/Overlays/ServerMessages/ServerMessagesOverlay.h"
 
@@ -67,6 +69,14 @@ void ARaceHUD::OnUpdateLapCountdown(int32 Seconds)
 	}
 }
 
+void ARaceHUD::OnPlayerIdSet(int32 PlayerId)
+{
+	if (InfoOverlay.IsValid())
+	{
+		InfoOverlay->SetPlayerId(PlayerId);
+	}
+}
+
 void ARaceHUD::BeginPlay()
 {
 	Super::BeginPlay();
@@ -98,6 +108,12 @@ void ARaceHUD::InitializeOverlays()
 	{
 		GEngine->GameViewport->AddViewportWidgetContent(CountdownOverlay.ToSharedRef());
 	}
+
+	InfoOverlay = SNew(SInfoOverlay);
+	if (InfoOverlay.IsValid())
+	{
+		GEngine->GameViewport->AddViewportWidgetContent(InfoOverlay.ToSharedRef());
+	}
 }
 
 void ARaceHUD::InitializeDelegates()
@@ -119,6 +135,13 @@ void ARaceHUD::InitializeDelegates()
 		if (ARaceController* RC = Cast<ARaceController>(GetOwningPlayerController()))
 		{
 			RC->OnUpdateLapCountdown.AddDynamic(this, &ARaceHUD::OnUpdateLapCountdown);
+
+			if (ARacePlayerState* RPS = RC->GetPlayerState<ARacePlayerState>())
+			{
+				OnPlayerIdSet(RPS->GetPlayerId());
+				RPS->OnPlayerIdSet.AddDynamic(this, &ARaceHUD::OnPlayerIdSet);
+			}
 		}
+
 	}
 }

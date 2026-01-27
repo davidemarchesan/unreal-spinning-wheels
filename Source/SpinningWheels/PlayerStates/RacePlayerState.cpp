@@ -7,7 +7,7 @@ void ARacePlayerState::ServerAddSimulationFrames_Implementation(const TArray<FSi
 {
 	SimulationFrames.Append(ClientSimulationFrames);
 
-	UE_LOG(LogTemp, Warning, TEXT("pid %d Client sent me %d frames. now ive got %d"), GetPlayerId(), ClientSimulationFrames.Num(), SimulationFrames.Num());
+	UE_LOG(LogTemp, Warning, TEXT("(pid %d) SERVER - received me %d frames. now ive got %d"), GetPlayerId(), ClientSimulationFrames.Num(), SimulationFrames.Num());
 }
 
 void ARacePlayerState::SendFramesToServer()
@@ -24,7 +24,10 @@ void ARacePlayerState::SendFramesToServer()
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("pid %d Sending %d Frames to Server"), GetPlayerId(), SimulationFrames.Num() - NextFrameToSendToServer);
+	// if (HasSimulationFrames() == false)
+	// {
+	// 	return;
+	// }
 
 	TArray<FSimulationFrame> FramesToSend;
 	for (int32 i = NextFrameToSendToServer; i < SimulationFrames.Num(); i++)
@@ -35,6 +38,8 @@ void ARacePlayerState::SendFramesToServer()
 		}
 	}
 
+	FramesSentToServer += FramesToSend.Num();
+	UE_LOG(LogTemp, Warning, TEXT("(pid %d) CLIENT - Sending %d Frames to Server | total: %d"), GetPlayerId(), SimulationFrames.Num() - NextFrameToSendToServer, FramesSentToServer);
 	ServerAddSimulationFrames(FramesToSend);
 	NextFrameToSendToServer = SimulationFrames.Num();
 }
@@ -53,6 +58,14 @@ void ARacePlayerState::OnNewBestLap(FRaceLap Lap)
 {
 }
 
+void ARacePlayerState::OnRep_PlayerId()
+{
+	Super::OnRep_PlayerId();
+
+	UE_LOG(LogTemp, Warning, TEXT("OnRep_PlayerId() %d"), GetPlayerId());
+	OnPlayerIdSet.Broadcast(GetPlayerId());
+}
+
 void ARacePlayerState::OnStartLap()
 {
 	SimulationFrames.Empty();
@@ -68,7 +81,7 @@ void ARacePlayerState::OnStartLap()
 	bOnALap = true;
 	if (HasAuthority() == false)
 	{
-		ServerOnStartLap_Implementation();
+		ServerOnStartLap();
 	}
 }
 
@@ -78,14 +91,13 @@ void ARacePlayerState::OnCheckpoint()
 
 void ARacePlayerState::OnFinishLap()
 {
-	UE_LOG(LogTemp, Warning, TEXT("(role %d) ARacePlayerState::OnFinishLap with %d sim frames"), GetLocalRole(),
-	       SimulationFrames.Num());
+	UE_LOG(LogTemp, Warning, TEXT("(role %d) (pid %d) ARacePlayerState::OnFinishLap with %d sim frames"), GetLocalRole(), GetPlayerId(), SimulationFrames.Num());
 
 	bOnALap = false;
-	if (HasAuthority() == false)
-	{
-		ServerOnFinishLap();
-	}
+	// if (HasAuthority() == false)
+	// {
+	// 	ServerOnFinishLap();
+	// }
 
 	// CurrentLap.Close(GetWorld()->GetTimeSeconds());
 	//
@@ -126,6 +138,14 @@ void ARacePlayerState::AddSimulationFrame(const FSimulationFrame Frame)
 		//        Frame.DriveInputValue, Frame.BrakeInputValue, Frame.TurnInputValue, Frame.TurboInputValue);
 	}
 
+	// UE_LOG(LogTemp, Log, TEXT("ARacePlayerState::AddSimulationFrame Index(%d) %d %d %d %d"), SimulationFrames.Num(),
+	//        Frame.DriveInputValue, Frame.BrakeInputValue, Frame.TurnInputValue, Frame.TurboInputValue);
+
+	if (bOnALap == false)
+	{
+		return;
+	}
+	
 	SimulationFrames.Add(Frame);
 }
 

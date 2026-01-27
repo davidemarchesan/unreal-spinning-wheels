@@ -96,17 +96,23 @@ void ACar::BeginPlay()
 
 void ACar::SimulatedTick(float DeltaTime)
 {
-	if (
-		// IsLocallyControlled() == false
-		RacePlayerState.IsValid() == false
-		|| CarMovementComponent == nullptr
-	)
+	// todo: reorder ifs
+	if (RacePlayerState.IsValid() == false)
 	{
-		// UE_LOG(LogTemp, Warning, TEXT("(role %d) Sim tick failed %d %d"), GetLocalRole(), RacePlayerState.IsValid() == false, CarMovementComponent == nullptr);
+		return;
+	}
+
+	if (CarMovementComponent == nullptr)
+	{
 		return;
 	}
 
 	if (RacePlayerState->IsOnALap() == false)
+	{
+		return;
+	}
+
+	if (RacePlayerState->HasSimulationFrames() == false)
 	{
 		return;
 	}
@@ -128,6 +134,8 @@ void ACar::SimulatedTick(float DeltaTime)
 			if (OptionalFrame.IsSet())
 			{
 				SetSimulationFrame(OptionalFrame.GetValue());
+				// UE_LOG(LogTemp, Log, TEXT("ARacePlayerState::AddSimulationFrame Index(%d) %d %d %d %d"), CurrentFrameIndex,
+				//        CurrentSimulationFrame.DriveInputValue, CurrentSimulationFrame.BrakeInputValue, CurrentSimulationFrame.TurnInputValue, CurrentSimulationFrame.TurboInputValue);
 
 				ConsumeTurbo(SimulationConstants::TickFrequency);
 
@@ -234,7 +242,8 @@ void ACar::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
                                    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
                                    const FHitResult& SweepResult)
 {
-	if (IsLocallyControlled() || HasAuthority())
+	// if (IsLocallyControlled() || HasAuthority())
+	if (true)
 	{
 		// Controller should always be true, but you never know
 		if (AController* PC = GetController())
@@ -243,7 +252,7 @@ void ACar::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 			{
 				if (OtherActor->IsA(ACheckpointBlock::StaticClass()))
 				{
-					UE_LOG(LogTemp, Warning, TEXT("ACar Checkpoint!"));
+					UE_LOG(LogTemp, Warning, TEXT("(role %d) ACar Pawn crossed Checkpoint line at frame %d!"), GetLocalRole(), CurrentFrameIndex);
 					if (ARacePlayerState* PS = Cast<ARacePlayerState>(GetPlayerState()))
 					{
 						PS->OnCheckpoint();
@@ -251,7 +260,7 @@ void ACar::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 				}
 				if (OtherActor->IsA(AFinishBlock::StaticClass()))
 				{
-					UE_LOG(LogTemp, Warning, TEXT("ACar Finish line!"));
+					UE_LOG(LogTemp, Warning, TEXT("(role %d) ACar Pawn crossed Finish line at frame %d!"), GetLocalRole(), CurrentFrameIndex);
 					if (ARacePlayerState* PS = Cast<ARacePlayerState>(GetPlayerState()))
 					{
 						PS->OnFinishLap();

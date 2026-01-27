@@ -37,6 +37,7 @@ void ARaceController::SimulatedTick(float DeltaSeconds)
 	
 	if (Phase != ERaceControllerPhase::RCP_Driving)
 	{
+		// UE_LOG(LogTemp, Warning, TEXT("not driving"));
 		return;
 	}
 	
@@ -157,6 +158,7 @@ void ARaceController::OnPossess(APawn* InPawn)
 
 void ARaceController::SetPhase(ERaceControllerPhase NewPhase)
 {
+	// UE_LOG(LogTemp, Warning, TEXT("(role %d) SetPhase %d"), GetLocalRole(), NewPhase);
 	Phase = NewPhase;
 }
 
@@ -242,6 +244,7 @@ void ARaceController::CreateCamera()
 
 void ARaceController::OnRep_Phase()
 {
+	// UE_LOG(LogTemp, Warning, TEXT("OnRep_Phase %d"), Phase);
 }
 
 void ARaceController::StartDriveProcedure(float DeltaSeconds)
@@ -384,23 +387,26 @@ void ARaceController::StartLap()
 		LocalStartLap();
 	}
 	
-	if (GetLocalRole() == ROLE_AutonomousProxy)
-	{
-		// Tells server
-		ServerStartLap();
-	}
+	// if (GetLocalRole() == ROLE_AutonomousProxy)
+	// {
+	// 	// Tells server
+	// 	ServerStartLap();
+	// }
 }
 
 void ARaceController::LocalStartLap()
 {
 	SetPhase(ERaceControllerPhase::RCP_Driving);
-	StartDriveSecondsRemaining = 0;
+
+
+	// onrep_phase -> driving?
 
 	if (RacePlayerState.IsValid())
 	{
 		RacePlayerState->OnStartLap();
 	}
-	
+
+	StartDriveSecondsRemaining = 0;
 	OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
 	
 	// if (Car.IsValid())
