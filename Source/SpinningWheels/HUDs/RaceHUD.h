@@ -30,6 +30,9 @@ private:
 	UFUNCTION()
 	void OnUpdateLapCountdown(int32 Seconds);
 
+	UFUNCTION()
+	void OnPlayerIdSet(int32 PlayerId);
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -45,5 +48,6 @@ private:
 	TSharedPtr<class SLeaderboardOverlay> LeaderboardOverlay;
 	TSharedPtr<class SServerMessagesOverlay> ServerMessagesOverlay;
 	TSharedPtr<class SCountdownOverlay> CountdownOverlay;
+	TSharedPtr<class SInfoOverlay> InfoOverlay;
 	
 };

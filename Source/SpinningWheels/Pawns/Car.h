@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "SpinningWheels/Core/Simulation.h"
 #include "Car.generated.h"
 
 class UArrowComponent;
@@ -12,6 +13,7 @@ class UBoxComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UCarMovementComponent;
+class ARacePlayerState;
 
 UCLASS()
 class SPINNINGWHEELS_API ACar : public APawn
@@ -23,12 +25,30 @@ public:
 	ACar(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	virtual void Tick(float DeltaTime) override;
-
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+protected:
+
+	virtual void BeginPlay() override;
+
 private:
+
+	// Begin Deterministic physics
+	TWeakObjectPtr<ARacePlayerState> RacePlayerState;
+	
+	void SimulatedTick(float DeltaTime);
+	
+	float AccSimulationTime = 0.f;
+	float LastSimulationDelta = 0.f;
+	float TotSeconds = 0.f;
+	
+	uint32 CurrentFrameIndex = 0;
+	FSimulationFrame CurrentSimulationFrame;
+	FSimulationFrame PreviousSimulationFrame;
+
+	void SetSimulationFrame(FSimulationFrame NewSimulationFrame);
+	// End Deterministic physics
 
 	UPROPERTY(Category=Car, VisibleAnywhere, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UBoxComponent> BoxComponent;
@@ -39,8 +59,8 @@ private:
 	UPROPERTY(Category=Car, VisibleDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UCarMovementComponent> CarMovementComponent;
 
-	UPROPERTY(Replicated) bool bDrive = false;
-	UPROPERTY(Replicated) bool bTurn = false;
+	// UPROPERTY(Replicated) bool bDrive = false;
+	// UPROPERTY(Replicated) bool bTurn = false;
 	
 	UPROPERTY(ReplicatedUsing=OnRep_BrakeUpdate) bool bBrake = false;
 	UFUNCTION() void OnRep_BrakeUpdate();
@@ -53,7 +73,6 @@ private:
 
 	void ConsumeTurbo(float DeltaTime);
 	
-
 	TWeakObjectPtr<UMaterialInstanceDynamic> DynamicMaterialLights;
 	
 	static const int32 MaterialIndexLights = 6;
@@ -68,15 +87,14 @@ private:
 	
 #endif
 
-
 protected:
-
-	virtual void BeginPlay() override;
-
+	
 	UFUNCTION()
 	void OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 public:
+
+	void SetPlayerState(ARacePlayerState* NewRacePlayerState) { RacePlayerState = NewRacePlayerState; };
 
 	UCarMovementComponent* GetCarMovementComponent() const { return CarMovementComponent; }
 
@@ -138,10 +156,5 @@ public:
 	float LightsFlashingOnCrash;
 
 	float GetTurboCurrentBattery() const { return TurboCurrentBattery; }
-
-	bool IsDriving() const { return bDrive; }
-	bool IsBraking() const { return bBrake; }
-	bool IsTurning() const { return bTurn; }
-	bool IsUsingTurbo() const { return bTurbo; }
 	
 };

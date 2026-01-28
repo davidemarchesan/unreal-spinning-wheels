@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "SpinningWheels/Actors/MainCamera.h"
+#include "SpinningWheels/Core/Simulation.h"
 #include "SpinningWheels/GameModes/RaceGameMode.h"
 #include "SpinningWheels/GameStates/RaceGameState.h"
 #include "SpinningWheels/HUDs/UI/Slate/Styles/MainStyle.h"
@@ -21,8 +22,60 @@ ARaceController::ARaceController()
 void ARaceController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
+	
+	SimulatedTick(DeltaSeconds);
+	
 	StartDriveProcedure(DeltaSeconds);
+}
+
+void ARaceController::SimulatedTick(float DeltaSeconds)
+{
+	if (IsLocalController() == false)
+	{
+		return;
+	}
+	
+	if (Phase != ERaceControllerPhase::RCP_Driving)
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("not driving"));
+		return;
+	}
+	
+	AccSimulationTime += DeltaSeconds;
+	TotSeconds += DeltaSeconds;
+	
+	if (AccSimulationTime >= SimulationConstants::TickFrequency)
+	{
+		int MaxIterations = FMath::Clamp(FMath::FloorToInt(AccSimulationTime / SimulationConstants::TickFrequency), 1, 30.f);
+		int Iteration = 0;
+
+		while (Iteration < MaxIterations)
+		{
+			Iteration++;
+
+			FSimulationFrame SimulationFrame;
+			SimulationFrame.DriveInputValue = DriveInputValue;
+			SimulationFrame.BrakeInputValue = BrakeInputValue;
+			SimulationFrame.TurnInputValue = TurnInputValue;
+			SimulationFrame.TurboInputValue = TurboInputValue;
+
+			if (RacePlayerState.IsValid())
+			{
+				RacePlayerState->AddSimulationFrame(SimulationFrame);
+				// UE_LOG(LogTemp, Warning, TEXT("Controller sim frame at %f seconds"), TotSeconds);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("(role %d) Raceplayerstate not valid"), GetLocalRole());
+			}
+			
+		}
+
+		LastSimulationDelta = AccSimulationTime - SimulationConstants::TickFrequency * MaxIterations;
+		AccSimulationTime = LastSimulationDelta;
+
+		TurnInputValue = 0;
+	}
 }
 
 ARaceGameMode* ARaceController::GetRaceGameMode()
@@ -49,19 +102,16 @@ void ARaceController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	RacePlayerState = GetRacePlayerState();
+	
 	SetupDriveInputBindings();
 	CreateCamera();
-}
-
-void ARaceController::SetupInputComponent()
-{
-	Super::SetupInputComponent();
 }
 
 void ARaceController::SetPawn(APawn* InPawn)
 {
 	Super::SetPawn(InPawn);
-	
+
 	if (InPawn && InPawn->IsA(ACar::StaticClass()))
 	{
 		Car = Cast<ACar>(InPawn);
@@ -85,8 +135,30 @@ void ARaceController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 	DOREPLIFETIME(ARaceController, ServerStartDriveTime);
 }
 
+void ARaceController::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+	RacePlayerState = GetRacePlayerState();
+
+	if (Car.IsValid())
+	{
+		Car->SetPlayerState(RacePlayerState.Get());
+	}
+}
+
+void ARaceController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	if (Car.IsValid() && RacePlayerState.IsValid())
+	{
+		Car->SetPlayerState(RacePlayerState.Get());
+	}
+}
+
 void ARaceController::SetPhase(ERaceControllerPhase NewPhase)
 {
+	// UE_LOG(LogTemp, Warning, TEXT("(role %d) SetPhase %d"), GetLocalRole(), NewPhase);
 	Phase = NewPhase;
 }
 
@@ -96,11 +168,9 @@ void ARaceController::PrepareForNewLap(float InServerStartTime)
 	{
 		return;
 	}
-
 	
 	SetPhase(ERaceControllerPhase::RCP_InStartingProcedure);
 	ServerStartDriveTime = InServerStartTime;
-	
 }
 
 void ARaceController::SetupDriveInputBindings()
@@ -174,10 +244,7 @@ void ARaceController::CreateCamera()
 
 void ARaceController::OnRep_Phase()
 {
-	if (Phase == ERaceControllerPhase::RCP_Driving)
-	{
-		LocalStartLap();
-	}
+	// UE_LOG(LogTemp, Warning, TEXT("OnRep_Phase %d"), Phase);
 }
 
 void ARaceController::StartDriveProcedure(float DeltaSeconds)
@@ -186,7 +253,7 @@ void ARaceController::StartDriveProcedure(float DeltaSeconds)
 	{
 		return;
 	}
-	
+
 	if (Phase != ERaceControllerPhase::RCP_InStartingProcedure)
 	{
 		return;
@@ -200,13 +267,13 @@ void ARaceController::StartDriveProcedure(float DeltaSeconds)
 	if (ARaceGameState* RGS = GetRaceGameState())
 	{
 		float CurrentServerTime = RGS->GetServerWorldTimeSeconds();
- 
+
 		if (ServerStartDriveTime <= CurrentServerTime && Phase == ERaceControllerPhase::RCP_InStartingProcedure)
 		{
-			LocalStartLap();
+			StartLap();
 			return;
 		}
- 
+
 		// Update UI
 		const float Diff = FMath::CeilToInt(ServerStartDriveTime - CurrentServerTime);
 
@@ -215,8 +282,6 @@ void ARaceController::StartDriveProcedure(float DeltaSeconds)
 			StartDriveSecondsRemaining = Diff;
 			OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
 		}
-			
-		
 	}
 }
 
@@ -227,10 +292,7 @@ void ARaceController::InputStartDrive()
 		return;
 	}
 
-	if (Car.IsValid())
-	{
-		Car->InputStartDrive();
-	}
+	DriveInputValue = 1;
 }
 
 void ARaceController::InputStopDrive()
@@ -240,10 +302,7 @@ void ARaceController::InputStopDrive()
 		return;
 	}
 
-	if (Car.IsValid())
-	{
-		Car->InputStopDrive();
-	}
+	DriveInputValue = 0;
 }
 
 void ARaceController::InputStartBrake()
@@ -253,10 +312,7 @@ void ARaceController::InputStartBrake()
 		return;
 	}
 
-	if (Car.IsValid())
-	{
-		Car->InputStartBrake();
-	}
+	BrakeInputValue = 1;
 }
 
 void ARaceController::InputStopBrake()
@@ -266,10 +322,7 @@ void ARaceController::InputStopBrake()
 		return;
 	}
 
-	if (Car.IsValid())
-	{
-		Car->InputStopBrake();
-	}
+	BrakeInputValue = 0;
 }
 
 void ARaceController::InputTurn(const FInputActionValue& Value)
@@ -280,10 +333,7 @@ void ARaceController::InputTurn(const FInputActionValue& Value)
 	}
 
 	FVector2D InputVector = Value.Get<FVector2D>();
-	if (Car.IsValid())
-	{
-		Car->InputTurn(InputVector);
-	}
+	TurnInputValue = InputVector.Y;
 }
 
 void ARaceController::InputStartTurbo()
@@ -293,10 +343,7 @@ void ARaceController::InputStartTurbo()
 		return;
 	}
 
-	if (Car.IsValid())
-	{
-		Car->InputStartTurbo();
-	}
+	TurboInputValue = 1;
 }
 
 void ARaceController::InputStopTurbo()
@@ -306,10 +353,7 @@ void ARaceController::InputStopTurbo()
 		return;
 	}
 
-	if (Car.IsValid())
-	{
-		Car->InputStopTurbo();
-	}
+	TurboInputValue = 0;
 }
 
 void ARaceController::InputCancelLap()
@@ -336,35 +380,57 @@ void ARaceController::InputCancelLap()
 
 void ARaceController::StartLap()
 {
+	
 	if (IsLocalController())
 	{
 		// Server-player or client-predict
 		LocalStartLap();
 	}
-
-	if (GetLocalRole() == ROLE_AutonomousProxy)
-	{
-		// Tells server
-		ServerStartLap(); 
-	}
+	
+	// if (GetLocalRole() == ROLE_AutonomousProxy)
+	// {
+	// 	// Tells server
+	// 	ServerStartLap();
+	// }
 }
 
 void ARaceController::LocalStartLap()
 {
-	if (Car.IsValid())
+	SetPhase(ERaceControllerPhase::RCP_Driving);
+
+
+	// onrep_phase -> driving?
+
+	if (RacePlayerState.IsValid())
 	{
-		Car->LocalStartEngine();
-
-		SetPhase(ERaceControllerPhase::RCP_Driving);
-
-		StartDriveSecondsRemaining = 0;
-		OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
+		RacePlayerState->OnStartLap();
 	}
+
+	StartDriveSecondsRemaining = 0;
+	OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
+	
+	// if (Car.IsValid())
+	// {
+	// 	Car->LocalStartEngine();
+	//
+	// 	if (RacePlayerState.IsValid())
+	// 	{
+	// 		RacePlayerState->OnStartLap();
+	// 	}
+	//
+	// 	// This line will start pushing simulation frames to player state
+	// 	SetPhase(ERaceControllerPhase::RCP_Driving);
+	//
+	// 	StartDriveSecondsRemaining = 0;
+	// 	OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
+	// }
 }
 
 void ARaceController::ServerStartLap_Implementation()
 {
-	LocalStartLap();
+	// LocalStartLap();
+	SetPhase(ERaceControllerPhase::RCP_Driving);
+	StartDriveSecondsRemaining = 0;
 }
 
 void ARaceController::ServerCancelLap_Implementation()
