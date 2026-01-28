@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SpinningWheels/Core/Simulation.h"
 #include "Lap.generated.h"
 
 USTRUCT()
@@ -8,10 +9,8 @@ struct FRaceLap
 	GENERATED_BODY()
 	
 private:
-	float StartTime = 0.f;
-	float EndTime = 0.f;
-	float LapTime = 0.f;
-	TArray<float> Sectors;
+	int32 LapTime = 0.f;
+	TArray<int32> Sectors;
 
 	bool bClosed = false;
 
@@ -19,33 +18,55 @@ public:
 	
 	/**
 	 * Add a sector to the lap.
-	 * @param Time Time of the sector.
+	 * @param FrameIndex
 	 */
-	FORCEINLINE void AddSector(const float Time)
+	FORCEINLINE void AddSector(const int32 FrameIndex)
 	{
 		if (bClosed == true)
 		{
 			return;
 		}
 
-		Sectors.Add(Time);
+		const int32 Frames = FrameIndex + 1;											// Example: Frame index 100 is the 101st
+		const float TimeSeconds = Frames * SimulationConstants::TickFrequency;			// Example: 101 * (1/120) = 0.8416667 seconds
+		const int32 TimeMilliSeconds = FMath::FloorToInt32(TimeSeconds * 1000.f);	// Example: 0.8416667 seconds = 841.6667 milliseconds = 842 rounded ms
+
+		if (Sectors.Num() == 0)
+		{
+			// This is the first sector to be added to the lap.
+			// So first sector time is the time until now.
+			Sectors.Add(TimeMilliSeconds);
+		}
+		else
+		{
+			int32 SectorTime = TimeMilliSeconds;
+			for (int i = 0; i < Sectors.Num(); i++)
+			{
+				SectorTime -= Sectors[i];
+			}
+
+			Sectors.Add(SectorTime);
+		}
+		
 	}
 
 	/**
 	 * Close a lap. Calc the total time.
 	 * Cannot be edited after being closed.
 	 */
-	FORCEINLINE void Close(const float Time)
+	FORCEINLINE void Close(const int32 FrameIndex)
 	{
 		if (bClosed == true)
 		{
 			return;
 		}
 
-		AddSector(Time);
+		AddSector(FrameIndex);
 
-		EndTime = Time;
-		LapTime = EndTime - StartTime;
+		for (int32 i = 0; i < Sectors.Num(); i++)
+		{
+			LapTime += Sectors[i];
+		}
 		
 		bClosed = true;
 	}
@@ -64,27 +85,21 @@ public:
 	}
 
 	FRaceLap() = default;
-	
-	explicit FRaceLap(const float InStartTime)
-		: StartTime(InStartTime)
-	{}
 
 public:
-	FORCEINLINE float GetStartTime() const { return StartTime;}
-	FORCEINLINE float GetEndTime() const { return EndTime;}
-	FORCEINLINE float GetLapTime() const { return LapTime; }
-	FORCEINLINE TArray<float> GetSectors() const { return Sectors; }
+	FORCEINLINE int32 GetLapTime() const { return LapTime; }
+	FORCEINLINE TArray<int32> GetSectors() const { return Sectors; }
 
 	FString ToString() const;
 };
 
 FORCEINLINE FString FRaceLap::ToString() const
 {
-	FString Str = FString::Printf(TEXT("S:%f E:%f L:%f"), StartTime, EndTime, LapTime);
+	FString Str = FString::Printf(TEXT("LapTime:%d"), LapTime);
 
 	for (int i = 0; i < Sectors.Num(); i++)
 	{
-		Str += FString::Printf(TEXT("\nS%d: %f"), i, Sectors[i]);	
+		Str += FString::Printf(TEXT("\nS%d: %d"), i, Sectors[i]);	
 	}
 	
 	return Str;

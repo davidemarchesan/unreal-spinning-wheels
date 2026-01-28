@@ -37,7 +37,6 @@ void ARaceController::SimulatedTick(float DeltaSeconds)
 	
 	if (Phase != ERaceControllerPhase::RCP_Driving)
 	{
-		// UE_LOG(LogTemp, Warning, TEXT("not driving"));
 		return;
 	}
 	
@@ -62,11 +61,6 @@ void ARaceController::SimulatedTick(float DeltaSeconds)
 			if (RacePlayerState.IsValid())
 			{
 				RacePlayerState->AddSimulationFrame(SimulationFrame);
-				// UE_LOG(LogTemp, Warning, TEXT("Controller sim frame at %f seconds"), TotSeconds);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("(role %d) Raceplayerstate not valid"), GetLocalRole());
 			}
 			
 		}

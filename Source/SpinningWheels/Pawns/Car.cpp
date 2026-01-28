@@ -134,9 +134,6 @@ void ACar::SimulatedTick(float DeltaTime)
 			if (OptionalFrame.IsSet())
 			{
 				SetSimulationFrame(OptionalFrame.GetValue());
-				// UE_LOG(LogTemp, Log, TEXT("ARacePlayerState::AddSimulationFrame Index(%d) %d %d %d %d"), CurrentFrameIndex,
-				//        CurrentSimulationFrame.DriveInputValue, CurrentSimulationFrame.BrakeInputValue, CurrentSimulationFrame.TurnInputValue, CurrentSimulationFrame.TurboInputValue);
-
 				ConsumeTurbo(SimulationConstants::TickFrequency);
 
 				// Actual physics movement component
@@ -242,67 +239,17 @@ void ACar::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
                                    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
                                    const FHitResult& SweepResult)
 {
-	// if (IsLocallyControlled() || HasAuthority())
-	if (true)
+	if (ARacePlayerState* RPS = GetPlayerState<ARacePlayerState>())
 	{
-		// Controller should always be true, but you never know
-		if (AController* PC = GetController())
+		if (OtherActor->IsA(ACheckpointBlock::StaticClass()))
 		{
-			if (PC->PlayerState)
-			{
-				if (OtherActor->IsA(ACheckpointBlock::StaticClass()))
-				{
-					UE_LOG(LogTemp, Warning, TEXT("(role %d) ACar Pawn crossed Checkpoint line at frame %d!"), GetLocalRole(), CurrentFrameIndex);
-					if (ARacePlayerState* PS = Cast<ARacePlayerState>(GetPlayerState()))
-					{
-						PS->OnCheckpoint();
-					}
-				}
-				if (OtherActor->IsA(AFinishBlock::StaticClass()))
-				{
-					UE_LOG(LogTemp, Warning, TEXT("(role %d) ACar Pawn crossed Finish line at frame %d!"), GetLocalRole(), CurrentFrameIndex);
-					if (ARacePlayerState* PS = Cast<ARacePlayerState>(GetPlayerState()))
-					{
-						PS->OnFinishLap();
-					}
-				}
-			}
+			RPS->CarOnCheckpoint(CurrentFrameIndex);
+		}
+		if (OtherActor->IsA(AFinishBlock::StaticClass()))
+		{
+			RPS->CarOnFinish(CurrentFrameIndex);
 		}
 	}
-
-
-	// // Server
-	// if (HasAuthority())
-	// {
-	//
-	// 	
-	// 	
-	// }
-	//
-	// // if (HasAuthority() == false)
-	// // {
-	// // 	return;
-	// // }
-	//
-	// // prediction
-	// // server
-	//
-	// if (OtherActor->IsA(ACheckpointBlock::StaticClass()))
-	// {
-	// 	if (AController* PC = GetController())
-	// 	{
-	// 		if (PC->PlayerState != nullptr)
-	// 		{
-	// 			ENetRole LR = GetLocalRole();
-	// 			int32 PID = GetController()->PlayerState->GetPlayerId();
-	// 			if (ARacePlayerState* PS = Cast<ARacePlayerState>(GetPlayerState()))
-	// 			{
-	// 				PS->OnCheckpoint();
-	// 			}
-	// 			UE_LOG(LogTemp, Warning, TEXT("Car: i have passed a checkpoint! id %d with role %d"), PID, LR);
-	// 		} else { UE_LOG(LogTemp, Error, TEXT("no ps")); }
-	// 	} else { UE_LOG(LogTemp, Error, TEXT("no pc")); }
-	// }
 }
 
 void ACar::LocalStartEngine()

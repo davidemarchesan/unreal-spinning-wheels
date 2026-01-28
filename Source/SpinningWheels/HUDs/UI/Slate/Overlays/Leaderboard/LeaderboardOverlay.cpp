@@ -76,7 +76,7 @@ void SLeaderboardOverlay::UpdateLeaderboard(TArray<FTimeAttackLeaderboardRow> Ne
 			[
 				SNew(STextBlock)
 				.Text(FText::FromString(FString::Printf(
-					TEXT("%d | %d | %s | %f"),
+					TEXT("%d | %d | %s | %d"),
 					Row.Position,
 					Row.PlayerId,
 					*Row.PlayerName,

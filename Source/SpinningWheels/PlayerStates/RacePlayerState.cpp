@@ -10,6 +10,11 @@ void ARacePlayerState::ServerAddSimulationFrames_Implementation(const TArray<FSi
 	// UE_LOG(LogTemp, Warning, TEXT("(pid %d) SERVER - received me %d frames. now ive got %d"), GetPlayerId(), ClientSimulationFrames.Num(), SimulationFrames.Num());
 }
 
+void ARacePlayerState::ResetSimulationFrames()
+{
+	SimulationFrames.Empty();
+}
+
 void ARacePlayerState::SendFramesToServer()
 {
 	if (HasAuthority())
@@ -68,8 +73,9 @@ void ARacePlayerState::OnRep_PlayerId()
 
 void ARacePlayerState::OnStartLap()
 {
-	SimulationFrames.Empty();
+	ResetSimulationFrames();
 
+	// Set timer to send server updates
 	if (HasAuthority() == false)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(TimerServerSimulationFramesUpdate);
@@ -79,21 +85,32 @@ void ARacePlayerState::OnStartLap()
 	}
 
 	bOnALap = true;
+	CurrentLap = FRaceLap();
 	if (HasAuthority() == false)
 	{
 		ServerOnStartLap();
 	}
 }
 
-void ARacePlayerState::OnCheckpoint()
+void ARacePlayerState::OnCancelLap()
 {
+	if (HasAuthority())
+	{
+		CurrentLap = FRaceLap();
+	}
 }
 
-void ARacePlayerState::OnFinishLap()
+void ARacePlayerState::CarOnCheckpoint(int32 CurrentFrameIndex)
 {
-	UE_LOG(LogTemp, Warning, TEXT("(role %d) (pid %d) ARacePlayerState::OnFinishLap with %d sim frames"), GetLocalRole(), GetPlayerId(), SimulationFrames.Num());
+	CurrentLap.AddSector(CurrentFrameIndex);
+}
 
-	// bOnALap = false;
+void ARacePlayerState::CarOnFinish(int32 CurrentFrameIndex)
+{
+	CurrentLap.Close(CurrentFrameIndex);
+	bOnALap = false;
+
+	UE_LOG(LogTemp, Warning, TEXT("LAP %s"), *CurrentLap.ToString());
 	// if (HasAuthority() == false)
 	// {
 	// 	ServerOnFinishLap();
@@ -114,14 +131,6 @@ void ARacePlayerState::OnFinishLap()
 	// }
 }
 
-void ARacePlayerState::OnCancelLap()
-{
-	if (HasAuthority())
-	{
-		CurrentLap = FRaceLap();
-	}
-}
-
 void ARacePlayerState::AddLap(FRaceLap NewLap)
 {
 }
@@ -132,15 +141,6 @@ void ARacePlayerState::ResetLaps()
 
 void ARacePlayerState::AddSimulationFrame(const FSimulationFrame Frame)
 {
-	if (GetLocalRole() != ROLE_Authority)
-	{
-		// UE_LOG(LogTemp, Log, TEXT("ARacePlayerState::AddSimulationFrame Index(%d) %d %d %d %d"), SimulationFrames.Num(),
-		//        Frame.DriveInputValue, Frame.BrakeInputValue, Frame.TurnInputValue, Frame.TurboInputValue);
-	}
-
-	// UE_LOG(LogTemp, Log, TEXT("ARacePlayerState::AddSimulationFrame Index(%d) %d %d %d %d"), SimulationFrames.Num(),
-	//        Frame.DriveInputValue, Frame.BrakeInputValue, Frame.TurnInputValue, Frame.TurboInputValue);
-
 	if (bOnALap == false)
 	{
 		return;

@@ -16,19 +16,27 @@ class SPINNINGWHEELS_API ARacePlayerState : public APlayerState
 	GENERATED_BODY()
 
 private:
-	
+
+	//~ Begin Lap management
 	TArray<FRaceLap> Laps;
 	FRaceLap CurrentLap;
 	FRaceLap LastLap;
 	FRaceLap BestLap;
+
+	void AddLap(FRaceLap NewLap);
+	//~ End Lap management
 
 	// UPROPERTY(Replicated) // todo: replicate using
 	int8 LeaderboardPosition;
 
 	float LapStartTime = 0.f;
 
+	//~ Begin Simulation Frames management
 	TArray<FSimulationFrame> SimulationFrames;
-
+	
+	void ResetSimulationFrames();
+	//~ End Simulation Frames management
+	
 	bool bOnALap = false;
 
 	// Sending simulation frames to the network
@@ -60,11 +68,11 @@ public:
 	FOnPlayerIdSetSignature OnPlayerIdSet;
 	
 	void OnStartLap();
-	void OnCheckpoint();
-	void OnFinishLap();
 	void OnCancelLap();
 
-	void AddLap(FRaceLap NewLap);
+	void CarOnCheckpoint(int32 CurrentFrameIndex);
+	void CarOnFinish(int32 CurrentFrameIndex);
+	
 	void ResetLaps();
 
 	void AddSimulationFrame(const FSimulationFrame Frame);
