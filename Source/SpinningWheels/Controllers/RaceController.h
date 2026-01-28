@@ -73,7 +73,7 @@ private:
 	bool bCameraInitializing = false;
 	bool bCameraInitialized = false;
 
-	UPROPERTY(ReplicatedUsing=OnRep_Phase)
+	UPROPERTY(ReplicatedUsing=OnRep_Phase, VisibleAnywhere)
 	ERaceControllerPhase Phase = ERaceControllerPhase::RCP_Respawning;
 
 	UFUNCTION()
@@ -105,6 +105,8 @@ private:
 	int8 TurnInputValue = 0;
 	int8 TurboInputValue = 0;
 
+	void InternalCancelLap();
+	
 	UFUNCTION(Server, Reliable)
 	void ServerCancelLap();
 
@@ -134,6 +136,11 @@ public:
 	//~ End AController Interface
 
 	void SetPhase(ERaceControllerPhase NewPhase);
+
+	void InternalSetPhase(ERaceControllerPhase NewPhase);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetPhase(ERaceControllerPhase NewPhase);
 
 	void PrepareForNewLap(float InServerStartTime);
 

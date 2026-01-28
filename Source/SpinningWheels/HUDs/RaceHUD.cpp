@@ -9,6 +9,7 @@
 #include "SpinningWheels/PlayerStates/RacePlayerState.h"
 #include "UI/Slate/Overlays/Countdown/CountdownOverlay.h"
 #include "UI/Slate/Overlays/Info/InfoOverlay.h"
+#include "UI/Slate/Overlays/LapTime/LapTimeOverlay.h"
 #include "UI/Slate/Overlays/Leaderboard/LeaderboardOverlay.h"
 #include "UI/Slate/Overlays/ServerMessages/ServerMessagesOverlay.h"
 
@@ -18,7 +19,7 @@ void ARaceHUD::OnLeaderboardUpdate()
 	{
 		if (LeaderboardOverlay.IsValid())
 		{
-			LeaderboardOverlay->UpdateLeaderboard(GS->GetLeaderboard());
+			// LeaderboardOverlay->UpdateLeaderboard(GS->GetLeaderboard());
 		}
 	}
 }
@@ -113,6 +114,12 @@ void ARaceHUD::InitializeOverlays()
 	if (InfoOverlay.IsValid())
 	{
 		GEngine->GameViewport->AddViewportWidgetContent(InfoOverlay.ToSharedRef());
+	}
+
+	LapTimeOverlay = SNew(SLapTimeOverlay);
+	if (LapTimeOverlay.IsValid())
+	{
+		GEngine->GameViewport->AddViewportWidgetContent(LapTimeOverlay.ToSharedRef());
 	}
 }
 

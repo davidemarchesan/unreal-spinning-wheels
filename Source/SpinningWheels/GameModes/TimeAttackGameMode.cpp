@@ -23,6 +23,6 @@ void ATimeAttackGameMode::CancelLap(AController* Controller)
 
 	if (ARacePlayerState* PS = Controller->GetPlayerState<ARacePlayerState>())
 	{
-		PS->OnCancelLap();
+		PS->CancelLap();
 	}
 }

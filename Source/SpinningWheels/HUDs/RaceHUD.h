@@ -49,5 +49,6 @@ private:
 	TSharedPtr<class SServerMessagesOverlay> ServerMessagesOverlay;
 	TSharedPtr<class SCountdownOverlay> CountdownOverlay;
 	TSharedPtr<class SInfoOverlay> InfoOverlay;
+	TSharedPtr<class SLapTimeOverlay> LapTimeOverlay;
 	
 };

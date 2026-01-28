@@ -73,6 +73,10 @@ void FMainStyle::InitializeColors()
 	
 	StyleInstance->Set("Color.Primary.Light", FLinearColor(FColor::FromHex("F5F5F5")));
 	StyleInstance->Set("Color.Primary.Dark", FLinearColor(FColor::FromHex("333333")));
+
+	StyleInstance->Set("Color.Time.Purple", FLinearColor(FColor::FromHex("B64CFF")));
+	StyleInstance->Set("Color.Time.Green", FLinearColor(FColor::FromHex("00E676")));
+	StyleInstance->Set("Color.Time.Red", FLinearColor(FColor::FromHex("FF3B30")));
 }
 
 void FMainStyle::InitializeFonts()
@@ -132,4 +136,5 @@ void FMainStyle::InitializeBrushes()
 {
 	StyleInstance->Set("Brush.Background.Light", new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.AlabasterGrey"), 12.f));
 	StyleInstance->Set("Brush.Background.Dark", new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.CharcoalBlue"), 12.f));
+	StyleInstance->Set("Brush.Background.Black", new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Primary.Dark"), 12.f));
 }

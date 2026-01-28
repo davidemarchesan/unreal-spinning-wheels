@@ -239,6 +239,12 @@ void ACar::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
                                    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
                                    const FHitResult& SweepResult)
 {
+
+	if (IsLocallyControlled() == false)
+	{
+		return;
+	}
+	
 	if (ARacePlayerState* RPS = GetPlayerState<ARacePlayerState>())
 	{
 		if (OtherActor->IsA(ACheckpointBlock::StaticClass()))

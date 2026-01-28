@@ -3,6 +3,9 @@
 
 #include "RacePlayerState.h"
 
+#include "Net/UnrealNetwork.h"
+#include "SpinningWheels/GameStates/RaceGameState.h"
+
 void ARacePlayerState::ServerAddSimulationFrames_Implementation(const TArray<FSimulationFrame>& ClientSimulationFrames)
 {
 	SimulationFrames.Append(ClientSimulationFrames);
@@ -29,11 +32,6 @@ void ARacePlayerState::SendFramesToServer()
 		return;
 	}
 
-	// if (HasSimulationFrames() == false)
-	// {
-	// 	return;
-	// }
-
 	TArray<FSimulationFrame> FramesToSend;
 	for (int32 i = NextFrameToSendToServer; i < SimulationFrames.Num(); i++)
 	{
@@ -44,7 +42,7 @@ void ARacePlayerState::SendFramesToServer()
 	}
 
 	FramesSentToServer += FramesToSend.Num();
-	// UE_LOG(LogTemp, Warning, TEXT("(pid %d) CLIENT - Sending %d Frames to Server | total: %d"), GetPlayerId(), SimulationFrames.Num() - NextFrameToSendToServer, FramesSentToServer);
+
 	ServerAddSimulationFrames(FramesToSend);
 	NextFrameToSendToServer = SimulationFrames.Num();
 }
@@ -61,19 +59,26 @@ void ARacePlayerState::ServerOnFinishLap_Implementation()
 
 void ARacePlayerState::OnNewBestLap(FRaceLap Lap)
 {
+	// Child class
+}
+
+void ARacePlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ARacePlayerState, LastLap);
+	DOREPLIFETIME(ARacePlayerState, BestLap);
 }
 
 void ARacePlayerState::OnRep_PlayerId()
 {
 	Super::OnRep_PlayerId();
-
-	UE_LOG(LogTemp, Warning, TEXT("OnRep_PlayerId() %d"), GetPlayerId());
 	OnPlayerIdSet.Broadcast(GetPlayerId());
 }
 
 void ARacePlayerState::OnStartLap()
 {
-	ResetSimulationFrames();
+	ResetCurrentLap();
 
 	// Set timer to send server updates
 	if (HasAuthority() == false)
@@ -92,12 +97,10 @@ void ARacePlayerState::OnStartLap()
 	}
 }
 
-void ARacePlayerState::OnCancelLap()
+void ARacePlayerState::CancelLap()
 {
-	if (HasAuthority())
-	{
-		CurrentLap = FRaceLap();
-	}
+	ResetCurrentLap();
+	bOnALap = false;
 }
 
 void ARacePlayerState::CarOnCheckpoint(int32 CurrentFrameIndex)
@@ -107,32 +110,48 @@ void ARacePlayerState::CarOnCheckpoint(int32 CurrentFrameIndex)
 
 void ARacePlayerState::CarOnFinish(int32 CurrentFrameIndex)
 {
+	UE_LOG(	LogTemp, Warning, TEXT("role %d, CarOnFinish"), GetLocalRole());
 	CurrentLap.Close(CurrentFrameIndex);
 	bOnALap = false;
 
-	UE_LOG(LogTemp, Warning, TEXT("LAP %s"), *CurrentLap.ToString());
-	// if (HasAuthority() == false)
-	// {
-	// 	ServerOnFinishLap();
-	// }
-
-	// CurrentLap.Close(GetWorld()->GetTimeSeconds());
-	//
-	//
-	// // todo: server only: should notify gamestate to check and update leaderboard
-	// if (HasAuthority())
-	// {
-	// 	LastLap = CurrentLap;
-	// 	if (LastLap < BestLap)
-	// 	{
-	// 		BestLap = LastLap;
-	// 		OnNewBestLap(BestLap);
-	// 	}
-	// }
+	if (HasAuthority())
+	{
+		InternalAddLap(CurrentLap);
+	}
+	else
+	{
+		ServerAddLap(CurrentLap);
+	}
 }
 
-void ARacePlayerState::AddLap(FRaceLap NewLap)
+void ARacePlayerState::ResetCurrentLap()
 {
+	CurrentLap = FRaceLap();
+	ResetSimulationFrames();
+}
+
+void ARacePlayerState::InternalAddLap(FRaceLap NewLap)
+{
+	if (const UWorld* World = GetWorld())
+	{
+		if (ARaceGameState* RGS = World->GetGameState<ARaceGameState>())
+		{
+			NewLap.SetAt(RGS->GetServerWorldTimeSeconds());
+			NewLap.SetPlayer(GetPlayerId(), GetPlayerName());
+
+			LastLap = NewLap;
+			if (LastLap < BestLap)
+			{
+				BestLap = LastLap;
+				OnNewBestLap(BestLap);
+			}
+		}
+	}
+}
+
+void ARacePlayerState::ServerAddLap_Implementation(FRaceLap NewLap)
+{
+	InternalAddLap(NewLap);
 }
 
 void ARacePlayerState::ResetLaps()
@@ -145,7 +164,7 @@ void ARacePlayerState::AddSimulationFrame(const FSimulationFrame Frame)
 	{
 		return;
 	}
-	
+
 	SimulationFrames.Add(Frame);
 }
 

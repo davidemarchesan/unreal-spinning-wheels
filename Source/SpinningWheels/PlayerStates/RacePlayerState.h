@@ -20,10 +20,19 @@ private:
 	//~ Begin Lap management
 	TArray<FRaceLap> Laps;
 	FRaceLap CurrentLap;
+
+	UPROPERTY(Replicated)
 	FRaceLap LastLap;
+
+	UPROPERTY(Replicated)
 	FRaceLap BestLap;
 
-	void AddLap(FRaceLap NewLap);
+	void ResetCurrentLap();
+	
+	UFUNCTION(Server, Reliable)
+	void ServerAddLap(FRaceLap NewLap);
+
+	void InternalAddLap(FRaceLap NewLap);
 	//~ End Lap management
 
 	// UPROPERTY(Replicated) // todo: replicate using
@@ -62,13 +71,14 @@ protected:
 public:
 
 	//~ Begin APlayerState Interface
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void OnRep_PlayerId() override;
 	//~ End APlayerState Interface
 
 	FOnPlayerIdSetSignature OnPlayerIdSet;
 	
 	void OnStartLap();
-	void OnCancelLap();
+	void CancelLap();
 
 	void CarOnCheckpoint(int32 CurrentFrameIndex);
 	void CarOnFinish(int32 CurrentFrameIndex);

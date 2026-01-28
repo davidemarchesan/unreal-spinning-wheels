@@ -19,7 +19,7 @@ class SPINNINGWHEELS_API ATimeAttackGameState : public ARaceGameState
 private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_Leaderboard)
-	TArray<FTimeAttackLeaderboardRow> Leaderboard;
+	FTimeAttackLeaderboard Leaderboard;
 
 	UFUNCTION()
 	void OnRep_Leaderboard();
@@ -36,7 +36,7 @@ public:
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void OnNewBestLap(ATimeAttackPlayerState* PlayerState, FRaceLap Lap);
+	void OnNewBestLap(FRaceLap Lap);
 
-	TArray<FTimeAttackLeaderboardRow> GetLeaderboard() const { return Leaderboard; }
+	FTimeAttackLeaderboard GetLeaderboard() const { return Leaderboard; }
 };

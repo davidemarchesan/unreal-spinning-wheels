@@ -152,8 +152,26 @@ void ARaceController::OnPossess(APawn* InPawn)
 
 void ARaceController::SetPhase(ERaceControllerPhase NewPhase)
 {
-	// UE_LOG(LogTemp, Warning, TEXT("(role %d) SetPhase %d"), GetLocalRole(), NewPhase);
 	Phase = NewPhase;
+
+	if (HasAuthority())
+	{
+		InternalSetPhase(NewPhase);
+	}
+	else
+	{
+		ServerSetPhase(NewPhase);;
+	}
+}
+
+void ARaceController::InternalSetPhase(ERaceControllerPhase NewPhase)
+{
+	Phase = NewPhase;
+}
+
+void ARaceController::ServerSetPhase_Implementation(ERaceControllerPhase NewPhase)
+{
+	InternalSetPhase(NewPhase);
 }
 
 void ARaceController::PrepareForNewLap(float InServerStartTime)
@@ -238,7 +256,7 @@ void ARaceController::CreateCamera()
 
 void ARaceController::OnRep_Phase()
 {
-	// UE_LOG(LogTemp, Warning, TEXT("OnRep_Phase %d"), Phase);
+	UE_LOG(LogTemp, Warning, TEXT("(role %d) OnRep_Phase %d"), GetLocalRole(), Phase);
 }
 
 void ARaceController::StartDriveProcedure(float DeltaSeconds)
@@ -360,16 +378,32 @@ void ARaceController::InputCancelLap()
 	if (IsLocalController() && HasAuthority() == true)
 	{
 		// Server player only
-		if (ARaceGameMode* GM = GetRaceGameMode())
-		{
-			GM->CancelLap(this);
-		}
+		InternalCancelLap();
 	}
 	else
 	{
 		// Ask the server to restart me
+		UE_LOG(LogTemp, Warning, TEXT("Asking server to respawn me"));
 		ServerCancelLap();
 	}
+
+	if (RacePlayerState.IsValid())
+	{
+		RacePlayerState->CancelLap();
+	}
+}
+
+void ARaceController::InternalCancelLap()
+{
+	if (ARaceGameMode* GM = GetRaceGameMode())
+	{
+		GM->CancelLap(this);
+	}
+}
+
+void ARaceController::ServerCancelLap_Implementation()
+{
+	InternalCancelLap();
 }
 
 void ARaceController::StartLap()
@@ -425,14 +459,6 @@ void ARaceController::ServerStartLap_Implementation()
 	// LocalStartLap();
 	SetPhase(ERaceControllerPhase::RCP_Driving);
 	StartDriveSecondsRemaining = 0;
-}
-
-void ARaceController::ServerCancelLap_Implementation()
-{
-	if (ARaceGameMode* GM = GetRaceGameMode())
-	{
-		GM->CancelLap(this);
-	}
 }
 
 void ARaceController::Debug()

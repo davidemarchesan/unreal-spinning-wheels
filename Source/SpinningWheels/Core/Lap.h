@@ -9,10 +9,16 @@ struct FRaceLap
 	GENERATED_BODY()
 	
 private:
-	int32 LapTime = 0.f;
-	TArray<int32> Sectors;
 
-	bool bClosed = false;
+	UPROPERTY() int32 PlayerId;
+	UPROPERTY() FString PlayerName;
+
+	UPROPERTY() float LapSetAt;
+	
+	UPROPERTY() int32 LapTime = 0.f;
+	UPROPERTY() TArray<int32> Sectors;
+
+	UPROPERTY() bool bClosed = false;
 
 public:
 	
@@ -74,6 +80,10 @@ public:
 	/**
 	 * Compare two lap times
 	*/
+	FORCEINLINE bool operator==(const FRaceLap& RL) const
+	{
+		return LapTime == RL.LapTime;
+	}
 	FORCEINLINE bool operator>=(const FRaceLap& RL) const
 	{
 		return LapTime >= RL.LapTime;
@@ -83,12 +93,21 @@ public:
 		if (RL.LapTime == 0.f || RL.bClosed == false) return true;
 		return LapTime < RL.LapTime;
 	}
+	FORCEINLINE bool operator<(const int32 OtherLapTime) const
+	{
+		return LapTime < OtherLapTime;
+	}
 
 	FRaceLap() = default;
 
 public:
+	FORCEINLINE int32 GetPlayerId() const { return PlayerId; }
+	FORCEINLINE int32 GetSetTime() const { return LapSetAt; }
 	FORCEINLINE int32 GetLapTime() const { return LapTime; }
 	FORCEINLINE TArray<int32> GetSectors() const { return Sectors; }
+
+	FORCEINLINE void SetPlayer(int32 InPlayerId, FString InPlayerName) { PlayerId = InPlayerId; PlayerName = InPlayerName; };
+	FORCEINLINE void SetAt(const float ServerTime) { LapSetAt = ServerTime; }
 
 	FString ToString() const;
 };
