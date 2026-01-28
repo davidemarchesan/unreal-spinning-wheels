@@ -7,7 +7,7 @@ void ARacePlayerState::ServerAddSimulationFrames_Implementation(const TArray<FSi
 {
 	SimulationFrames.Append(ClientSimulationFrames);
 
-	UE_LOG(LogTemp, Warning, TEXT("(pid %d) SERVER - received me %d frames. now ive got %d"), GetPlayerId(), ClientSimulationFrames.Num(), SimulationFrames.Num());
+	// UE_LOG(LogTemp, Warning, TEXT("(pid %d) SERVER - received me %d frames. now ive got %d"), GetPlayerId(), ClientSimulationFrames.Num(), SimulationFrames.Num());
 }
 
 void ARacePlayerState::SendFramesToServer()
@@ -39,7 +39,7 @@ void ARacePlayerState::SendFramesToServer()
 	}
 
 	FramesSentToServer += FramesToSend.Num();
-	UE_LOG(LogTemp, Warning, TEXT("(pid %d) CLIENT - Sending %d Frames to Server | total: %d"), GetPlayerId(), SimulationFrames.Num() - NextFrameToSendToServer, FramesSentToServer);
+	// UE_LOG(LogTemp, Warning, TEXT("(pid %d) CLIENT - Sending %d Frames to Server | total: %d"), GetPlayerId(), SimulationFrames.Num() - NextFrameToSendToServer, FramesSentToServer);
 	ServerAddSimulationFrames(FramesToSend);
 	NextFrameToSendToServer = SimulationFrames.Num();
 }
@@ -93,7 +93,7 @@ void ARacePlayerState::OnFinishLap()
 {
 	UE_LOG(LogTemp, Warning, TEXT("(role %d) (pid %d) ARacePlayerState::OnFinishLap with %d sim frames"), GetLocalRole(), GetPlayerId(), SimulationFrames.Num());
 
-	bOnALap = false;
+	// bOnALap = false;
 	// if (HasAuthority() == false)
 	// {
 	// 	ServerOnFinishLap();
