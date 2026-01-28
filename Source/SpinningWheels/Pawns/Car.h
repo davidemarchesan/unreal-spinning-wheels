@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "SpinningWheels/Core/Simulation.h"
 #include "Car.generated.h"
 
 class UArrowComponent;
@@ -12,6 +13,7 @@ class UBoxComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UCarMovementComponent;
+class ARacePlayerState;
 
 UCLASS()
 class SPINNINGWHEELS_API ACar : public APawn
@@ -23,10 +25,30 @@ public:
 	ACar(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	virtual void Tick(float DeltaTime) override;
+	
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+protected:
+
+	virtual void BeginPlay() override;
 
 private:
+
+	// Begin Deterministic physics
+	TWeakObjectPtr<ARacePlayerState> RacePlayerState;
+	
+	void SimulatedTick(float DeltaTime);
+	
+	float AccSimulationTime = 0.f;
+	float LastSimulationDelta = 0.f;
+	float TotSeconds = 0.f;
+	
+	uint32 CurrentFrameIndex = 0;
+	FSimulationFrame CurrentSimulationFrame;
+	FSimulationFrame PreviousSimulationFrame;
+
+	void SetSimulationFrame(FSimulationFrame NewSimulationFrame);
+	// End Deterministic physics
 
 	UPROPERTY(Category=Car, VisibleAnywhere, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UBoxComponent> BoxComponent;
@@ -37,17 +59,20 @@ private:
 	UPROPERTY(Category=Car, VisibleDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UCarMovementComponent> CarMovementComponent;
 
-	bool bDrive = false;
-	bool bBrake = false;
-	bool bTurn = false;
-	bool bTurbo = false;
+	// UPROPERTY(Replicated) bool bDrive = false;
+	// UPROPERTY(Replicated) bool bTurn = false;
+	
+	UPROPERTY(ReplicatedUsing=OnRep_BrakeUpdate) bool bBrake = false;
+	UFUNCTION() void OnRep_BrakeUpdate();
+	
+	UPROPERTY(ReplicatedUsing=OnRep_TurboUpdate) bool bTurbo = false;
+	UFUNCTION() void OnRep_TurboUpdate();
 	
 	float TurboMaxBattery = 1.f;
 	float TurboCurrentBattery = 1.f;
 
 	void ConsumeTurbo(float DeltaTime);
 	
-
 	TWeakObjectPtr<UMaterialInstanceDynamic> DynamicMaterialLights;
 	
 	static const int32 MaterialIndexLights = 6;
@@ -62,22 +87,51 @@ private:
 	
 #endif
 
-
 protected:
-
-	virtual void BeginPlay() override;
+	
+	UFUNCTION()
+	void OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 public:
 
+	void SetPlayerState(ARacePlayerState* NewRacePlayerState) { RacePlayerState = NewRacePlayerState; };
+
 	UCarMovementComponent* GetCarMovementComponent() const { return CarMovementComponent; }
 
-	void StartDrive();
-	void StopDrive();
-	void StartBrake();
-	void StopBrake();
-	void Turn(FVector2D InputVector);
-	void StartTurbo();
-	void StopTurbo();
+	void LocalStartEngine();
+	UFUNCTION(Server, Reliable) void ServerStartEngine();
+	void LocalStopEngine();
+
+	void LocalStartDrive();
+	void InputStartDrive();
+	UFUNCTION(Server, Reliable) void ServerStartDrive();
+
+	void LocalStopDrive();
+	void InputStopDrive();
+	UFUNCTION(Server, Reliable) void ServerStopDrive();
+
+	void LocalStartBrake();
+	void InputStartBrake();
+	UFUNCTION(Server, Reliable) void ServerStartBrake();
+	void LocalBrakeLights();
+
+	void LocalStopBrake();
+	void InputStopBrake();
+	UFUNCTION(Server, Reliable) void ServerStopBrake();
+
+	void LocalTurn(FVector2D InputVector);
+	void InputTurn(FVector2D InputVector);
+	UFUNCTION(Server, Unreliable) void ServerTurn(FVector2D InputVector);
+
+	void LocalStartTurbo();
+	void InputStartTurbo();
+	UFUNCTION(Server, Reliable) void ServerStartTurbo();
+	void LocalTurboLights();
+
+	void LocalStopTurbo();
+	void InputStopTurbo();
+	UFUNCTION(Server, Reliable) void ServerStopTurbo();
+	
 	void ToggleTurbo();
 
 	UPROPERTY(Category=Turbo, EditAnywhere)
@@ -102,10 +156,5 @@ public:
 	float LightsFlashingOnCrash;
 
 	float GetTurboCurrentBattery() const { return TurboCurrentBattery; }
-
-	bool IsDriving() const { return bDrive; }
-	bool IsBraking() const { return bBrake; }
-	bool IsTurning() const { return bTurn; }
-	bool IsUsingTurbo() const { return bTurbo; }
 	
 };

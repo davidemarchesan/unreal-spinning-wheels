@@ -24,6 +24,7 @@ void AMainCamera::SetupForCar()
 	if (FollowingCar.IsValid())
 	{
 		CarMovementComponent = FollowingCar->GetCarMovementComponent();
+		SetActorRotation(FollowingCar->GetActorRotation());
 		CameraMode = ECameraMode::CAMERAMODE_Car;
 	}
 }
@@ -39,10 +40,16 @@ void AMainCamera::SetupForEditor()
 
 void AMainCamera::UpdateCamera(float DeltaSeconds)
 {
+	if (HasAuthority() == false)
+	{
+		return;
+	}
+	
 	switch (CameraMode)
 	{
 	default:
 	case ECameraMode::CAMERAMODE_None:
+		UpdateCameraIdle(DeltaSeconds);
 		break;
 
 	case ECameraMode::CAMERAMODE_Car:
@@ -53,6 +60,11 @@ void AMainCamera::UpdateCamera(float DeltaSeconds)
 		UpdateCameraForEditor(DeltaSeconds);
 		break;
 	}
+}
+
+void AMainCamera::UpdateCameraIdle(float DeltaSeconds)
+{
+	SetActorRotation(FRotator(0.f, GetActorRotation().Yaw + (1.f * IdleRotationSpeed * DeltaSeconds), 0.f));
 }
 
 void AMainCamera::UpdateCameraForCar(float DeltaSeconds)
@@ -100,17 +112,31 @@ void AMainCamera::UpdateCameraForEditor(float DeltaSeconds)
 	SetActorRotation(FollowingEditor->GetActorRotation());
 }
 
+void AMainCamera::BeginPlay()
+{
+	Super::BeginPlay();
+
+	SetActorLocation(IdleLocation); // Pivot
+	if (UCameraComponent* Camera = GetCameraComponent())
+	{
+		FVector RelativeLocation = -FVector::ForwardVector * IdleLocationOffset.X;
+		RelativeLocation.Z = IdleLocationOffset.Z;
+		Camera->SetRelativeLocation(RelativeLocation);
+	}
+	
+}
+
 void AMainCamera::SetPawn(APawn* InPawn)
 {
 	if (InPawn)
 	{
 		FollowingPawn = InPawn;
-
+	
 		if (FollowingPawn->IsA(ACar::StaticClass()))
 		{
 			SetupForCar();
 		}
-
+	
 		if (FollowingPawn->IsA(AEditorPawn::StaticClass()))
 		{
 			SetupForEditor();

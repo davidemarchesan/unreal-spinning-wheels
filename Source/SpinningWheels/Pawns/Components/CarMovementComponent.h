@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "SpinningWheels/Core/Simulation.h"
 #include "CarMovementComponent.generated.h"
 
 enum ECarMode : int
@@ -12,12 +13,12 @@ enum ECarMode : int
 	CARMODE_Slide,
 	CARMODE_Reverse,
 	CARMODE_Crash,
-	CARMODE_Fly
+	CARMODE_Fly,
 };
 
-/**
- * 
- */
+
+class ARacePlayerState;
+
 UCLASS()
 class SPINNINGWHEELS_API UCarMovementComponent : public UPawnMovementComponent
 {
@@ -25,8 +26,14 @@ class SPINNINGWHEELS_API UCarMovementComponent : public UPawnMovementComponent
 
 private:
 
+	// Begin Deterministic physics
+	FSimulationFrame CurrentSimulationFrame;
+	// End Deterministic physics
+
 	TEnumAsByte<ECarMode> CarMode = ECarMode::CARMODE_Fly;
 	void SetMode(ECarMode NewMode);
+
+	int8 Engine = 0;
 
 	void StartDrivePhysics();
 	void StartSlidePhysics();
@@ -34,12 +41,7 @@ private:
 	float Acceleration = 0.f;							// Current acceleration
 	float BrakeDeceleration = 0.f;						// Current deceleration given by break
 	FRotator AngularVelocity = FRotator::ZeroRotator;	// Current rotation angular velocity (turning)
-
-	float DriveInputValue = 0.f;						// Is player pushing the drive button (float to handle decimal values in future?)
-	float BrakeInputValue = 0.f;						// Is player pushing the brake button
-	float TurnInputValue = 0.f;							// Is player turning (usually between -1 and 1)
-	float TurboInputValue = 0.f;						// Is player pushing the turbo button
-
+	
 	float BrakeHoldTime = 0.f;
 
 	const float Gravity = 9.8f;
@@ -53,8 +55,6 @@ private:
 	void CalcRotationDrive();
 	void CalcRotationSlide();
 	
-	void ResetTurnInputValue();
-
 	bool IsSpeedZero();
 	bool IsAccelerating();
 	bool IsBraking();
@@ -69,15 +69,7 @@ protected:
 
 public:
 
-	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	void StartDrive();
-	void StopDrive();
-	void Turn(FVector2D InputVector);
-	void StartBrake();
-	void StopBrake();
-	void StartTurbo();
-	void StopTurbo();
+	void SimulateMovement(FSimulationFrame SimulationFrame);
 
 	UPROPERTY(Category=Drive, EditAnywhere, BlueprintReadOnly)
 	float MaxSpeed;
@@ -139,9 +131,5 @@ public:
 	float GetAcceleration() const { return Acceleration; }
 	float GetBrakeDeceleration() const { return BrakeDeceleration; }
 	FRotator GetAngularVelocity() const { return AngularVelocity; }
-	
-	float GetDriveInputValue() const { return DriveInputValue; }
-	float GetBrakeInputValue() const { return BrakeInputValue; }
-	float GetTurnInputValue() const { return TurnInputValue; }
 	
 };
