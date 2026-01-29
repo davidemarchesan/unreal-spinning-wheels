@@ -24,6 +24,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Turbo;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_CancelLap;
+	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Leaderboard;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_F1;
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_F2;

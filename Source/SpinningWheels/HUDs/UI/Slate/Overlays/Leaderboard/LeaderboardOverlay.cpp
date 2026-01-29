@@ -11,8 +11,7 @@ void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 	
 	ChildSlot[
 		SAssignNew(MainOverlay, SOverlay)
-		.Visibility(EVisibility::Visible)
-		// .Visibility(EVisibility::Collapsed)
+		.Visibility(EVisibility::Collapsed)
 
 		+ SOverlay::Slot()
 		.VAlign(VAlign_Center)
@@ -34,6 +33,7 @@ void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 						.ListItemsSource(&PlayersBestLap)
 						.OnGenerateRow(this, &SLeaderboardOverlay::GenerateRow)
 						.ListViewStyle(&ListViewStyle)
+						
 					]
 
 				]
@@ -105,8 +105,16 @@ void SLeaderboardOverlay::OnLeaderboardUpdate(FTimeAttackLeaderboard InLeaderboa
 
 void SLeaderboardOverlay::Show()
 {
+	if (MainOverlay.IsValid())
+	{
+		MainOverlay->SetVisibility(EVisibility::Visible);
+	}
 }
 
 void SLeaderboardOverlay::Hide()
 {
+	if (MainOverlay.IsValid())
+	{
+		MainOverlay->SetVisibility(EVisibility::Collapsed);
+	}
 }

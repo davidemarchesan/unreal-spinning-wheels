@@ -9,6 +9,7 @@
 #include "SpinningWheels/Core/Simulation.h"
 #include "SpinningWheels/GameModes/RaceGameMode.h"
 #include "SpinningWheels/GameStates/RaceGameState.h"
+#include "SpinningWheels/HUDs/RaceHUD.h"
 #include "SpinningWheels/HUDs/UI/Slate/Styles/MainStyle.h"
 #include "SpinningWheels/Input/Configs/DriveInputConfig.h"
 #include "SpinningWheels/Pawns/Car.h"
@@ -136,7 +137,6 @@ void ARaceController::OnRep_PlayerState()
 
 	if (RacePlayerState.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Controller: onrep race player state"));
 		OnUpdateRacePlayerState.Broadcast(RacePlayerState.Get());
 	}
 
@@ -226,6 +226,11 @@ void ARaceController::SetupDriveInputBindings()
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_CancelLap, ETriggerEvent::Triggered, this,
 			                          &ARaceController::InputCancelLap);
+
+			EnhancedInput->BindAction(DriveInputConfig->IA_Leaderboard, ETriggerEvent::Started, this,
+									  &ARaceController::InputShowLeaderboard);
+			EnhancedInput->BindAction(DriveInputConfig->IA_Leaderboard, ETriggerEvent::Completed, this,
+									  &ARaceController::InputHideLeaderboard);
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_Turbo, ETriggerEvent::Started, this,
 			                          &ARaceController::InputStartTurbo);
@@ -396,6 +401,22 @@ void ARaceController::InputCancelLap()
 	if (RacePlayerState.IsValid())
 	{
 		RacePlayerState->CancelLap();
+	}
+}
+
+void ARaceController::InputShowLeaderboard()
+{
+	if (ARaceHUD* RaceHUD = GetHUD<ARaceHUD>())
+	{
+		RaceHUD->ShowLeaderboard();
+	}
+}
+
+void ARaceController::InputHideLeaderboard()
+{
+	if (ARaceHUD* RaceHUD = GetHUD<ARaceHUD>())
+	{
+		RaceHUD->HideLeaderboard();
 	}
 }
 

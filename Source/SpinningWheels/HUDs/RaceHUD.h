@@ -42,8 +42,6 @@ protected:
 
 	virtual void BeginPlay() override;
 
-public:
-
 private:
 
 	void InitializeOverlays();
@@ -55,5 +53,10 @@ private:
 	TSharedPtr<class SCountdownOverlay> CountdownOverlay;
 	TSharedPtr<class SInfoOverlay> InfoOverlay;
 	TSharedPtr<class SLapTimeOverlay> LapTimeOverlay;
+
+public:
+
+	void ShowLeaderboard();
+	void HideLeaderboard();
 	
 };

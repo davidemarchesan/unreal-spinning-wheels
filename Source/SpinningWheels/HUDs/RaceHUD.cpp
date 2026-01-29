@@ -183,3 +183,19 @@ void ARaceHUD::InitializeDelegates()
 
 	}
 }
+
+void ARaceHUD::ShowLeaderboard()
+{
+	if (LeaderboardOverlay.IsValid())
+	{
+		LeaderboardOverlay->Show();
+	}
+}
+
+void ARaceHUD::HideLeaderboard()
+{
+	if (LeaderboardOverlay.IsValid())
+	{
+		LeaderboardOverlay->Hide();
+	}
+}

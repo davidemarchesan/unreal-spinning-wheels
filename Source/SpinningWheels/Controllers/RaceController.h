@@ -100,6 +100,9 @@ private:
 	void InputStopTurbo();
 	void InputCancelLap();
 
+	void InputShowLeaderboard();
+	void InputHideLeaderboard();
+
 	int8 DriveInputValue = 0;
 	int8 BrakeInputValue = 0;
 	int8 TurnInputValue = 0;
