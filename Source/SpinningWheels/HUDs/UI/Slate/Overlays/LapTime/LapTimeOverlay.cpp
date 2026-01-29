@@ -106,39 +106,42 @@ void SLapTimeOverlay::OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderbo
 
 			FSlateLapTimeRow NewRow;
 			NewRow.Name = FText::FromString("Pers. Best");
+
+			ESlateTimeColor LapColor = ESlateTimeColor::TC_White;
+			if (PersonalBest == Record)
+			{
+				LapColor = ESlateTimeColor::TC_Purple;
+			}
+			const int32 LapDiff = PersonalBest.GetLapTimeDiff(Record.GetLapTime());
+			const FString LapDiffStr = FRaceLap::FormatDiff(LapDiff);
 			NewRow.LapTime = FSlateTime(
 				FText::FromString(PersonalBest.GetLapTimeFormat()),
-				ESlateTimeColor::TC_Purple
+				LapColor,
+				FText::FromString(LapDiffStr),
+					LapDiff < 0 ? ESlateTimeColor::TC_Green : ESlateTimeColor::TC_Red
 			);
 
+			const TArray<int32> BestSectors = Leaderboard.GetBestSectors();
 			const TArray<int32> RecordSectors = Record.GetSectors();
 			const TArray<int32> PersBestSectors = PersonalBest.GetSectors();
 			for (int32 i = 0; i < PersBestSectors.Num(); i++)
 			{
-				ESlateTimeColor Color = ESlateTimeColor::TC_White;
-				if (RecordSectors.IsValidIndex(i) && PersBestSectors[i] == RecordSectors[i])
+				ESlateTimeColor SectorColor = ESlateTimeColor::TC_White;
+				if (PersBestSectors[i] == BestSectors[i])
 				{
-					Color = ESlateTimeColor::TC_Purple;
-					NewRow.Sectors.Add(
-						FSlateTime(
-							FText::FromString(FRaceLap::FormatTime(PersBestSectors[i])),
-							Color
-						)
-					);
+					SectorColor = ESlateTimeColor::TC_Purple;
 				}
-				else
-				{
-					const int32 Diff = PersonalBest.GetSectorDiff(i, RecordSectors[i]);
-					const FString DiffStr = FRaceLap::FormatDiff(Diff);
-					NewRow.Sectors.Add(
+				
+				const int32 SectorDiff = PersonalBest.GetSectorDiff(i, RecordSectors[i]);
+				const FString SectorDiffStr = FRaceLap::FormatDiff(SectorDiff);
+				NewRow.Sectors.Add(
 					FSlateTime(
 						FText::FromString(FRaceLap::FormatTime(PersBestSectors[i])),
-						Color,
-						FText::FromString(DiffStr),
-						Diff < 0 ? ESlateTimeColor::TC_Green : ESlateTimeColor::TC_Red
+						SectorColor,
+						FText::FromString(SectorDiffStr),
+						SectorDiff < 0 ? ESlateTimeColor::TC_Green : ESlateTimeColor::TC_Red
 					)
 				);
-				}
 			}
 
 			PersonalBestLapTimeRow->SetLapTimeRow(NewRow);

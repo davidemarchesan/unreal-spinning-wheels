@@ -24,9 +24,9 @@ enum class ERaceControllerPhase : uint8
 	RCP_Driving,
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartLapCountdownSignature, float, Seconds);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartLapCountdownSignature, float, Seconds); // Deprecated
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateLapCountdownSignature, int32, Seconds);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateRacePlayerStateSignature, ARacePlayerState*, RacePlayerState);
 
 UCLASS()
 class SPINNINGWHEELS_API ARaceController : public APlayerController
@@ -146,4 +146,5 @@ public:
 
 	FOnStartLapCountdownSignature OnStartLapCountdown;
 	FOnUpdateLapCountdownSignature OnUpdateLapCountdown;
+	FOnUpdateRacePlayerStateSignature OnUpdateRacePlayerState;
 };

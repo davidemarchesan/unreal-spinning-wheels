@@ -6,6 +6,9 @@
 
 void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 {
+
+	static FTableViewStyle ListViewStyle = FTableViewStyle().SetBackgroundBrush(FSlateColorBrush(FLinearColor::Transparent));
+	
 	ChildSlot[
 		SAssignNew(MainOverlay, SOverlay)
 		.Visibility(EVisibility::Visible)
@@ -30,6 +33,7 @@ void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 						SAssignNew(LeaderboardListView, SListView<TSharedPtr<FRaceLap>>)
 						.ListItemsSource(&PlayersBestLap)
 						.OnGenerateRow(this, &SLeaderboardOverlay::GenerateRow)
+						.ListViewStyle(&ListViewStyle)
 					]
 
 				]
@@ -42,8 +46,11 @@ void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 TSharedRef<ITableRow> SLeaderboardOverlay::GenerateRow(TSharedPtr<FRaceLap> Lap,
                                                        const TSharedRef<class STableViewBase>& OwningWidget)
 {
+
+	const int32 Index = PlayersBestLap.IndexOfByKey(Lap);
+	
 	FSlateLapTimeRow NewRow;
-	NewRow.Name = FText::AsNumber(Lap->GetPlayerId());
+	NewRow.Name = FText::FromString(FString::Printf(TEXT("#%d - %d"), Index + 1, Lap->GetPlayerId()));
 	NewRow.LapTime = FSlateTime(FText::FromString(Lap->GetLapTimeFormat()));
 
 	const TArray<int32> Sectors = Lap->GetSectors();
@@ -84,6 +91,8 @@ void SLeaderboardOverlay::OnLeaderboardUpdate(FTimeAttackLeaderboard InLeaderboa
 	{
 		return;
 	}
+
+	Record = Laps[0];
 
 	// Creating shared ptrs for list view
 	for (int i = 0; i < Laps.Num(); i++)

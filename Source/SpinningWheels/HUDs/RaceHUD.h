@@ -8,9 +8,8 @@
 #include "SpinningWheels/Core/Match.h"
 #include "RaceHUD.generated.h"
 
-/**
- * 
- */
+class ARacePlayerState;
+
 UCLASS()
 class SPINNINGWHEELS_API ARaceHUD : public AHUD
 {
@@ -32,6 +31,9 @@ private:
 
 	UFUNCTION()
 	void OnUpdateLapCountdown(int32 Seconds);
+
+	UFUNCTION()
+	void OnUpdateRacePlayerState(ARacePlayerState* RacePlayerState);
 
 	UFUNCTION()
 	void OnPlayerIdSet(int32 InPlayerId);

@@ -14,7 +14,7 @@ void ATimeAttackPlayerState::OnNewBestLap(FRaceLap Lap)
 {
 	Super::OnNewBestLap(Lap);
 
-	UE_LOG(LogTemp, Warning, TEXT("Time attack: new player best"));
+	// UE_LOG(LogTemp, Warning, TEXT("Time attack: new player best"));
 	if (ATimeAttackGameState* GS = GetTimeAttackGameState())
 	{
 		GS->OnNewBestLap(Lap);

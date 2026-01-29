@@ -134,6 +134,12 @@ void ARaceController::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 	RacePlayerState = GetRacePlayerState();
 
+	if (RacePlayerState.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Controller: onrep race player state"));
+		OnUpdateRacePlayerState.Broadcast(RacePlayerState.Get());
+	}
+
 	if (Car.IsValid())
 	{
 		Car->SetPlayerState(RacePlayerState.Get());
@@ -256,7 +262,7 @@ void ARaceController::CreateCamera()
 
 void ARaceController::OnRep_Phase()
 {
-	UE_LOG(LogTemp, Warning, TEXT("(role %d) OnRep_Phase %d"), GetLocalRole(), Phase);
+	// UE_LOG(LogTemp, Warning, TEXT("(role %d) OnRep_Phase %d"), GetLocalRole(), Phase);
 }
 
 void ARaceController::StartDriveProcedure(float DeltaSeconds)

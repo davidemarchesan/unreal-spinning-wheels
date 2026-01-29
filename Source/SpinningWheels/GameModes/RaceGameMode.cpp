@@ -89,8 +89,8 @@ void ARaceGameMode::SetRaceMatchState(ERaceMatchState NewState)
 		return;
 	}
 
-	UE_LOG(LogGameMode, Warning, TEXT("Race Match State switched from %d to %d"), static_cast<uint8>(RaceMatchState),
-	       static_cast<uint8>(NewState));
+	// UE_LOG(LogGameMode, Warning, TEXT("Race Match State switched from %d to %d"), static_cast<uint8>(RaceMatchState),
+	//        static_cast<uint8>(NewState));
 
 	RaceMatchState = NewState;
 

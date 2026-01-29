@@ -110,7 +110,7 @@ void ARacePlayerState::CarOnCheckpoint(int32 CurrentFrameIndex)
 
 void ARacePlayerState::CarOnFinish(int32 CurrentFrameIndex)
 {
-	UE_LOG(	LogTemp, Warning, TEXT("role %d, CarOnFinish"), GetLocalRole());
+	// UE_LOG(	LogTemp, Warning, TEXT("role %d, CarOnFinish"), GetLocalRole());
 	CurrentLap.Close(CurrentFrameIndex);
 	bOnALap = false;
 

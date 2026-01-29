@@ -24,7 +24,13 @@ private:
 
 	FTimeAttackLeaderboard Leaderboard;
 
+	FRaceLap Record = FRaceLap();
+
+	int32 PlayerId = 0;
+
 public:
+
+	void SetPlayerId(int32 InPlayerId) { PlayerId = InPlayerId; };
 
 	void OnLeaderboardUpdate(FTimeAttackLeaderboard InLeaderboard);
 	void Show();
