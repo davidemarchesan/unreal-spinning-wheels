@@ -57,6 +57,19 @@ void ARaceGameState::SetRaceMatchState(ERaceMatchState NewState)
 	OnRep_RaceMatchState();
 }
 
+void ARaceGameState::SetCurrentTrack(const FTrack& NewTrack)
+{
+	CurrentTrack = NewTrack;
+
+	// Server-player
+	OnRep_CurrentTrack();
+}
+
+void ARaceGameState::OnRep_CurrentTrack()
+{
+	OnTrackUpdate.Broadcast(CurrentTrack);
+}
+
 void ARaceGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

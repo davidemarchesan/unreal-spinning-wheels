@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
+#include "SpinningWheels/Core/Track.h"
 #include "SpinningWheels/Core/Match.h"
 #include "RaceGameMode.generated.h"
 
@@ -34,7 +35,11 @@ protected:
 
 	virtual void PrepareControllerForNewLap(AController* Controller);
 
+	// todo: array of maps to play on the server
+	FTrack CurrentTrack;
+
 	//~ Begin AGameMode Interface
+	virtual void OnMatchStateSet() override;
 	virtual void HandleMatchHasStarted() override;
 	//~ End AGameMode Interface
 
@@ -54,6 +59,8 @@ public:
 	UPROPERTY(Category=Timers, EditDefaultsOnly)
 	float TimeStartDriveCountdown = 4;
 
+	FTrack GetCurrentTrack() { return CurrentTrack;}
+	
 	//~ Begin AGameMode Interface
 	//~ End AGameMode Interface
 

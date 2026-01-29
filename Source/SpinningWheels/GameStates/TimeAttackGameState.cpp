@@ -10,8 +10,14 @@
 
 void ATimeAttackGameState::OnRep_Leaderboard()
 {
-	UE_LOG(LogTemp, Warning, TEXT("im on client, and leaderboard has been modified"));
-	OnLeaderboardUpdate.Broadcast();
+	OnLeaderboardUpdate.Broadcast(Leaderboard);
+}
+
+void ATimeAttackGameState::HandleMatchIsWaitingToStart()
+{
+	Super::HandleMatchIsWaitingToStart();
+
+	Leaderboard.Reset();
 }
 
 void ATimeAttackGameState::HandleRaceMatchStateRacing()
@@ -43,9 +49,6 @@ void ATimeAttackGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 void ATimeAttackGameState::OnNewBestLap(FRaceLap Lap)
 {
-	// Leaderboard.Add(FTimeAttackLeaderboardRow(PlayerState->GetPlayerId(), PlayerState->GetPlayerName(), Lap));
 	Leaderboard.AddPlayerNewBest(Lap);
-	OnLeaderboardUpdate.Broadcast();
-
-	UE_LOG(LogTemp, Log, TEXT("Leaderboard update %s"), *Leaderboard.ToString());
+	OnLeaderboardUpdate.Broadcast(Leaderboard);
 }

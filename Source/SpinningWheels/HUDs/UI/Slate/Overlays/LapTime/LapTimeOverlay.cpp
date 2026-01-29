@@ -1,17 +1,14 @@
 #include "LapTimeOverlay.h"
 
+#include "LapTimeRow.h"
 #include "TimeSlot.h"
 #include "SpinningWheels/HUDs/UI/Slate/Styles/MainStyle.h"
 
 void SLapTimeOverlay::Construct(const FArguments& InArgs)
 {
+	PlayerId = InArgs._PlayerId;
+
 	const FSlateBrush* Background = FMainStyle::Get().GetBrush("Brush.Background.Black");
-
-	FSlateFontInfo FontTitles = FMainStyle::Get().GetFontStyle("Font.Lato.Regular.p");
-	FSlateFontInfo FontTimes = FMainStyle::Get().GetFontStyle("Font.JetBrains.Regular.p");
-	FSlateFontInfo FontTimesCompare = FMainStyle::Get().GetFontStyle("Font.JetBrains.Regular.help");
-
-	float ColumnWidth = 200.f;
 
 	ChildSlot[
 		SNew(SOverlay)
@@ -36,57 +33,14 @@ void SLapTimeOverlay::Construct(const FArguments& InArgs)
 					+ SVerticalBox::Slot()
 					.AutoHeight()
 					[
-						SNew(SHorizontalBox)
+						SAssignNew(RecordLapTimeRow, SLapTimeRow)
+					]
 
-						+ SHorizontalBox::Slot()
-						.AutoWidth()
-						[
-							SNew(SBox)
-							.MinDesiredWidth(ColumnWidth)
-							[
-								SNew(STextBlock)
-								.AutoWrapText(true)
-								.Text(FText::FromString("Pers. Best"))
-								.Font(FontTitles)
-								.ColorAndOpacity(FMainStyle::Get().GetColor("Color.Primary.Light"))
-							]
-						]
-
-						+ SHorizontalBox::Slot()
-						.AutoWidth()
-						[
-							SNew(SBox)
-							.MinDesiredWidth(ColumnWidth)
-							[
-								SNew(STimeSlot)
-								.Time(FText::FromString("---"))
-								.TimeColor(FMainStyle::Get().GetColor("Color.Primary.Light"))
-							]
-						]
-
-						+ SHorizontalBox::Slot()
-						.AutoWidth()
-						[
-							SNew(SBox)
-							.MinDesiredWidth(ColumnWidth)
-							[
-								SNew(STimeSlot)
-								.Time(FText::FromString("---"))
-								.TimeColor(FMainStyle::Get().GetColor("Color.Primary.Light"))
-							]
-						]
-
-						+ SHorizontalBox::Slot()
-						.AutoWidth()
-						[
-							SNew(SBox)
-							.MinDesiredWidth(ColumnWidth)
-							[
-								SNew(STimeSlot)
-								.Time(FText::FromString("---"))
-								.TimeColor(FMainStyle::Get().GetColor("Color.Primary.Light"))
-							]
-						]
+					// Personal Best
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					[
+						SAssignNew(PersonalBestLapTimeRow, SLapTimeRow)
 					]
 
 				]
@@ -95,4 +49,99 @@ void SLapTimeOverlay::Construct(const FArguments& InArgs)
 
 		]
 	];
+}
+
+void SLapTimeOverlay::OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard)
+{
+	const TArray<FRaceLap> Laps = Leaderboard.GetPlayersBestLap();
+
+	if (Laps.Num() == 0)
+	{
+		return;
+	}
+
+	Record = Laps[0];
+
+	// Record
+	if (RecordLapTimeRow.IsValid())
+	{
+		FSlateLapTimeRow NewRow;
+		NewRow.Name = FText::FromString("Record");
+		NewRow.LapTime = FSlateTime(
+			FText::FromString(Record.GetLapTimeFormat()),
+			ESlateTimeColor::TC_Purple
+		);
+
+		const TArray<int32> BestSectors = Leaderboard.GetBestSectors();
+		const TArray<int32> RecordSectors = Record.GetSectors();
+		for (int32 i = 0; i < RecordSectors.Num(); i++)
+		{
+			ESlateTimeColor Color = ESlateTimeColor::TC_White;
+			if (BestSectors.IsValidIndex(i) && RecordSectors[i] == BestSectors[i])
+			{
+				Color = ESlateTimeColor::TC_Purple;
+			}
+			NewRow.Sectors.Add(
+				FSlateTime(
+					FText::FromString(FRaceLap::FormatTime(RecordSectors[i])),
+					Color
+				)
+			);
+		}
+
+		RecordLapTimeRow->SetLapTimeRow(NewRow);
+	}
+
+	// Personal best
+	if (PersonalBestLapTimeRow.IsValid() && PlayerId != 0)
+	{
+		const FRaceLap* PersonalBestPtr = Laps.FindByPredicate([this](const FRaceLap& InLap)
+		{
+			return InLap.GetPlayerId() == PlayerId;
+		});
+
+		if (PersonalBestPtr)
+		{
+			PersonalBest = *PersonalBestPtr;
+
+			FSlateLapTimeRow NewRow;
+			NewRow.Name = FText::FromString("Pers. Best");
+			NewRow.LapTime = FSlateTime(
+				FText::FromString(PersonalBest.GetLapTimeFormat()),
+				ESlateTimeColor::TC_Purple
+			);
+
+			const TArray<int32> RecordSectors = Record.GetSectors();
+			const TArray<int32> PersBestSectors = PersonalBest.GetSectors();
+			for (int32 i = 0; i < PersBestSectors.Num(); i++)
+			{
+				ESlateTimeColor Color = ESlateTimeColor::TC_White;
+				if (RecordSectors.IsValidIndex(i) && PersBestSectors[i] == RecordSectors[i])
+				{
+					Color = ESlateTimeColor::TC_Purple;
+					NewRow.Sectors.Add(
+						FSlateTime(
+							FText::FromString(FRaceLap::FormatTime(PersBestSectors[i])),
+							Color
+						)
+					);
+				}
+				else
+				{
+					const int32 Diff = PersonalBest.GetSectorDiff(i, RecordSectors[i]);
+					const FString DiffStr = FRaceLap::FormatDiff(Diff);
+					NewRow.Sectors.Add(
+					FSlateTime(
+						FText::FromString(FRaceLap::FormatTime(PersBestSectors[i])),
+						Color,
+						FText::FromString(DiffStr),
+						Diff < 0 ? ESlateTimeColor::TC_Green : ESlateTimeColor::TC_Red
+					)
+				);
+				}
+			}
+
+			PersonalBestLapTimeRow->SetLapTimeRow(NewRow);
+		}
+	}
 }

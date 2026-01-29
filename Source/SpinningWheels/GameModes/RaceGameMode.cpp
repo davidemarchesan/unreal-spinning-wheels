@@ -61,6 +61,21 @@ void ARaceGameMode::PrepareControllerForNewLap(AController* Controller)
 	}
 }
 
+void ARaceGameMode::OnMatchStateSet()
+{
+	Super::OnMatchStateSet();
+
+	if (MatchState == MatchState::EnteringMap)
+	{
+		CurrentTrack = FTrack("qwer-tyui-opas", "Track 1", 2);
+
+		if (ARaceGameState* RGS = GetGameState<ARaceGameState>())
+		{
+			RGS->SetCurrentTrack(CurrentTrack);
+		}
+	}
+}
+
 void ARaceGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();

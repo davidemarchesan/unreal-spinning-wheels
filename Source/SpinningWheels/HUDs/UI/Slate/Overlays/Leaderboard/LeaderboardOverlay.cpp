@@ -1,13 +1,15 @@
 #include "LeaderboardOverlay.h"
 
+#include "SpinningWheels/HUDs/UI/Slate/Overlays/LapTime/LapTimeRow.h"
+#include "SpinningWheels/HUDs/UI/Slate/Overlays/LapTime/TimeSlot.h"
 #include "SpinningWheels/HUDs/UI/Slate/Styles/MainStyle.h"
 
 void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 {
 	ChildSlot[
 		SAssignNew(MainOverlay, SOverlay)
-		// .Visibility(EVisibility::Visible)
-		.Visibility(EVisibility::Collapsed)
+		.Visibility(EVisibility::Visible)
+		// .Visibility(EVisibility::Collapsed)
 
 		+ SOverlay::Slot()
 		.VAlign(VAlign_Center)
@@ -15,46 +17,19 @@ void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 		[
 
 			SNew(SBox)
-			.WidthOverride(600.f)
-			.HeightOverride(400.f)
+			.WidthOverride(900.f)
+			.HeightOverride(700.f)
 			[
 				SNew(SBorder)
-				.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Dark"))
+				.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Black"))
 				[
-					SNew(SVerticalBox)
-					
-					+ SVerticalBox::Slot()
-					.AutoHeight()
+
+					SNew(SBox)
+					.Padding(10.f)
 					[
-						SNew(STextBlock)
-						.Text(FText::FromString("Leaderboard"))
-						.Font(FMainStyle::Get().GetFontStyle("Font.Roboto.h1"))
-						.ColorAndOpacity(FMainStyle::Get().GetColor("Color.Primary.Light"))
-					]
-
-					+ SVerticalBox::Slot()
-					[
-						SAssignNew(LeaderboardVerticalBox, SVerticalBox)
-
-						+ SVerticalBox::Slot()
-						[
-							SNew(STextBlock)
-							.Text(FText::FromString("P1 | 6.123"))
-							.Font(FMainStyle::Get().GetFontStyle("Roboto.Regular.h1"))
-						]
-
-						+ SVerticalBox::Slot()
-						[
-							SNew(STextBlock)
-							.Text(FText::FromString("P1 | 6.123"))
-							.Font(FMainStyle::Get().GetFontStyle("Lato.Bold.h1"))
-						]
-
-						+ SVerticalBox::Slot()
-						[
-							SNew(STextBlock)
-							.Text(FText::FromString("P1 | 6.123"))
-						]
+						SAssignNew(LeaderboardListView, SListView<TSharedPtr<FRaceLap>>)
+						.ListItemsSource(&PlayersBestLap)
+						.OnGenerateRow(this, &SLeaderboardOverlay::GenerateRow)
 					]
 
 				]
@@ -64,27 +39,59 @@ void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 	];
 }
 
-void SLeaderboardOverlay::UpdateLeaderboard(TArray<FTimeAttackLeaderboardRow> NewLeaderboard)
+TSharedRef<ITableRow> SLeaderboardOverlay::GenerateRow(TSharedPtr<FRaceLap> Lap,
+                                                       const TSharedRef<class STableViewBase>& OwningWidget)
 {
-	if (LeaderboardVerticalBox.IsValid())
-	{
-		// LeaderboardVerticalBox->ClearChildren();
+	FSlateLapTimeRow NewRow;
+	NewRow.Name = FText::AsNumber(Lap->GetPlayerId());
+	NewRow.LapTime = FSlateTime(FText::FromString(Lap->GetLapTimeFormat()));
 
-		for (FTimeAttackLeaderboardRow& Row : NewLeaderboard)
+	const TArray<int32> Sectors = Lap->GetSectors();
+	for (int32 i = 0; i < Sectors.Num(); i++)
+	{
+		ESlateTimeColor Color = ESlateTimeColor::TC_White;
+		if (Leaderboard.BestSectors.IsValidIndex(i) && Sectors[i] == Leaderboard.BestSectors[i])
 		{
-			LeaderboardVerticalBox->AddSlot()
-			[
-				SNew(STextBlock)
-				.Text(FText::FromString(FString::Printf(
-					TEXT("%d | %d | %s | %d"),
-					Row.Position,
-					Row.PlayerId,
-					*Row.PlayerName,
-					Row.BestLap.GetLapTime()
-				)))
-			];
+			Color = ESlateTimeColor::TC_Purple;
 		}
+		NewRow.Sectors.Add(FSlateTime(
+			FText::FromString(FRaceLap::FormatTime(Sectors[i])),
+			Color));
 	}
+
+	const TSharedPtr<SLapTimeRow> LapTimeRow = SNew(SLapTimeRow)
+		.LapTimeRow(NewRow);
+
+	return SNew(STableRow<TSharedPtr<FRaceLap>>, OwningWidget)
+		[
+			LapTimeRow.ToSharedRef()
+		];
+}
+
+void SLeaderboardOverlay::OnLeaderboardUpdate(FTimeAttackLeaderboard InLeaderboard)
+{
+	if (LeaderboardListView.IsValid() == false)
+	{
+		return;
+	}
+
+	Leaderboard = InLeaderboard;
+
+	PlayersBestLap.Empty();
+	const TArray<FRaceLap> Laps = Leaderboard.GetPlayersBestLap();
+
+	if (Laps.Num() == 0)
+	{
+		return;
+	}
+
+	// Creating shared ptrs for list view
+	for (int i = 0; i < Laps.Num(); i++)
+	{
+		PlayersBestLap.Add(MakeShared<FRaceLap>(Leaderboard.GetPlayersBestLap()[i]));
+	}
+
+	LeaderboardListView->RequestListRefresh();
 }
 
 void SLeaderboardOverlay::Show()

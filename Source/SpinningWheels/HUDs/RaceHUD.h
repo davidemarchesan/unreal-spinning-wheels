@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "SpinningWheels/Core/Leaderboard.h"
 #include "SpinningWheels/Core/Match.h"
 #include "RaceHUD.generated.h"
 
@@ -17,8 +18,10 @@ class SPINNINGWHEELS_API ARaceHUD : public AHUD
 
 private:
 
+	int32 PlayerId;
+
 	UFUNCTION()
-	void OnLeaderboardUpdate();
+	void OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard);
 
 	UFUNCTION()
 	void OnRaceMatchStateUpdate(ERaceMatchState NewState);
@@ -31,7 +34,7 @@ private:
 	void OnUpdateLapCountdown(int32 Seconds);
 
 	UFUNCTION()
-	void OnPlayerIdSet(int32 PlayerId);
+	void OnPlayerIdSet(int32 InPlayerId);
 
 protected:
 

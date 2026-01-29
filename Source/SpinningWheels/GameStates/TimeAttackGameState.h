@@ -9,7 +9,7 @@
 
 class ATimeAttackPlayerState;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeaderboardUpdateSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLeaderboardUpdateSignature, const FTimeAttackLeaderboard&, Leaderboard);
 
 UCLASS()
 class SPINNINGWHEELS_API ATimeAttackGameState : public ARaceGameState
@@ -26,17 +26,23 @@ private:
 
 protected:
 
+	//~ Begin AGameState Interface
+	virtual void HandleMatchIsWaitingToStart() override;
+	//~ End AGameState Interface
+
 	//~ Begin ARaceGameState Interface
 	virtual void HandleRaceMatchStateRacing() override;
 	//~ End ARaceGameState Interface
 	
 public:
 
-	FOnLeaderboardUpdateSignature OnLeaderboardUpdate;
-	
+	const FTimeAttackLeaderboard& GetLeaderboard() const { return Leaderboard; }
+
+	//~ Begin AGameState Interface
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	//~ End AGameState Interface
 
 	void OnNewBestLap(FRaceLap Lap);
-
-	FTimeAttackLeaderboard GetLeaderboard() const { return Leaderboard; }
+	
+	FOnLeaderboardUpdateSignature OnLeaderboardUpdate;
 };

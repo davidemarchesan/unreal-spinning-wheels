@@ -4,17 +4,16 @@
 
 void STimeSlot::Construct(const FArguments& InArgs)
 {
-
 	const FText Time = InArgs._Time;
-	const FLinearColor TimeColor = InArgs._TimeColor;
-	
+	const ESlateTimeColor TimeColor = InArgs._TimeColor;
+
 	const FText Diff = InArgs._Diff;
-	const FLinearColor DiffColor = InArgs._DiffColor;
-	
+	const ESlateTimeColor DiffColor = InArgs._DiffColor;
+
 	FSlateFontInfo FontTitles = FMainStyle::Get().GetFontStyle("Font.Lato.Regular.p");
 	FSlateFontInfo FontTimes = FMainStyle::Get().GetFontStyle("Font.JetBrains.Regular.p");
 	FSlateFontInfo FontTimesCompare = FMainStyle::Get().GetFontStyle("Font.JetBrains.Regular.help");
-	
+
 	ChildSlot[
 		SNew(SVerticalBox)
 
@@ -24,7 +23,7 @@ void STimeSlot::Construct(const FArguments& InArgs)
 			.AutoWrapText(true)
 			.Font(FontTimes)
 			.Text(Time)
-			.ColorAndOpacity(TimeColor)
+			.ColorAndOpacity(GetColor(TimeColor))
 		]
 
 		+ SVerticalBox::Slot()
@@ -34,7 +33,30 @@ void STimeSlot::Construct(const FArguments& InArgs)
 			.AutoWrapText(true)
 			.Font(FontTimesCompare)
 			.Text(Diff)
-			.ColorAndOpacity(DiffColor)
+			.ColorAndOpacity(GetColor(DiffColor))
 		]
 	];
+}
+
+FLinearColor STimeSlot::GetColor(ESlateTimeColor InColor)
+{
+	switch (InColor)
+	{
+	default:
+	case ESlateTimeColor::TC_White:
+		return FMainStyle::Get().GetColor("Color.Primary.Light");
+		break;
+
+	case ESlateTimeColor::TC_Purple:
+		return FMainStyle::Get().GetColor("Color.Time.Purple");
+		break;
+
+	case ESlateTimeColor::TC_Green:
+		return FMainStyle::Get().GetColor("Color.Time.Green");
+		break;
+
+	case ESlateTimeColor::TC_Red:
+	return FMainStyle::Get().GetColor("Color.Time.Red");
+		break;
+	}
 }

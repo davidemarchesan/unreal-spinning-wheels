@@ -36,23 +36,79 @@ struct FTimeAttackLeaderboard
 {
 	GENERATED_BODY()
 
-private:
+public:
 
 	UPROPERTY() int32 BestLapTime = 0;
 	UPROPERTY() TArray<int32> BestSectors;
 	UPROPERTY() TArray<FRaceLap> PlayersBestLap;
 
+private:
+
+	void CalcBestSectors();
+
 public:
 
+	void Reset();
+
 	void AddPlayerNewBest(FRaceLap NewLap);
+	
+	const TArray<int32>& GetBestSectors() const { return BestSectors; }
+	const TArray<FRaceLap>& GetPlayersBestLap() const { return PlayersBestLap; }
 
 	FString ToString() const;
 	
 };
 
-FORCEINLINE void FTimeAttackLeaderboard::AddPlayerNewBest(FRaceLap NewLap)
+FORCEINLINE void FTimeAttackLeaderboard::CalcBestSectors()
 {
 
+	if (BestSectors.Num() <= 1)
+	{
+		return;
+	}
+
+	TArray<int32> TempBestSectors;
+	// TempBestSectors.SetNum(BestSectors.Num());
+	
+	for (int32 i = 0; i < BestSectors.Num(); i++)
+	{
+
+		int32 Best = 0;
+
+		for (int32 j = 0; j < PlayersBestLap.Num(); j++)
+		{
+			const TArray<int32> PlayerSectors = PlayersBestLap[j].GetSectors();
+			if (PlayerSectors.IsValidIndex(i))
+			{
+				if (Best == 0)
+				{
+					Best = PlayerSectors[i];
+				}
+				else
+				{
+					Best = FMath::Min(Best, PlayerSectors[i]);
+				}
+			}
+		}
+
+		TempBestSectors.Add(Best);
+	}
+
+	BestSectors = TempBestSectors;
+	
+}
+
+
+FORCEINLINE void FTimeAttackLeaderboard::Reset()
+{
+	BestLapTime = 0;
+	BestSectors.Reset();
+	PlayersBestLap.Reset();
+}
+
+
+FORCEINLINE void FTimeAttackLeaderboard::AddPlayerNewBest(FRaceLap NewLap)
+{
 	int32 FoundIndex = PlayersBestLap.IndexOfByPredicate([NewLap](const FRaceLap& InLap)
 	{
 		return InLap.GetPlayerId() == NewLap.GetPlayerId();
@@ -79,7 +135,14 @@ FORCEINLINE void FTimeAttackLeaderboard::AddPlayerNewBest(FRaceLap NewLap)
 
 		return L1 < L2;
 	});
-	
+
+	if (BestSectors.Num() == 0)
+	{
+		BestSectors = NewLap.GetSectors();
+	}
+
+	CalcBestSectors();
+
 }
 
 FORCEINLINE FString FTimeAttackLeaderboard::ToString() const

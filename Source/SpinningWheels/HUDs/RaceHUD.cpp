@@ -13,14 +13,17 @@
 #include "UI/Slate/Overlays/Leaderboard/LeaderboardOverlay.h"
 #include "UI/Slate/Overlays/ServerMessages/ServerMessagesOverlay.h"
 
-void ARaceHUD::OnLeaderboardUpdate()
+void ARaceHUD::OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard)
 {
-	if (ATimeAttackGameState* GS = GetWorld()->GetGameState<ATimeAttackGameState>())
+	if (LeaderboardOverlay.IsValid())
 	{
-		if (LeaderboardOverlay.IsValid())
-		{
-			// LeaderboardOverlay->UpdateLeaderboard(GS->GetLeaderboard());
-		}
+		LeaderboardOverlay->OnLeaderboardUpdate(Leaderboard);
+	}
+
+	if (LapTimeOverlay.IsValid())
+	{
+		LapTimeOverlay->OnLeaderboardUpdate(Leaderboard);
+		
 	}
 }
 
@@ -70,11 +73,18 @@ void ARaceHUD::OnUpdateLapCountdown(int32 Seconds)
 	}
 }
 
-void ARaceHUD::OnPlayerIdSet(int32 PlayerId)
+void ARaceHUD::OnPlayerIdSet(int32 InPlayerId)
 {
+	PlayerId = InPlayerId;
+	
 	if (InfoOverlay.IsValid())
 	{
 		InfoOverlay->SetPlayerId(PlayerId);
+	}
+
+	if (LapTimeOverlay.IsValid())
+	{
+		LapTimeOverlay->SetPlayerId(PlayerId);
 	}
 }
 
@@ -129,7 +139,7 @@ void ARaceHUD::InitializeDelegates()
 	{
 		if (ATimeAttackGameState* TAGS = World->GetGameState<ATimeAttackGameState>())
 		{
-			OnLeaderboardUpdate();
+			OnLeaderboardUpdate(TAGS->GetLeaderboard());
 			TAGS->OnLeaderboardUpdate.AddDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
 		}
 
