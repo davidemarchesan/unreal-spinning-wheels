@@ -58,9 +58,6 @@ private:
 
 	UPROPERTY(Category=Car, VisibleDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UCarMovementComponent> CarMovementComponent;
-
-	// UPROPERTY(Replicated) bool bDrive = false;
-	// UPROPERTY(Replicated) bool bTurn = false;
 	
 	UPROPERTY(ReplicatedUsing=OnRep_BrakeUpdate) bool bBrake = false;
 	UFUNCTION() void OnRep_BrakeUpdate();
@@ -94,45 +91,12 @@ protected:
 
 public:
 
-	void SetPlayerState(ARacePlayerState* NewRacePlayerState) { RacePlayerState = NewRacePlayerState; };
+	void SetPlayerState(ARacePlayerState* NewRacePlayerState);
 
 	UCarMovementComponent* GetCarMovementComponent() const { return CarMovementComponent; }
-
-	void LocalStartEngine();
-	UFUNCTION(Server, Reliable) void ServerStartEngine();
-	void LocalStopEngine();
-
-	void LocalStartDrive();
-	void InputStartDrive();
-	UFUNCTION(Server, Reliable) void ServerStartDrive();
-
-	void LocalStopDrive();
-	void InputStopDrive();
-	UFUNCTION(Server, Reliable) void ServerStopDrive();
-
-	void LocalStartBrake();
-	void InputStartBrake();
-	UFUNCTION(Server, Reliable) void ServerStartBrake();
-	void LocalBrakeLights();
-
-	void LocalStopBrake();
-	void InputStopBrake();
-	UFUNCTION(Server, Reliable) void ServerStopBrake();
-
-	void LocalTurn(FVector2D InputVector);
-	void InputTurn(FVector2D InputVector);
-	UFUNCTION(Server, Unreliable) void ServerTurn(FVector2D InputVector);
-
-	void LocalStartTurbo();
-	void InputStartTurbo();
-	UFUNCTION(Server, Reliable) void ServerStartTurbo();
-	void LocalTurboLights();
-
-	void LocalStopTurbo();
-	void InputStopTurbo();
-	UFUNCTION(Server, Reliable) void ServerStopTurbo();
 	
-	void ToggleTurbo();
+	void LocalBrakeLights();
+	void LocalTurboLights();
 
 	UPROPERTY(Category=Turbo, EditAnywhere)
 	float TurboConsumption;

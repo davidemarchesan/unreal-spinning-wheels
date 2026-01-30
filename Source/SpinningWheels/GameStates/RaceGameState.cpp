@@ -47,10 +47,7 @@ void ARaceGameState::SetRaceMatchState(ERaceMatchState NewState)
 	{
 		return;
 	}
-
-	// UE_LOG(LogGameState, Log, TEXT("Race Match State switched from %d to %d"), static_cast<uint8>(RaceMatchState),
-	//        static_cast<uint8>(NewState));
-
+	
 	RaceMatchState = NewState;
 
 	// Server player only

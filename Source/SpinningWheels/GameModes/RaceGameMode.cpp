@@ -67,7 +67,7 @@ void ARaceGameMode::OnMatchStateSet()
 
 	if (MatchState == MatchState::EnteringMap)
 	{
-		CurrentTrack = FTrack("qwer-tyui-opas", "Track 1", 2);
+		CurrentTrack = FTrack("qwer-tyui-opas", "Track 1", 2); // todo: these are hard-coded test 
 
 		if (ARaceGameState* RGS = GetGameState<ARaceGameState>())
 		{
@@ -88,10 +88,7 @@ void ARaceGameMode::SetRaceMatchState(ERaceMatchState NewState)
 	{
 		return;
 	}
-
-	// UE_LOG(LogGameMode, Warning, TEXT("Race Match State switched from %d to %d"), static_cast<uint8>(RaceMatchState),
-	//        static_cast<uint8>(NewState));
-
+	
 	RaceMatchState = NewState;
 
 	if (ARaceGameState* GS = Cast<ARaceGameState>(GetWorld()->GetGameState()))
@@ -156,10 +153,7 @@ void ARaceGameMode::RestartPlayerAtTransform(AController* NewPlayer, const FTran
 	{
 		return;
 	}
-
-	UE_LOG(LogGameMode, Verbose, TEXT("RestartPlayerAtTransform %s"),
-	       (NewPlayer && NewPlayer->PlayerState) ? *NewPlayer->PlayerState->GetPlayerName() : TEXT("Unknown"));
-
+	
 	if (MustSpectate(Cast<APlayerController>(NewPlayer)))
 	{
 		UE_LOG(LogGameMode, Verbose, TEXT("RestartPlayerAtTransform: Tried to restart a spectator-only player!"));

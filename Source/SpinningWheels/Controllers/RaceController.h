@@ -24,7 +24,6 @@ enum class ERaceControllerPhase : uint8
 	RCP_Driving,
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartLapCountdownSignature, float, Seconds); // Deprecated
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateLapCountdownSignature, int32, Seconds);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateRacePlayerStateSignature, ARacePlayerState*, RacePlayerState);
 
@@ -87,6 +86,7 @@ private:
 
 	void StartLap();
 	void LocalStartLap();
+	
 	UFUNCTION(Server, Reliable)
 	void ServerStartLap();
 
@@ -114,7 +114,7 @@ private:
 	void ServerCancelLap();
 
 	/** Debug */
-	void Debug();
+	void Debug(); // todo: remove
 
 protected:
 
@@ -147,7 +147,6 @@ public:
 
 	void PrepareForNewLap(float InServerStartTime);
 
-	FOnStartLapCountdownSignature OnStartLapCountdown;
 	FOnUpdateLapCountdownSignature OnUpdateLapCountdown;
 	FOnUpdateRacePlayerStateSignature OnUpdateRacePlayerState;
 };

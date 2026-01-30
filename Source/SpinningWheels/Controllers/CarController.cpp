@@ -45,7 +45,7 @@ void ACarController::StartDrive()
 {
 	if (Car.IsValid())
 	{
-		Car->InputStartDrive();
+		// Car->InputStartDrive();
 	}
 }
 
@@ -53,7 +53,7 @@ void ACarController::StopDrive()
 {
 	if (Car.IsValid())
 	{
-		Car->InputStopDrive();
+		// Car->InputStopDrive();
 	}
 }
 
@@ -61,7 +61,7 @@ void ACarController::StartBrake()
 {
 	if (Car.IsValid())
 	{
-		Car->InputStartBrake();
+		// Car->InputStartBrake();
 	}
 }
 
@@ -69,7 +69,7 @@ void ACarController::StopBrake()
 {
 	if (Car.IsValid())
 	{
-		Car->InputStopBrake();
+		// Car->InputStopBrake();
 	}
 }
 
@@ -78,7 +78,7 @@ void ACarController::Turn(const FInputActionValue& Value)
 	FVector2D InputVector = Value.Get<FVector2D>();
 	if (Car.IsValid())
 	{
-		Car->InputTurn(InputVector);
+		// Car->InputTurn(InputVector);
 	}
 }
 
@@ -86,7 +86,7 @@ void ACarController::StartTurbo()
 {
 	if (Car.IsValid())
 	{
-		Car->InputStartTurbo();
+		// Car->InputStartTurbo();
 	}
 }
 
@@ -94,7 +94,7 @@ void ACarController::StopTurbo()
 {
 	if (Car.IsValid())
 	{
-		Car->InputStopTurbo();
+		// Car->InputStopTurbo();
 	}
 }
 

@@ -185,7 +185,6 @@ void ARaceHUD::InitializeDelegates()
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("HUD: PlayerState is not valid, so i listen for controller"));
 				RC->OnUpdateRacePlayerState.AddDynamic(this, &ARaceHUD::OnUpdateRacePlayerState);
 			}
 		}

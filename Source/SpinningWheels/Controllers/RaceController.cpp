@@ -10,7 +10,6 @@
 #include "SpinningWheels/GameModes/RaceGameMode.h"
 #include "SpinningWheels/GameStates/RaceGameState.h"
 #include "SpinningWheels/HUDs/RaceHUD.h"
-#include "SpinningWheels/HUDs/UI/Slate/Styles/MainStyle.h"
 #include "SpinningWheels/Input/Configs/DriveInputConfig.h"
 #include "SpinningWheels/Pawns/Car.h"
 #include "SpinningWheels/PlayerStates/RacePlayerState.h"
@@ -267,7 +266,6 @@ void ARaceController::CreateCamera()
 
 void ARaceController::OnRep_Phase()
 {
-	// UE_LOG(LogTemp, Warning, TEXT("(role %d) OnRep_Phase %d"), GetLocalRole(), Phase);
 }
 
 void ARaceController::StartDriveProcedure(float DeltaSeconds)
@@ -394,7 +392,6 @@ void ARaceController::InputCancelLap()
 	else
 	{
 		// Ask the server to restart me
-		UE_LOG(LogTemp, Warning, TEXT("Asking server to respawn me"));
 		ServerCancelLap();
 	}
 
@@ -435,27 +432,17 @@ void ARaceController::ServerCancelLap_Implementation()
 
 void ARaceController::StartLap()
 {
-	
 	if (IsLocalController())
 	{
 		// Server-player or client-predict
 		LocalStartLap();
 	}
-	
-	// if (GetLocalRole() == ROLE_AutonomousProxy)
-	// {
-	// 	// Tells server
-	// 	ServerStartLap();
-	// }
 }
 
 void ARaceController::LocalStartLap()
 {
 	SetPhase(ERaceControllerPhase::RCP_Driving);
-
-
-	// onrep_phase -> driving?
-
+	
 	if (RacePlayerState.IsValid())
 	{
 		RacePlayerState->OnStartLap();
@@ -463,33 +450,14 @@ void ARaceController::LocalStartLap()
 
 	StartDriveSecondsRemaining = 0;
 	OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
-	
-	// if (Car.IsValid())
-	// {
-	// 	Car->LocalStartEngine();
-	//
-	// 	if (RacePlayerState.IsValid())
-	// 	{
-	// 		RacePlayerState->OnStartLap();
-	// 	}
-	//
-	// 	// This line will start pushing simulation frames to player state
-	// 	SetPhase(ERaceControllerPhase::RCP_Driving);
-	//
-	// 	StartDriveSecondsRemaining = 0;
-	// 	OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
-	// }
 }
 
 void ARaceController::ServerStartLap_Implementation()
 {
-	// LocalStartLap();
 	SetPhase(ERaceControllerPhase::RCP_Driving);
 	StartDriveSecondsRemaining = 0;
 }
 
 void ARaceController::Debug()
 {
-	FMainStyle::Shutdown();
-	FMainStyle::Initialize();
 }
