@@ -45,32 +45,11 @@ private:
 	float TotSeconds = 0.f;
 	// End Deterministic physics
 
-	void SetupDriveInputBindings();
-
-	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
-	TObjectPtr<UInputMappingContext> DriveMappingContext;
-
-	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
-	TObjectPtr<UDriveInputConfig> DriveInputConfig;
-
 	UPROPERTY(Category=Classes, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
-	TSubclassOf<ACar> CarClass;
+	TSubclassOf<ACar> CarClass; // Deprecated
 
 	UPROPERTY(Category=Classes, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TSubclassOf<AMainCamera> CameraClass;
-
-	TWeakObjectPtr<ACar> Car;
-	TWeakObjectPtr<AMainCamera> MainCamera;
-
-	void CreateCamera();
-
-	bool CanCreateCamera() const
-	{
-		return IsLocalController() == true && bCameraInitialized == false && bCameraInitializing == false;
-	}
-
-	bool bCameraInitializing = false;
-	bool bCameraInitialized = false;
 
 	UPROPERTY(ReplicatedUsing=OnRep_Phase, VisibleAnywhere)
 	ERaceControllerPhase Phase = ERaceControllerPhase::RCP_Respawning;
@@ -118,11 +97,32 @@ private:
 
 protected:
 
+	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UInputMappingContext> DriveMappingContext;
+
+	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UDriveInputConfig> DriveInputConfig;
+
 	//~ Begin AController Interface
 	virtual void BeginPlay() override;
 	virtual void SetPawn(APawn* InPawn) override;
 	//~ End AController Interface
 
+	virtual void SetupInputBindings();
+	virtual void SetupDriveInputBindings();
+
+	void CreateCamera();
+
+	bool CanCreateCamera() const
+	{
+		return IsLocalController() == true && bCameraInitialized == false && bCameraInitializing == false;
+	}
+
+	bool bCameraInitializing = false;
+	bool bCameraInitialized = false;
+
+	TWeakObjectPtr<ACar> Car;
+	TWeakObjectPtr<AMainCamera> MainCamera;
 	TWeakObjectPtr<ARacePlayerState> RacePlayerState;
 
 	ARaceGameMode* GetRaceGameMode();

@@ -98,7 +98,7 @@ void ARaceController::BeginPlay()
 
 	RacePlayerState = GetRacePlayerState();
 	
-	SetupDriveInputBindings();
+	SetupInputBindings();
 	CreateCamera();
 }
 
@@ -188,6 +188,11 @@ void ARaceController::PrepareForNewLap(float InServerStartTime)
 	
 	SetPhase(ERaceControllerPhase::RCP_InStartingProcedure);
 	ServerStartDriveTime = InServerStartTime;
+}
+
+void ARaceController::SetupInputBindings()
+{
+	SetupDriveInputBindings();
 }
 
 void ARaceController::SetupDriveInputBindings()
