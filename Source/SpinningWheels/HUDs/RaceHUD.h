@@ -38,6 +38,9 @@ private:
 	UFUNCTION()
 	void OnPlayerIdSet(int32 InPlayerId);
 
+	UFUNCTION()
+	void OnCurrentLapUpdate(const FRaceLap& CurrentLap);
+
 protected:
 
 	virtual void BeginPlay() override;

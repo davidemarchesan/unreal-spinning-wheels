@@ -75,12 +75,12 @@ void ARaceHUD::OnUpdateLapCountdown(int32 Seconds)
 
 void ARaceHUD::OnUpdateRacePlayerState(ARacePlayerState* RacePlayerState)
 {
-	UE_LOG(LogTemp, Warning, TEXT("HUD: controller sent me playerstate, valid?"));
 	if (RacePlayerState)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("HUD: player id %d"), RacePlayerState->GetPlayerId());
+		// todo: this code repeats on initialize delegates
 		OnPlayerIdSet(RacePlayerState->GetPlayerId());
 		RacePlayerState->OnPlayerIdSet.AddDynamic(this, &ARaceHUD::OnPlayerIdSet);
+		RacePlayerState->OnCurrentLapUpdate.AddDynamic(this, &ARaceHUD::OnCurrentLapUpdate);
 	}
 }
 
@@ -101,6 +101,14 @@ void ARaceHUD::OnPlayerIdSet(int32 InPlayerId)
 	if (LeaderboardOverlay.IsValid())
 	{
 		LeaderboardOverlay->SetPlayerId(PlayerId);
+	}
+}
+
+void ARaceHUD::OnCurrentLapUpdate(const FRaceLap& CurrentLap)
+{
+	if (LapTimeOverlay.IsValid())
+	{
+		LapTimeOverlay->OnCurrentLapUpdate(CurrentLap);
 	}
 }
 
@@ -173,6 +181,7 @@ void ARaceHUD::InitializeDelegates()
 			{
 				OnPlayerIdSet(RPS->GetPlayerId());
 				RPS->OnPlayerIdSet.AddDynamic(this, &ARaceHUD::OnPlayerIdSet);
+				RPS->OnCurrentLapUpdate.AddDynamic(this, &ARaceHUD::OnCurrentLapUpdate);
 			}
 			else
 			{

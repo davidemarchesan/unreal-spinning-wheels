@@ -9,6 +9,7 @@
 #include "RacePlayerState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerIdSetSignature, int32, PlayerId);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCurrentLapUpdateSignature, const FRaceLap&, CurrentLap);
 
 UCLASS()
 class SPINNINGWHEELS_API ARacePlayerState : public APlayerState
@@ -76,6 +77,7 @@ public:
 	//~ End APlayerState Interface
 
 	FOnPlayerIdSetSignature OnPlayerIdSet;
+	FOnCurrentLapUpdateSignature OnCurrentLapUpdate;
 	
 	void OnStartLap();
 	void CancelLap();

@@ -91,10 +91,13 @@ void ARacePlayerState::OnStartLap()
 
 	bOnALap = true;
 	CurrentLap = FRaceLap();
+	
 	if (HasAuthority() == false)
 	{
 		ServerOnStartLap();
 	}
+
+	OnCurrentLapUpdate.Broadcast(CurrentLap);
 }
 
 void ARacePlayerState::CancelLap()
@@ -106,6 +109,7 @@ void ARacePlayerState::CancelLap()
 void ARacePlayerState::CarOnCheckpoint(int32 CurrentFrameIndex)
 {
 	CurrentLap.AddSector(CurrentFrameIndex);
+	OnCurrentLapUpdate.Broadcast(CurrentLap);
 }
 
 void ARacePlayerState::CarOnFinish(int32 CurrentFrameIndex)
@@ -122,6 +126,8 @@ void ARacePlayerState::CarOnFinish(int32 CurrentFrameIndex)
 	{
 		ServerAddLap(CurrentLap);
 	}
+
+	OnCurrentLapUpdate.Broadcast(CurrentLap);
 }
 
 void ARacePlayerState::ResetCurrentLap()

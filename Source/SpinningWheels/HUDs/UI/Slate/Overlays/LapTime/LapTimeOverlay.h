@@ -21,7 +21,10 @@ private:
 
 	FRaceLap Record = FRaceLap();
 	FRaceLap PersonalBest = FRaceLap();
+	FRaceLap LastPersonalBest = FRaceLap();
 	FRaceLap Current = FRaceLap();
+
+	FTimeAttackLeaderboard Leaderboard;
 	
 	int32 PlayerId = 0;
 
@@ -29,6 +32,8 @@ public:
 
 	void SetPlayerId(int32 InPlayerId) { PlayerId = InPlayerId; };
 
-	void OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard);
+	void OnLeaderboardUpdate(const FTimeAttackLeaderboard& InLeaderboard);
+	void OnCurrentLapUpdate(const FRaceLap& CurrentLap);
+	// void OnCancelLap();
 	
 };

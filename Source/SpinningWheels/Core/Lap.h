@@ -138,7 +138,11 @@ public:
 	}
 
 	FORCEINLINE static int32 GetDiff(int32 A, int32 B) { return A - B; }
-	FORCEINLINE int32 GetLapTimeDiff(int32 Other) const { return GetDiff(LapTime, Other); }
+	FORCEINLINE int32 GetLapTimeDiff(int32 Other) const
+	{
+		if (Other == 0) return 0;
+		return GetDiff(LapTime, Other);
+	}
 	FORCEINLINE int32 GetSectorDiff(int32 Index, int32 Other) const { return GetDiff(Sectors[Index], Other); }
 	FORCEINLINE FString static FormatDiff(int32 Diff)
 	{
