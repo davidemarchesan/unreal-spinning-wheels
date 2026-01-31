@@ -9,6 +9,14 @@
 #include "SpinningWheels/Input/Configs/EditorInputConfig.h"
 #include "SpinningWheels/Pawns/EditorPawn.h"
 
+void AEditorController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	bShowMouseCursor = true;
+	SetInputMode(FInputModeGameAndUI());
+}
+
 void AEditorController::SetPawn(APawn* InPawn)
 {
 	Super::SetPawn(InPawn);
@@ -63,6 +71,17 @@ void AEditorController::SetupEditorInputBindings()
 			// EnhancedInput->BindAction(EditorInputConfig->IA_F2, ETriggerEvent::Started, this, &ACarController::SwitchToDrive);
 		}
 
+	}
+}
+
+void AEditorController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	FHitResult Hit;
+	if (GetHitResultUnderCursor(ECC_Camera, false, Hit))
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("Cursor hit %s"), *Hit.ImpactPoint.ToString());
 	}
 }
 

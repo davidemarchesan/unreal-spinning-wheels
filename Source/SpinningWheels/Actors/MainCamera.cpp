@@ -36,6 +36,11 @@ void AMainCamera::SetupForEditor()
 	{
 		CameraMode = ECameraMode::CAMERAMODE_Editor;
 	}
+
+	if (UCameraComponent* Camera = GetCameraComponent())
+	{
+		Camera->SetRelativeRotation(EditorCameraRotation);
+	}
 }
 
 void AMainCamera::UpdateCamera(float DeltaSeconds)
@@ -80,9 +85,9 @@ void AMainCamera::UpdateCameraForCar(float DeltaSeconds)
 	SetActorLocation(FollowingCar->GetActorLocation()); // Pivot
 	if (UCameraComponent* Camera = GetCameraComponent())
 	{
-		FVector RelativeLocation = -FVector::ForwardVector * OffsetFromCar.X;
-		RelativeLocation.X -= VelocityRatio * OffsetFromCarVelocityMultiplier;
-		RelativeLocation.Z = OffsetFromCar.Z;
+		FVector RelativeLocation = -FVector::ForwardVector * CarOffsetFromPawn.X;
+		RelativeLocation.X -= VelocityRatio * CarOffsetFromPawnVelocityMultiplier;
+		RelativeLocation.Z = CarOffsetFromPawn.Z;
 		Camera->SetRelativeLocation(RelativeLocation);
 	}
 
@@ -90,7 +95,7 @@ void AMainCamera::UpdateCameraForCar(float DeltaSeconds)
 	const FRotator CurrentRotation = GetActorRotation();
 
 	/** ROTATION */
-	const FRotator NewRotation = FMath::Lerp(CurrentRotation, TargetRotation, RotationLerpSpeed * VelocityRatio);
+	const FRotator NewRotation = FMath::Lerp(CurrentRotation, TargetRotation, CarRotationLerpSpeed * VelocityRatio);
 	SetActorRotation(NewRotation);
 }
 
@@ -104,8 +109,8 @@ void AMainCamera::UpdateCameraForEditor(float DeltaSeconds)
 	SetActorLocation(FollowingEditor->GetActorLocation());
 	if (UCameraComponent* Camera = GetCameraComponent())
 	{
-		FVector RelativeLocation = -FVector::ForwardVector * OffsetFromEditor.X;
-		RelativeLocation.Z = OffsetFromEditor.Z;
+		FVector RelativeLocation = -FVector::ForwardVector * EditorOffsetFromPawn.X;
+		RelativeLocation.Z = EditorOffsetFromPawn.Z;
 		Camera->SetRelativeLocation(RelativeLocation);
 	}
 

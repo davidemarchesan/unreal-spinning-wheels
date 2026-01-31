@@ -70,15 +70,18 @@ public:
 	float IdleRotationSpeed;
 
 	UPROPERTY(Category=Car, EditAnywhere)
-	FVector OffsetFromCar;
+	FVector CarOffsetFromPawn;
 
 	UPROPERTY(Category=Car, EditAnywhere)
-	float OffsetFromCarVelocityMultiplier;
+	float CarOffsetFromPawnVelocityMultiplier;
 
 	UPROPERTY(Category=Car, EditAnywhere)
-	float RotationLerpSpeed;
+	float CarRotationLerpSpeed;
 
-	UPROPERTY(Category = Editor, EditAnywhere)
-	FVector OffsetFromEditor;
+	UPROPERTY(Category=Editor, EditAnywhere)
+	FVector EditorOffsetFromPawn;
+
+	UPROPERTY(Category=Editor, EditAnywhere)
+	FRotator EditorCameraRotation;
 	
 };

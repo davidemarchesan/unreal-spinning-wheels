@@ -12,6 +12,6 @@ void AEditorGameMode::StartPlay()
 	TrackGrid = GetWorld()->SpawnActor<ATrackGrid>(DefaultTrackGridClass, FVector::ZeroVector, FRotator::ZeroRotator);
 	if (TrackGrid.IsValid())
 	{
-		TrackGrid->Initialize(10, 10);
+		TrackGrid->Initialize(2, 3);
 	}
 }

@@ -15,6 +15,10 @@ class SPINNINGWHEELS_API AEditorController : public ARaceController
 {
 	GENERATED_BODY()
 
+public:
+
+	virtual void Tick(float DeltaSeconds) override;
+
 private:
 
 	TWeakObjectPtr<AEditorPawn> EditorPawn;
@@ -31,6 +35,7 @@ protected:
 	TObjectPtr<UEditorInputConfig> EditorInputConfig;
 
 	//~ Begin AController Interface
+	virtual void BeginPlay() override;
 	virtual void SetPawn(APawn* InPawn) override;
 	//~ End AController Interface
 

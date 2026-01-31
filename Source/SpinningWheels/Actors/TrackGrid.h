@@ -7,7 +7,7 @@
 #include "TrackGrid.generated.h"
 
 UENUM()
-enum class TileStatus : uint8
+enum class ETileStatus : uint8
 {
 	TS_Free,
 	TS_Busy
@@ -36,11 +36,18 @@ private:
 
 	int32 TileSize = 1500;
 
+	TArray<TArray<ETileStatus>> Grid;
+
+	void InitializeLogicGrid();
+	void InitializeCollisionGrid();
+
+	FVector WorldCenter;
+
 protected:
 	virtual void BeginPlay() override;
 
 public:	
 
-	void Initialize(int32 InRows, int32 InCols);
+	void Initialize(int32 InCols, int32 InRows);
 
 };
