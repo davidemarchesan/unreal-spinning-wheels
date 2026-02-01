@@ -20,8 +20,14 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Move;
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Rotate;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_F1;
-	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_F2;
-	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_F3;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Slot1;
+	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Slot2;
+	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Slot3;
+	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Slot4;
+	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Slot5;
+	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Slot6;
+	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Slot7;
+	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Slot8;
+	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Slot9;
 };

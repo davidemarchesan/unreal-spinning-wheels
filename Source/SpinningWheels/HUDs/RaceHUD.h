@@ -17,6 +17,17 @@ class SPINNINGWHEELS_API ARaceHUD : public AHUD
 
 private:
 
+	void InitializeOverlays();
+	void InitializeDelegates();
+
+	/** Begin Pointers to overlays */
+	TSharedPtr<class SLeaderboardOverlay> LeaderboardOverlay;
+	TSharedPtr<class SServerMessagesOverlay> ServerMessagesOverlay;
+	TSharedPtr<class SCountdownOverlay> CountdownOverlay;
+	TSharedPtr<class SInfoOverlay> InfoOverlay;
+	TSharedPtr<class SLapTimeOverlay> LapTimeOverlay;
+	/** End Pointers to overlays */
+
 	int32 PlayerId;
 
 	UFUNCTION()
@@ -44,18 +55,6 @@ private:
 protected:
 
 	virtual void BeginPlay() override;
-
-private:
-
-	void InitializeOverlays();
-	void InitializeDelegates();
-
-	/** Pointers to overlays */
-	TSharedPtr<class SLeaderboardOverlay> LeaderboardOverlay;
-	TSharedPtr<class SServerMessagesOverlay> ServerMessagesOverlay;
-	TSharedPtr<class SCountdownOverlay> CountdownOverlay;
-	TSharedPtr<class SInfoOverlay> InfoOverlay;
-	TSharedPtr<class SLapTimeOverlay> LapTimeOverlay;
 
 public:
 

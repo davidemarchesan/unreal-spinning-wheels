@@ -134,12 +134,12 @@ void ACarController::SwitchToEditor()
 	{
 		if (EditorInputConfig)
 		{
-			EnhancedInput->ClearActionBindings();
-			
-			EnhancedInput->BindAction(EditorInputConfig->IA_Move, ETriggerEvent::Triggered, this, &ACarController::MoveCamera);
-			EnhancedInput->BindAction(EditorInputConfig->IA_Rotate, ETriggerEvent::Triggered, this, &ACarController::RotateCamera);
-
-			EnhancedInput->BindAction(EditorInputConfig->IA_F2, ETriggerEvent::Started, this, &ACarController::SwitchToDrive);
+			// EnhancedInput->ClearActionBindings();
+			//
+			// EnhancedInput->BindAction(EditorInputConfig->IA_Move, ETriggerEvent::Triggered, this, &ACarController::MoveCamera);
+			// EnhancedInput->BindAction(EditorInputConfig->IA_Rotate, ETriggerEvent::Triggered, this, &ACarController::RotateCamera);
+			//
+			// EnhancedInput->BindAction(EditorInputConfig->IA_F2, ETriggerEvent::Started, this, &ACarController::SwitchToDrive);
 		}
 
 	}
@@ -203,21 +203,21 @@ void ACarController::SwitchToDrive()
 		{
 			EnhancedInput->ClearActionBindings();
 			
-			EnhancedInput->BindAction(DriveInputConfig->IA_Drive, ETriggerEvent::Started, this, &ACarController::StartDrive);
-			EnhancedInput->BindAction(DriveInputConfig->IA_Drive, ETriggerEvent::Completed, this,
-									  &ACarController::StopDrive);
-
-			EnhancedInput->BindAction(DriveInputConfig->IA_Brake, ETriggerEvent::Started, this, &ACarController::StartBrake);
-			EnhancedInput->BindAction(DriveInputConfig->IA_Brake, ETriggerEvent::Completed, this,
-									  &ACarController::StopBrake);
-
-			EnhancedInput->BindAction(DriveInputConfig->IA_Turn, ETriggerEvent::Triggered, this, &ACarController::Turn);
-
-			EnhancedInput->BindAction(DriveInputConfig->IA_Turbo, ETriggerEvent::Started, this, &ACarController::StartTurbo);
-			EnhancedInput->BindAction(DriveInputConfig->IA_Turbo, ETriggerEvent::Completed, this,
-									  &ACarController::StopTurbo);
-
-			EnhancedInput->BindAction(DriveInputConfig->IA_F2, ETriggerEvent::Started, this, &ACarController::SwitchToEditor);
+			// EnhancedInput->BindAction(DriveInputConfig->IA_Drive, ETriggerEvent::Started, this, &ACarController::StartDrive);
+			// EnhancedInput->BindAction(DriveInputConfig->IA_Drive, ETriggerEvent::Completed, this,
+			// 						  &ACarController::StopDrive);
+			//
+			// EnhancedInput->BindAction(DriveInputConfig->IA_Brake, ETriggerEvent::Started, this, &ACarController::StartBrake);
+			// EnhancedInput->BindAction(DriveInputConfig->IA_Brake, ETriggerEvent::Completed, this,
+			// 						  &ACarController::StopBrake);
+			//
+			// EnhancedInput->BindAction(DriveInputConfig->IA_Turn, ETriggerEvent::Triggered, this, &ACarController::Turn);
+			//
+			// EnhancedInput->BindAction(DriveInputConfig->IA_Turbo, ETriggerEvent::Started, this, &ACarController::StartTurbo);
+			// EnhancedInput->BindAction(DriveInputConfig->IA_Turbo, ETriggerEvent::Completed, this,
+			// 						  &ACarController::StopTurbo);
+			//
+			// EnhancedInput->BindAction(DriveInputConfig->IA_F2, ETriggerEvent::Started, this, &ACarController::SwitchToEditor);
 		}
 
 	}

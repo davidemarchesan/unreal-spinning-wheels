@@ -4,11 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "RaceController.h"
+#include "SpinningWheels/Core/EditorBuildMenu.h"
 #include "EditorController.generated.h"
 
 class UInputMappingContext;
 class UEditorInputConfig;
+class UEditorBuildMenu;
 class AEditorPawn;
+class AEditorHUD;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMenuSlotSelectedSignature, int8, Slot);
 
 UCLASS()
 class SPINNINGWHEELS_API AEditorController : public ARaceController
@@ -23,9 +28,21 @@ private:
 
 	TWeakObjectPtr<AEditorPawn> EditorPawn;
 
-	void MoveCamera(const FInputActionValue& Value);
-	void RotateCamera(const FInputActionValue& Value);
+	void InputMoveCamera(const FInputActionValue& Value);
+	void InputRotateCamera(const FInputActionValue& Value);
 
+	void InputSlot1();
+	void InputSlot2();
+	void InputSlot3();
+	void InputSlot4();
+	void InputSlot5();
+	void InputSlot6();
+	void InputSlot7();
+	void InputSlot8();
+	void InputSlot9();
+
+	TWeakObjectPtr<AEditorHUD> HUD;
+	
 protected:
 
 	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
@@ -33,6 +50,11 @@ protected:
 
 	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UEditorInputConfig> EditorInputConfig;
+
+	UPROPERTY(Category=EditorBuildMenu, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UEditorBuildMenuDataAsset> EditorBuildMenuData;
+
+	FEditorBuildMenu CurrentActiveMenu;
 
 	//~ Begin AController Interface
 	virtual void BeginPlay() override;
@@ -43,5 +65,9 @@ protected:
 	void SetupEditorInputBindings();
 
 public:
+
+	FOnMenuSlotSelectedSignature OnMenuSlotSelected;
+
+	void InputSlot(int8 Slot);
 	
 };

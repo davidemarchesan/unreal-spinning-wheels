@@ -10,52 +10,54 @@ USTRUCT()
 struct FEditorBuildMenuItem
 {
 	GENERATED_BODY()
-	
+
 	UPROPERTY(Category=Menu, EditAnywhere)
-	class UEditorBuildMenu* Submenu;
+	FText Name;
+
+	UPROPERTY(Category=Menu, EditAnywhere)
+	class UEditorBuildMenuDataAsset* Submenu;
 
 	UPROPERTY(Category=Menu, EditAnywhere)
 	TSubclassOf<class ABlock> Block;
 	
 };
 
-// UCLASS()
-// class SPINNINGWHEELS_API UEditorBuildMenuItem : public UObject
-// {
-// 	GENERATED_BODY()
-//
-// 	UPROPERTY(Category=Menu, EditAnywhere)
-// 	FText Name;
-// 	
-// };
-
-// UCLASS()
-// class SPINNINGWHEELS_API UEditorBuildMenuItem_Submenu : public UObject
-// {
-// 	GENERATED_BODY()
-//
-// 	UPROPERTY(Category=Menu, EditAnywhere)
-// 	TObjectPtr<class UEditorBuildMenu> Submenu;
-// };
-//
-// UCLASS()
-// class SPINNINGWHEELS_API UEditorBuildMenuItem_Block : public UObject
-// {
-// 	GENERATED_BODY()
-//
-// 	UPROPERTY(Category=Menu, EditAnywhere)
-// 	TSubclassOf<class ABlock> Block;
-// };
-
 UCLASS()
-class SPINNINGWHEELS_API UEditorBuildMenu : public UDataAsset
+class SPINNINGWHEELS_API UEditorBuildMenuDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Category=Menu, EditAnywhere)
-	FText Name;
-
+public:
 	UPROPERTY(Category=Menu, EditAnywhere)
 	TArray<FEditorBuildMenuItem> Items;
+};
+
+USTRUCT()
+struct FEditorBuildMenu
+{
+	GENERATED_BODY()
+
+private:
+	UPROPERTY(Category=Menu, EditAnywhere)
+	UEditorBuildMenuDataAsset* MenuData;
+
+public:
+
+	TArray<FEditorBuildMenuItem> Items;
+	
+	bool bInitialized = false;
+
+public:
+	FEditorBuildMenu() = default;
+
+	FEditorBuildMenu(UEditorBuildMenuDataAsset* InMenuData)
+		: MenuData(InMenuData)
+	{
+		if (MenuData)
+		{
+			Items = MenuData->Items;
+			bInitialized = true;
+		}
+	}
 	
 };
