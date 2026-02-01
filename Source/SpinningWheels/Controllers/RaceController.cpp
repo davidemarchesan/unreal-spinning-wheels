@@ -98,8 +98,9 @@ void ARaceController::BeginPlay()
 
 	RacePlayerState = GetRacePlayerState();
 	
-	SetupInputBindings();
 	CreateCamera();
+
+	EnableDefaultInputMappingContext();
 }
 
 void ARaceController::SetPawn(APawn* InPawn)
@@ -119,6 +120,13 @@ void ARaceController::SetPawn(APawn* InPawn)
 			MainCamera->SetPawn(Car.Get());
 		}
 	}
+}
+
+void ARaceController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	SetupInputBindings();
 }
 
 void ARaceController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -197,18 +205,6 @@ void ARaceController::SetupInputBindings()
 
 void ARaceController::SetupDriveInputBindings()
 {
-	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<
-			UEnhancedInputLocalPlayerSubsystem>())
-		{
-			if (DriveMappingContext)
-			{
-				InputSystem->AddMappingContext(DriveMappingContext, 1);
-			}
-		}
-	}
-
 	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		if (DriveInputConfig)
@@ -243,6 +239,41 @@ void ARaceController::SetupDriveInputBindings()
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_Debug, ETriggerEvent::Triggered, this,
 			                          &ARaceController::Debug);
+		}
+	}
+}
+
+void ARaceController::EnableDefaultInputMappingContext()
+{
+	EnableDriveInputMappingContext();
+}
+
+void ARaceController::EnableDriveInputMappingContext()
+{
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>())
+		{
+			if (DriveMappingContext)
+			{
+				InputSystem->AddMappingContext(DriveMappingContext, 1);
+			}
+		}
+	}
+}
+
+void ARaceController::DisableDriveInputMappingContext()
+{
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>())
+		{
+			if (DriveMappingContext)
+			{
+				InputSystem->RemoveMappingContext(DriveMappingContext);
+			}
 		}
 	}
 }

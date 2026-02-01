@@ -5,11 +5,13 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "DataWrappers/ChaosVDQueryDataWrappers.h"
 #include "SpinningWheels/Actors/MainCamera.h"
+#include "SpinningWheels/Actors/TrackGrid.h"
 #include "SpinningWheels/Actors/Blocks/Block.h"
 #include "SpinningWheels/Core/EditorBuildMenu.h"
+#include "SpinningWheels/GameModes/EditorGameMode.h"
 #include "SpinningWheels/HUDs/EditorHUD.h"
+#include "SpinningWheels/Input/Configs/BuildInputConfig.h"
 #include "SpinningWheels/Input/Configs/EditorInputConfig.h"
 #include "SpinningWheels/Pawns/EditorPawn.h"
 
@@ -20,20 +22,17 @@ void AEditorController::BeginPlay()
 	bShowMouseCursor = true;
 	SetInputMode(FInputModeGameAndUI());
 
-
 	HUD = GetHUD<AEditorHUD>();
-
-	// test
-	if (EditorBuildMenuData)
+	if (AEditorGameMode* GameMode = GetWorld()->GetAuthGameMode<AEditorGameMode>())
 	{
-		CurrentActiveMenu = FEditorBuildMenu(EditorBuildMenuData);
-
-		if (HUD.IsValid())
+		TrackGrid = GameMode->GetTrackGrid();
+		if (TrackGrid.IsValid() == false)
 		{
-			HUD->InitializeBuildMenu(this, CurrentActiveMenu);
+			GameMode->OnTrackGridReady.AddDynamic(this, &AEditorController::OnTrackGridReady);
 		}
 	}
-	// end test
+
+	SetupBuildMenu();
 }
 
 void AEditorController::SetPawn(APawn* InPawn)
@@ -57,27 +56,14 @@ void AEditorController::SetPawn(APawn* InPawn)
 
 void AEditorController::SetupInputBindings()
 {
+	Super::SetupInputBindings();
+
 	SetupEditorInputBindings();
+	SetupBuildInputBindings();
 }
 
 void AEditorController::SetupEditorInputBindings()
 {
-	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<
-			UEnhancedInputLocalPlayerSubsystem>())
-		{
-			if (DriveMappingContext)
-			{
-				InputSystem->RemoveMappingContext(DriveMappingContext);
-			}
-			if (EditorMappingContext)
-			{
-				InputSystem->AddMappingContext(EditorMappingContext, 1);
-			}
-		}
-	}
-
 	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		if (EditorInputConfig)
@@ -111,15 +97,92 @@ void AEditorController::SetupEditorInputBindings()
 	}
 }
 
+void AEditorController::SetupBuildInputBindings()
+{
+	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		if (EditorBuildInputConfig)
+		{
+			EnhancedInput->BindAction(EditorBuildInputConfig->IA_Build, ETriggerEvent::Triggered, this,
+			                          &AEditorController::InputBuildBlock);
+			EnhancedInput->BindAction(EditorBuildInputConfig->IA_Cancel, ETriggerEvent::Triggered, this,
+			                          &AEditorController::InputBuildCancel);
+			EnhancedInput->BindAction(EditorBuildInputConfig->IA_Rotate, ETriggerEvent::Triggered, this,
+			                          &AEditorController::InputBuildRotateBlock);
+		}
+	}
+}
+
+void AEditorController::EnableDefaultInputMappingContext()
+{
+	EnableEditorInputMappingContext();
+}
+
+void AEditorController::EnableEditorInputMappingContext()
+{
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>())
+		{
+			if (EditorMappingContext)
+			{
+				InputSystem->AddMappingContext(EditorMappingContext, 1);
+			}
+		}
+	}
+}
+
+void AEditorController::DisableEditorInputMappingContext()
+{
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>())
+		{
+			if (EditorMappingContext)
+			{
+				InputSystem->RemoveMappingContext(EditorMappingContext);
+			}
+		}
+	}
+}
+
+void AEditorController::EnableBuildInputMappingContext()
+{
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>())
+		{
+			if (EditorBuildMappingContext)
+			{
+				InputSystem->AddMappingContext(EditorBuildMappingContext, 1);
+			}
+		}
+	}
+}
+
+void AEditorController::DisableBuildInputMappingContext()
+{
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>())
+		{
+			if (EditorBuildMappingContext)
+			{
+				InputSystem->RemoveMappingContext(EditorBuildMappingContext);
+			}
+		}
+	}
+}
+
 void AEditorController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	FHitResult Hit;
-	if (GetHitResultUnderCursor(ECC_Camera, false, Hit))
-	{
-		// UE_LOG(LogTemp, Warning, TEXT("Cursor hit %s"), *Hit.ImpactPoint.ToString());
-	}
+	PreviewBlock();
 }
 
 void AEditorController::InputMoveCamera(const FInputActionValue& Value)
@@ -185,9 +248,70 @@ void AEditorController::InputSlot9()
 	InputSlot(9);
 }
 
+void AEditorController::InputBuildBlock()
+{
+	UE_LOG(LogTemp, Warning, TEXT("AEditorController::InputBuildBlock()"));
+
+	FHitResult Hit;
+	if (GetHitResultUnderCursor(ECC_GameTraceChannel1, false, Hit))
+	{
+		if (TrackGrid.IsValid() && BlockClass)
+		{
+			TrackGrid->Build(BlockClass, Hit.ImpactPoint, FRotator::ZeroRotator);
+		}
+	}
+}
+
+void AEditorController::InputBuildCancel()
+{
+	UE_LOG(LogTemp, Warning, TEXT("AEditorController::InputBuildCancel()"));
+	ExitBuildMode();
+}
+
+void AEditorController::InputBuildRotateBlock(const FInputActionValue& Value)
+{
+	FVector2D InputVector = Value.Get<FVector2D>();
+	UE_LOG(LogTemp, Warning, TEXT("AEditorController::InputBuildRotateBlock() %s"), *InputVector.ToString());
+}
+
+void AEditorController::PreviewBlock()
+{
+	if (bBuildMode == false || TrackGrid.IsValid() == false)
+	{
+		return;
+	}
+	// todo: to preview
+
+	// FHitResult Hit;
+	// if (GetHitResultUnderCursor(ECC_Camera, false, Hit))
+	// {
+	// 	// UE_LOG(LogTemp, Warning, TEXT("Cursor hit %s"), *Hit.ImpactPoint.ToString());
+	// }
+}
+
+void AEditorController::OnTrackGridReady(ATrackGrid* InTrackGrid)
+{
+	if (InTrackGrid)
+	{
+		TrackGrid = MakeWeakObjectPtr<ATrackGrid>(InTrackGrid);
+	}
+}
+
+void AEditorController::SetupBuildMenu()
+{
+	if (EditorBuildMenuData)
+	{
+		CurrentActiveMenu = FEditorBuildMenu(EditorBuildMenuData);
+
+		if (HUD.IsValid())
+		{
+			HUD->InitializeBuildMenu(this, CurrentActiveMenu);
+		}
+	}
+}
+
 void AEditorController::InputSlot(int8 Slot)
 {
-
 	const int8 Index = Slot - 1;
 	if (CurrentActiveMenu.bInitialized == true)
 	{
@@ -195,7 +319,7 @@ void AEditorController::InputSlot(int8 Slot)
 		{
 			const FEditorBuildMenuItem& Item = CurrentActiveMenu.Items[Index];
 			OnMenuSlotSelected.Broadcast(Slot);
-			
+
 			if (Item.Submenu)
 			{
 				CurrentActiveMenu = FEditorBuildMenu(Item.Submenu);
@@ -203,8 +327,31 @@ void AEditorController::InputSlot(int8 Slot)
 			}
 			else if (Item.Block)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("it's a block %s"), *Item.Block->GetName());
+				UE_LOG(LogTemp, Warning, TEXT("it's a block %s, entering build mode"), *Item.Block->GetName());
+				EnterBuildMode(Item.Block);
 			}
 		}
 	}
+}
+
+void AEditorController::EnterBuildMode(TSubclassOf<ABlock> NewBlockClass)
+{
+	if (TrackGrid.IsValid() == false)
+	{
+		return;
+	}
+
+	if (bBuildMode == false)
+	{
+		bBuildMode = true;
+		EnableBuildInputMappingContext();
+	}
+
+	BlockClass = NewBlockClass;
+}
+
+void AEditorController::ExitBuildMode()
+{
+	bBuildMode = false;
+	DisableBuildInputMappingContext();
 }

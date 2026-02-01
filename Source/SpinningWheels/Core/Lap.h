@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 #include "SpinningWheels/Core/Simulation.h"
 #include "Lap.generated.h"
 

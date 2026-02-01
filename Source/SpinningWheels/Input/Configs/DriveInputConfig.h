@@ -8,9 +8,6 @@
 
 class UInputAction;
 
-/**
- * 
- */
 UCLASS()
 class SPINNINGWHEELS_API UDriveInputConfig : public UDataAsset
 {

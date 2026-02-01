@@ -13,5 +13,6 @@ void AEditorGameMode::StartPlay()
 	if (TrackGrid.IsValid())
 	{
 		TrackGrid->Initialize(2, 3);
+		OnTrackGridReady.Broadcast(TrackGrid.Get());
 	}
 }

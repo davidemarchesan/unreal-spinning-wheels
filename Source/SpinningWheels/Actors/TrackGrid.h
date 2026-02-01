@@ -4,16 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "SpinningWheels/Core/Grid.h"
 #include "TrackGrid.generated.h"
 
-UENUM()
-enum class ETileStatus : uint8
-{
-	TS_Free,
-	TS_Busy
-};
-
 class UBoxComponent;
+class ABlock;
 
 UCLASS()
 class SPINNINGWHEELS_API ATrackGrid : public AActor
@@ -43,11 +38,16 @@ private:
 
 	FVector WorldCenter;
 
+	FGridCoord GetTileCoord(FVector WorldLocation);
+	FVector GetTileWorldLocation(FVector WorldLocation);
+
 protected:
 	virtual void BeginPlay() override;
 
 public:	
 
 	void Initialize(int32 InCols, int32 InRows);
+
+	void Build(TSubclassOf<ABlock> BlockClass, FVector WorldLocation, FRotator Rotation);
 
 };

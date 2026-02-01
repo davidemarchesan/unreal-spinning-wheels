@@ -3,7 +3,9 @@
 
 #include "TrackGrid.h"
 
+#include "Blocks/Block.h"
 #include "Components/BoxComponent.h"
+#include "SpinningWheels/Core/Grid.h"
 
 ATrackGrid::ATrackGrid()
 {
@@ -23,6 +25,22 @@ ATrackGrid::ATrackGrid()
 	
 }
 
+FGridCoord ATrackGrid::GetTileCoord(FVector WorldLocation)
+{
+	const int32 X = FMath::FloorToInt32(WorldLocation.Y / TileSize);
+	const int32 Y = FMath::FloorToInt32(WorldLocation.X / TileSize);
+
+	return FGridCoord(X, Y);
+}
+
+FVector ATrackGrid::GetTileWorldLocation(FVector WorldLocation)
+{
+	const int32 X = FMath::FloorToInt32(WorldLocation.Y / TileSize) * TileSize + (TileSize * 0.5f);
+	const int32 Y = FMath::FloorToInt32(WorldLocation.X / TileSize) * TileSize + (TileSize * 0.5f);
+
+	return FVector(Y, X, 0.f);
+}
+
 void ATrackGrid::BeginPlay()
 {
 	Super::BeginPlay();
@@ -35,6 +53,25 @@ void ATrackGrid::Initialize(int32 InCols, int32 InRows)
 
 	InitializeLogicGrid();
 	InitializeCollisionGrid();
+}
+
+void ATrackGrid::Build(TSubclassOf<ABlock> BlockClass, FVector WorldLocation, FRotator Rotation)
+{
+	if (UWorld* World = GetWorld())
+	{
+		FGridCoord GridCoord = GetTileCoord(WorldLocation);
+
+		// Avoid to build on an already occupied tile
+		if (Grid[GridCoord.X][GridCoord.Y] == ETileStatus::TS_Busy)
+		{
+			return;
+		}
+		
+		FVector Location = GetTileWorldLocation(WorldLocation);
+		ABlock* NewBlock = World->SpawnActor<ABlock>(BlockClass, Location, Rotation);
+
+		Grid[GridCoord.X][GridCoord.Y] = ETileStatus::TS_Busy;
+	}
 }
 
 void ATrackGrid::InitializeLogicGrid()

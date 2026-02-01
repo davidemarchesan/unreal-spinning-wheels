@@ -8,6 +8,8 @@
 
 class ATrackGrid;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTrackGridReadySignature, ATrackGrid*, TrackGrid);
+
 UCLASS()
 class SPINNINGWHEELS_API AEditorGameMode : public AGameModeBase
 {
@@ -25,5 +27,8 @@ protected:
 public:
 
 	virtual void StartPlay() override;
+
+	FOnTrackGridReadySignature OnTrackGridReady;
+	TWeakObjectPtr<ATrackGrid> GetTrackGrid() const { return TrackGrid; }
 	
 };

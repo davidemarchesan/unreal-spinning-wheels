@@ -9,9 +9,12 @@
 
 class UInputMappingContext;
 class UEditorInputConfig;
+class UBuildInputConfig;
 class UEditorBuildMenu;
 class AEditorPawn;
 class AEditorHUD;
+class ATrackGrid;
+class ABlock;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMenuSlotSelectedSignature, int8, Slot);
 
@@ -41,7 +44,19 @@ private:
 	void InputSlot8();
 	void InputSlot9();
 
+	void InputBuildBlock();
+	void InputBuildCancel();
+	void InputBuildRotateBlock(const FInputActionValue& Value);
+
+	void PreviewBlock();
+
 	TWeakObjectPtr<AEditorHUD> HUD;
+	TWeakObjectPtr<ATrackGrid> TrackGrid;
+
+	TSubclassOf<ABlock> BlockClass;
+
+	UFUNCTION()
+	void OnTrackGridReady(ATrackGrid* InTrackGrid);
 	
 protected:
 
@@ -51,10 +66,22 @@ protected:
 	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UEditorInputConfig> EditorInputConfig;
 
+	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UInputMappingContext> EditorBuildMappingContext;
+
+	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UBuildInputConfig> EditorBuildInputConfig;
+
 	UPROPERTY(Category=EditorBuildMenu, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UEditorBuildMenuDataAsset> EditorBuildMenuData;
 
+	void SetupBuildMenu();
 	FEditorBuildMenu CurrentActiveMenu;
+
+	bool bBuildMode = false;
+	
+	void EnterBuildMode(TSubclassOf<ABlock> NewBlockClass);
+	void ExitBuildMode();
 
 	//~ Begin AController Interface
 	virtual void BeginPlay() override;
@@ -63,11 +90,20 @@ protected:
 
 	virtual void SetupInputBindings() override;
 	void SetupEditorInputBindings();
+	void SetupBuildInputBindings();
+
+	virtual void EnableDefaultInputMappingContext() override;
+	void EnableEditorInputMappingContext();
+	void DisableEditorInputMappingContext();
+	void EnableBuildInputMappingContext();
+	void DisableBuildInputMappingContext();
 
 public:
 
 	FOnMenuSlotSelectedSignature OnMenuSlotSelected;
 
+	void SetTrackGrid(const TWeakObjectPtr<ATrackGrid> InTrackGrid) { TrackGrid = InTrackGrid;};
+	
 	void InputSlot(int8 Slot);
 	
 };

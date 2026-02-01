@@ -106,10 +106,15 @@ protected:
 	//~ Begin AController Interface
 	virtual void BeginPlay() override;
 	virtual void SetPawn(APawn* InPawn) override;
+	virtual void SetupInputComponent() override;
 	//~ End AController Interface
 
 	virtual void SetupInputBindings();
 	virtual void SetupDriveInputBindings();
+
+	virtual void EnableDefaultInputMappingContext();
+	virtual void EnableDriveInputMappingContext();
+	virtual void DisableDriveInputMappingContext();
 
 	void CreateCamera();
 
