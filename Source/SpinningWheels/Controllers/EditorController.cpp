@@ -325,10 +325,13 @@ void AEditorController::InputSlot(int8 Slot)
 				CurrentActiveMenu = FEditorBuildMenu(Item.Submenu);
 				UE_LOG(LogTemp, Warning, TEXT("it's a submenu"));
 			}
-			else if (Item.Block)
+			else if (Item.BlocksTableRow.IsNull() == false)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("it's a block %s, entering build mode"), *Item.Block->GetName());
-				EnterBuildMode(Item.Block);
+				if (FBlockRow* BlockRow = Item.BlocksTableRow.GetRow<FBlockRow>("Block Class"))
+				{
+					EnterBuildMode(BlockRow->BlockClass);
+					UE_LOG(LogTemp, Warning, TEXT("it's a block %s, entering build mode"), *BlockRow->Name.ToString());
+				}
 			}
 		}
 	}

@@ -72,7 +72,10 @@ protected:
 	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UBuildInputConfig> EditorBuildInputConfig;
 
-	UPROPERTY(Category=EditorBuildMenu, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	// UPROPERTY(Category=Data, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	// TObjectPtr<UDataTable> BlocksTableData;
+	
+	UPROPERTY(Category=Data, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UEditorBuildMenuDataAsset> EditorBuildMenuData;
 
 	void SetupBuildMenu();

@@ -43,3 +43,18 @@ struct FTileInfo
 	TSubclassOf<ABlock> BlockClass;
 	
 };
+
+USTRUCT()
+struct FBlockRow : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ABlock> BlockClass;
+
+	UPROPERTY(EditAnywhere)
+	FText Name;
+	
+};

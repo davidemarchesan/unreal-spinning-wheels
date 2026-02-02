@@ -18,7 +18,7 @@ struct FEditorBuildMenuItem
 	class UEditorBuildMenuDataAsset* Submenu;
 
 	UPROPERTY(Category=Menu, EditAnywhere)
-	TSubclassOf<class ABlock> Block;
+	FDataTableRowHandle BlocksTableRow;
 	
 };
 
