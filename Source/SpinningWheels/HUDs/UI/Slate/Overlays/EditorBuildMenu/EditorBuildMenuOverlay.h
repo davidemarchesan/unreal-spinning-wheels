@@ -1,5 +1,6 @@
 #pragma once
-#include "EditorBuildMenuItem.h"
+
+#include "EditorBuildMenu.h"
 #include "SpinningWheels/Core/EditorBuildMenu.h"
 
 class SEditorBuildMenuOverlay : public SCompoundWidget
@@ -16,13 +17,11 @@ private:
 
 	FEditorBuildMenu Menu = FEditorBuildMenu();
 
-	TSharedPtr<SVerticalBox> ContainerVerticalBox;
-	TSharedPtr<SHorizontalBox> ItemsHorizontalBox;
-	TArray<TSharedPtr<SEditorBuildMenuItem>> MenuItems;
-	TSharedPtr<SEditorBuildMenuOverlay> SubMenu;
+	TSharedPtr<SEditorBuildMenu> EditorBuildMenu;
 
 public:
 
 	void OnMenuSlotSelected(int8 Slot);
+	void OnExitBuildMode();
 	
 };

@@ -19,7 +19,6 @@ void AEditorHUD::InitializeOverlays()
 	{
 		if (this)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("HUD lambda EditorOverlay OnSaveTrack_Lambda %s"), *TrackName);
 			return OnSaveTrack(TrackName);
 		}
 
@@ -40,6 +39,14 @@ void AEditorHUD::OnMenuSlotSelected(int8 Slot)
 	if (EditorBuildMenuOverlay.IsValid())
 	{
 		EditorBuildMenuOverlay->OnMenuSlotSelected(Slot);
+	}
+}
+
+void AEditorHUD::OnExitBuildMode()
+{
+	if (EditorBuildMenuOverlay.IsValid())
+	{
+		EditorBuildMenuOverlay->OnExitBuildMode();
 	}
 }
 
@@ -72,11 +79,12 @@ void AEditorHUD::InitializeBuildMenu(AEditorController* Controller, const FEdito
 		.Menu(CurrentActiveMenu);
 	if (EditorBuildMenuOverlay.IsValid())
 	{
-		GEngine->GameViewport->AddViewportWidgetContent(EditorBuildMenuOverlay.ToSharedRef());
+		GEngine->GameViewport->AddViewportWidgetContent(EditorBuildMenuOverlay.ToSharedRef(), 5);
 	}
 
 	if (Controller)
 	{
 		Controller->OnMenuSlotSelected.AddDynamic(this, &AEditorHUD::OnMenuSlotSelected);
+		Controller->OnExitBuildMode.AddDynamic(this, &AEditorHUD::OnExitBuildMode);
 	}
 }

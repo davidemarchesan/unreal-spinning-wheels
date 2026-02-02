@@ -19,6 +19,7 @@ class ATrackGrid;
 class ABlock;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMenuSlotSelectedSignature, int8, Slot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExitBuildModeSignature);
 
 UCLASS()
 class SPINNINGWHEELS_API AEditorController : public ARaceController
@@ -108,6 +109,7 @@ protected:
 public:
 
 	FOnMenuSlotSelectedSignature OnMenuSlotSelected;
+	FOnExitBuildModeSignature OnExitBuildMode;
 
 	void SetTrackGrid(const TWeakObjectPtr<ATrackGrid> InTrackGrid) { TrackGrid = InTrackGrid;};
 	

@@ -263,7 +263,7 @@ void AEditorController::InputBuildBlock()
 	{
 		return;
 	}
-	
+
 	FHitResult Hit;
 	if (GetHitResultUnderCursor(ECC_GameTraceChannel1, false, Hit))
 	{
@@ -276,7 +276,6 @@ void AEditorController::InputBuildBlock()
 
 void AEditorController::InputBuildCancel()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AEditorController::InputBuildCancel()"));
 	ExitBuildMode();
 }
 
@@ -289,7 +288,8 @@ void AEditorController::InputBuildRotateBlock(const FInputActionValue& Value)
 		const float Rotation = InputVector.X * -1;
 
 		FRotator CurrentRotation = PreviewedBlock->GetActorRotation();
-		PreviewedBlock->SetActorRotation(FRotator(CurrentRotation.Pitch, CurrentRotation.Yaw + Rotation * 90.f, CurrentRotation.Roll));
+		PreviewedBlock->SetActorRotation(FRotator(CurrentRotation.Pitch, CurrentRotation.Yaw + Rotation * 90.f,
+		                                          CurrentRotation.Roll));
 	}
 }
 
@@ -414,10 +414,8 @@ void AEditorController::EnterBuildMode(const FName& RowName, const FBlockRow& Bl
 		if (PreviewedBlock->GetClass() == BlockRow.BlockClass)
 		{
 			// No need to re-spawn the same block
-			UE_LOG(LogTemp, Warning, TEXT("No need to respawn the same preview block"));
 			return;
 		}
-		UE_LOG(LogTemp, Warning, TEXT("destroy preview block"));
 		PreviewedBlock->Destroy();
 	}
 
@@ -433,4 +431,13 @@ void AEditorController::ExitBuildMode()
 {
 	bBuildMode = false;
 	DisableBuildInputMappingContext();
+
+	if (PreviewedBlock.IsValid() && PreviewedBlock->IsPendingKillPending() == false)
+	{
+		PreviewedBlock->Destroy();
+	}
+
+	CurrentActiveMenu = FEditorBuildMenu(EditorBuildMenuData);
+
+	OnExitBuildMode.Broadcast();
 }

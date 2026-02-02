@@ -22,5 +22,6 @@ private:
 public:
 
 	void SetSelected();
+	void SetUnselected();
 	
 };

@@ -21,6 +21,7 @@ private:
 	void InitializeDelegates();
 
 	UFUNCTION() void OnMenuSlotSelected(int8 Slot);
+	UFUNCTION() void OnExitBuildMode();
 
 	/** Begin Pointers to overlays */
 	TSharedPtr<class SEditorBuildMenuOverlay> EditorBuildMenuOverlay;
