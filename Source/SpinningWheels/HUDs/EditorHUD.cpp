@@ -37,7 +37,6 @@ void AEditorHUD::InitializeDelegates()
 
 void AEditorHUD::OnMenuSlotSelected(int8 Slot)
 {
-	UE_LOG(LogTemp, Warning, TEXT("HUD selected slot %d"), Slot);
 	if (EditorBuildMenuOverlay.IsValid())
 	{
 		EditorBuildMenuOverlay->OnMenuSlotSelected(Slot);
@@ -46,8 +45,6 @@ void AEditorHUD::OnMenuSlotSelected(int8 Slot)
 
 FReply AEditorHUD::OnSaveTrack(const FString& TrackName)
 {
-	UE_LOG(LogTemp, Warning, TEXT("HUD function EditorOverlay OnSaveTrack_Lambda %s"), *TrackName);
-
 	if (AEditorController* EditorController = Cast<AEditorController>(GetOwningPlayerController()))
 	{
 		EditorController->InputSaveTrack(TrackName);

@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "SpinningWheels/Actors/MainCamera.h"
 #include "SpinningWheels/Actors/TrackGrid.h"
+#include "SpinningWheels/Actors/Blocks/Block.h"
 #include "SpinningWheels/Core/EditorBuildMenu.h"
 #include "SpinningWheels/GameModes/EditorGameMode.h"
 #include "SpinningWheels/HUDs/EditorHUD.h"
@@ -258,8 +259,6 @@ void AEditorController::InputSlot9()
 
 void AEditorController::InputBuildBlock()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AEditorController::InputBuildBlock()"));
-
 	FHitResult Hit;
 	if (GetHitResultUnderCursor(ECC_GameTraceChannel1, false, Hit))
 	{
@@ -284,11 +283,31 @@ void AEditorController::InputBuildRotateBlock(const FInputActionValue& Value)
 
 void AEditorController::PreviewBlock()
 {
-	if (bBuildMode == false || TrackGrid.IsValid() == false)
+	if (bBuildMode == false || TrackGrid.IsValid() == false || PreviewedBlock.IsValid() == false)
 	{
 		return;
 	}
-	// todo: to preview
+
+	// Get coordinates and world location where im pointing to
+	// move the previewed block there (spawns it if null)
+	FHitResult Hit;
+	if (GetHitResultUnderCursor(ECC_GameTraceChannel1, false, Hit))
+	{
+		if (TrackGrid->CanBuildOn(Hit.ImpactPoint))
+		{
+			FVector Location = TrackGrid->GetTileWorldLocation(Hit.ImpactPoint);
+			if (PreviewedBlock->GetActorLocation() != Location)
+			{
+				PreviewedBlock->SetActorLocation(Location);
+				PreviewedBlock->SetActorHiddenInGame(false);
+			}
+		}
+		else
+		{
+			PreviewedBlock->SetActorHiddenInGame(true);
+			PreviewedBlock->SetActorLocation(FVector::ZeroVector);
+		}
+	}
 }
 
 void AEditorController::OnTrackGridReady(ATrackGrid* InTrackGrid)
@@ -340,16 +359,13 @@ void AEditorController::InputSlot(int8 Slot)
 			if (Item.Submenu)
 			{
 				CurrentActiveMenu = FEditorBuildMenu(Item.Submenu);
-				UE_LOG(LogTemp, Warning, TEXT("it's a submenu"));
 			}
 			else if (Item.BlocksTableRow.IsNull() == false)
 			{
-					EnterBuildMode(Item.BlocksTableRow.RowName);
-					UE_LOG(LogTemp, Warning, TEXT("it's a block %s, entering build mode"), *Item.BlocksTableRow.RowName.ToString());
-				// if (FBlockRow* BlockRow = Item.BlocksTableRow.GetRow<FBlockRow>("Block Class"))
-				// {
-				// 	Item.BlocksTableRow.RowName
-				// }
+				if (FBlockRow* BlockRow = Item.BlocksTableRow.GetRow<FBlockRow>("Preview"))
+				{
+					EnterBuildMode(Item.BlocksTableRow.RowName, *BlockRow);
+				}
 			}
 		}
 	}
@@ -365,7 +381,7 @@ void AEditorController::InputSaveTrack(const FString& TrackName)
 	}
 }
 
-void AEditorController::EnterBuildMode(const FName& RowName)
+void AEditorController::EnterBuildMode(const FName& RowName, const FBlockRow& BlockRow)
 {
 	if (TrackGrid.IsValid() == false)
 	{
@@ -379,7 +395,26 @@ void AEditorController::EnterBuildMode(const FName& RowName)
 	}
 
 	BlockToBuildName = RowName;
-	// BlockClass = NewBlockClass;
+
+	// Setting up preview
+	if (PreviewedBlock.IsValid())
+	{
+		if (PreviewedBlock->GetClass() == BlockRow.BlockClass)
+		{
+			// No need to re-spawn the same block
+			UE_LOG(LogTemp, Warning, TEXT("No need to respawn the same preview block"));
+			return;
+		}
+		UE_LOG(LogTemp, Warning, TEXT("destroy preview block"));
+		PreviewedBlock->Destroy();
+	}
+
+	PreviewedBlock = GetWorld()->SpawnActor<ABlock>(BlockRow.BlockClass, FVector::ZeroVector, FRotator::ZeroRotator);
+	if (PreviewedBlock.IsValid())
+	{
+		PreviewedBlock->SetActorHiddenInGame(true);
+		// Tick function PreviewBlock() will set location, rotation and hiding
+	}
 }
 
 void AEditorController::ExitBuildMode()

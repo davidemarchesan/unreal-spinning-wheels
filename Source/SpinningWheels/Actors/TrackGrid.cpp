@@ -24,7 +24,7 @@ ATrackGrid::ATrackGrid()
 	
 }
 
-FGridCoord ATrackGrid::GetTileCoord(FVector WorldLocation)
+FGridCoord ATrackGrid::GetTileCoordinates(FVector WorldLocation)
 {
 	const int32 X = FMath::FloorToInt32(WorldLocation.Y / TileSize);
 	const int32 Y = FMath::FloorToInt32(WorldLocation.X / TileSize);
@@ -46,6 +46,25 @@ FVector ATrackGrid::GetTileWorldLocation(const FGridCoord& Coordinates)
 	const int32 Y = Coordinates.Y * TileSize + (TileSize * 0.5f);
 	
 	return FVector(Y, X, 0.f);
+}
+
+bool ATrackGrid::CanBuildOn(FVector WorldLocation)
+{
+
+	FGridCoord Coordinates = GetTileCoordinates(WorldLocation);
+	
+	if (Grid.IsValidIndex(Coordinates.X) == false)
+	{
+		return false;
+	}
+
+	if (Grid[Coordinates.X].IsValidIndex(Coordinates.Y) == false)
+	{
+		return false;
+	}
+	
+	return Grid[Coordinates.X][Coordinates.Y] != ETileStatus::TS_Busy;
+	
 }
 
 void ATrackGrid::BeginPlay()
@@ -74,28 +93,9 @@ void ATrackGrid::Initialize(int32 InCols, int32 InRows, const FTrackSaveData& Tr
 	}
 }
 
-// void ATrackGrid::Build(TSubclassOf<ABlock> BlockClass, FVector WorldLocation, FRotator Rotation)
-// {
-// 	if (UWorld* World = GetWorld())
-// 	{
-// 		FGridCoord GridCoord = GetTileCoord(WorldLocation);
-//
-// 		// Avoid to build on an already occupied tile
-// 		if (Grid[GridCoord.X][GridCoord.Y] == ETileStatus::TS_Busy)
-// 		{
-// 			return;
-// 		}
-// 		
-// 		FVector Location = GetTileWorldLocation(WorldLocation);
-// 		ABlock* NewBlock = World->SpawnActor<ABlock>(BlockClass, Location, Rotation);
-//
-// 		Grid[GridCoord.X][GridCoord.Y] = ETileStatus::TS_Busy;
-// 	}
-// }
-
 void ATrackGrid::Build(const FName& BlockName, FVector WorldLocation, FRotator Rotation)
 {
-	const FGridCoord GridCoord = GetTileCoord(WorldLocation);
+	const FGridCoord GridCoord = GetTileCoordinates(WorldLocation);
 
 	// Avoid to build on an already occupied tile
 	if (Grid[GridCoord.X][GridCoord.Y] == ETileStatus::TS_Busy)

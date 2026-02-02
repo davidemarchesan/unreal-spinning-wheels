@@ -45,10 +45,6 @@ private:
 
 	FVector WorldCenter;
 
-	FGridCoord GetTileCoord(FVector WorldLocation);
-	FVector GetTileWorldLocation(FVector WorldLocation);
-	FVector GetTileWorldLocation(const FGridCoord& Coordinates);
-
 protected:
 	virtual void BeginPlay() override;
 
@@ -65,4 +61,10 @@ public:
 	TArray<FTrackBlock> GetBlocks() const {	return Blocks; }
 
 	FVector GetWorldCenter() const { return WorldCenter; }
+	FGridCoord GetTileCoordinates(FVector WorldLocation);
+	FVector GetTileWorldLocation(FVector WorldLocation);
+	FVector GetTileWorldLocation(const FGridCoord& Coordinates);
+
+	bool CanBuildOn(FVector WorldLocation);
+	
 };

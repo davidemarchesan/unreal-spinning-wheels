@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "RaceController.h"
+#include "SpinningWheels/Actors/Blocks/Block.h"
 #include "SpinningWheels/Core/EditorBuildMenu.h"
 #include "EditorController.generated.h"
 
@@ -47,15 +48,15 @@ private:
 	void InputBuildCancel();
 	void InputBuildRotateBlock(const FInputActionValue& Value);
 
-	void PreviewBlock();
-
 	TWeakObjectPtr<AEditorPawn> EditorPawn;
 	TWeakObjectPtr<AEditorGameMode> GameMode;
 	TWeakObjectPtr<AEditorHUD> HUD;
 	TWeakObjectPtr<ATrackGrid> TrackGrid;
 
 	FName BlockToBuildName;
-	TSubclassOf<ABlock> BlockClass;
+
+	void PreviewBlock();
+	TWeakObjectPtr<ABlock> PreviewedBlock;
 
 	UFUNCTION()
 	void OnTrackGridReady(ATrackGrid* InTrackGrid);
@@ -84,7 +85,7 @@ protected:
 
 	bool bBuildMode = false;
 	
-	void EnterBuildMode(const FName& RowName);
+	void EnterBuildMode(const FName& RowName, const FBlockRow& BlockRow);
 	void ExitBuildMode();
 
 	//~ Begin AController Interface
