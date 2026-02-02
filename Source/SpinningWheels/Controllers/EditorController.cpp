@@ -22,14 +22,7 @@ void AEditorController::BeginPlay()
 	SetInputMode(FInputModeGameAndUI());
 
 	GameMode = GetWorld()->GetAuthGameMode<AEditorGameMode>();
-	if (GameMode.IsValid())
-	{
-		TrackGrid = GameMode->GetTrackGrid();
-		if (TrackGrid.IsValid() == false)
-		{
-			GameMode->OnTrackGridReady.AddDynamic(this, &AEditorController::OnTrackGridReady);
-		}
-	}
+	SetupTrackGrid();
 
 	HUD = GetHUD<AEditorHUD>();
 
@@ -52,6 +45,8 @@ void AEditorController::SetPawn(APawn* InPawn)
 		{
 			MainCamera->SetPawn(EditorPawn.Get());
 		}
+
+		MovePawnAtCenter();
 	}
 }
 
@@ -179,6 +174,18 @@ void AEditorController::DisableBuildInputMappingContext()
 	}
 }
 
+void AEditorController::SetupTrackGrid()
+{
+	if (GameMode.IsValid())
+	{
+		TrackGrid = GameMode->GetTrackGrid();
+		if (TrackGrid.IsValid() == false)
+		{
+			GameMode->OnTrackGridReady.AddDynamic(this, &AEditorController::OnTrackGridReady);
+		}
+	}
+}
+
 void AEditorController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -289,7 +296,22 @@ void AEditorController::OnTrackGridReady(ATrackGrid* InTrackGrid)
 	if (InTrackGrid)
 	{
 		TrackGrid = MakeWeakObjectPtr<ATrackGrid>(InTrackGrid);
+
+		if (TrackGrid.IsValid())
+		{
+			MovePawnAtCenter();
+		}
 	}
+}
+
+void AEditorController::MovePawnAtCenter()
+{
+	if (TrackGrid.IsValid() == false || EditorPawn.IsValid() == false)
+	{
+		return;
+	}
+
+	EditorPawn->SetActorLocation(TrackGrid->GetWorldCenter());
 }
 
 void AEditorController::SetupBuildMenu()

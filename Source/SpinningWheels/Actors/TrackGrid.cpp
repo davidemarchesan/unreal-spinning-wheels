@@ -156,10 +156,10 @@ void ATrackGrid::InitializeCollisionGrid()
 
 	// World X = Grid Y
 	// World Y = Grid X
-	const float GridXs = Cols * TileSize * 0.5f;
-	const float GridYs = Rows * TileSize * 0.5f;
+	const float CenterX = Cols * TileSize * 0.5f;
+	const float CenterY = Rows * TileSize * 0.5f;
 
-	WorldCenter = FVector (GridYs, GridXs, 0.f);
+	WorldCenter = FVector (CenterY, CenterX, 0.f);
 
 	SetActorLocation(WorldCenter);
 	

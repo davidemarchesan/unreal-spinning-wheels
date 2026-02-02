@@ -63,4 +63,6 @@ public:
 	void Build(const FName& BlockName, const FGridCoord& Coordinates);
 
 	TArray<FTrackBlock> GetBlocks() const {	return Blocks; }
+
+	FVector GetWorldCenter() const { return WorldCenter; }
 };

@@ -29,9 +29,7 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
-
-	TWeakObjectPtr<AEditorPawn> EditorPawn;
-
+	
 	void InputMoveCamera(const FInputActionValue& Value);
 	void InputRotateCamera(const FInputActionValue& Value);
 
@@ -51,6 +49,7 @@ private:
 
 	void PreviewBlock();
 
+	TWeakObjectPtr<AEditorPawn> EditorPawn;
 	TWeakObjectPtr<AEditorGameMode> GameMode;
 	TWeakObjectPtr<AEditorHUD> HUD;
 	TWeakObjectPtr<ATrackGrid> TrackGrid;
@@ -60,6 +59,8 @@ private:
 
 	UFUNCTION()
 	void OnTrackGridReady(ATrackGrid* InTrackGrid);
+
+	void MovePawnAtCenter();
 	
 protected:
 
@@ -74,9 +75,6 @@ protected:
 
 	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UBuildInputConfig> EditorBuildInputConfig;
-
-	// UPROPERTY(Category=Data, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
-	// TObjectPtr<UDataTable> BlocksTableData;
 	
 	UPROPERTY(Category=Data, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UEditorBuildMenuDataAsset> EditorBuildMenuData;
@@ -103,6 +101,8 @@ protected:
 	void DisableEditorInputMappingContext();
 	void EnableBuildInputMappingContext();
 	void DisableBuildInputMappingContext();
+
+	void SetupTrackGrid();
 
 public:
 

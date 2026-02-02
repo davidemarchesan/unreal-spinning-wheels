@@ -14,28 +14,27 @@ void AEditorGameMode::StartPlay()
 	if (TrackGrid.IsValid())
 	{
 
-		// Simulating a map load
-		const FString BaseDir = FPaths::ProjectUserDir() / TEXT("Tracks"); // User/Documents on Live
-		const FString FileName = TEXT("loadtest.json");
-		const FString FilePath = BaseDir / FileName;
-
-		if (FPaths::FileExists(FilePath))
-		{
-			FString OutString;
-			if (FFileHelper::LoadFileToString(OutString, *FilePath))
-			{
-				FTrackSaveData TrackSave;
-				if (FJsonObjectConverter::JsonObjectStringToUStruct(OutString, &TrackSave))
-				{
-					UE_LOG(LogTemp, Warning, TEXT("dunno how, but it works %s %s"), *TrackSave.Id.ToString(), *TrackSave.Name);
-					TrackGrid->Initialize(2, 3, TrackSave);
-				}
-			}
-		}
+		// Simulating a map load (it works)
+		// const FString BaseDir = FPaths::ProjectUserDir() / TEXT("Tracks"); // User/Documents on Live
+		// const FString FileName = TEXT("loadtest.json");
+		// const FString FilePath = BaseDir / FileName;
+		//
+		// if (FPaths::FileExists(FilePath))
+		// {
+		// 	FString OutString;
+		// 	if (FFileHelper::LoadFileToString(OutString, *FilePath))
+		// 	{
+		// 		FTrackSaveData TrackSave;
+		// 		if (FJsonObjectConverter::JsonObjectStringToUStruct(OutString, &TrackSave))
+		// 		{
+		// 			UE_LOG(LogTemp, Warning, TEXT("dunno how, but it works %s %s"), *TrackSave.Id.ToString(), *TrackSave.Name);
+		// 			TrackGrid->Initialize(2, 3, TrackSave);
+		// 		}
+		// 	}
+		// }
 		// End simulating a map load
 
-		// TrackGrid->Initialize(2, 3);
-		
+		TrackGrid->Initialize(2, 3);
 		OnTrackGridReady.Broadcast(TrackGrid.Get());
 	}
 }
