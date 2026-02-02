@@ -4,22 +4,28 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "SpinningWheels/Core/Grid.h"
+#include "SpinningWheels/Core/Track.h"
 #include "TrackGrid.generated.h"
 
 class UBoxComponent;
 class ABlock;
 
+UENUM()
+enum class ETileStatus : uint8
+{
+	TS_Free,
+	TS_Busy
+};
+
 UCLASS()
 class SPINNINGWHEELS_API ATrackGrid : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	ATrackGrid();
 
 private:
-
 	UPROPERTY(VisibleAnywhere, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UBoxComponent> BoxComponent;
 
@@ -32,6 +38,7 @@ private:
 	int32 TileSize = 1500;
 
 	TArray<TArray<ETileStatus>> Grid;
+	TArray<FTrackBlock> Blocks;
 
 	void InitializeLogicGrid();
 	void InitializeCollisionGrid();
@@ -40,14 +47,20 @@ private:
 
 	FGridCoord GetTileCoord(FVector WorldLocation);
 	FVector GetTileWorldLocation(FVector WorldLocation);
+	FVector GetTileWorldLocation(const FGridCoord& Coordinates);
 
 protected:
 	virtual void BeginPlay() override;
 
-public:	
+	UPROPERTY(Category=Data, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UDataTable> BlocksTable;
 
+public:
 	void Initialize(int32 InCols, int32 InRows);
+	void Initialize(int32 InCols, int32 InRows, const FTrackSaveData& TrackSaveData);
 
-	void Build(TSubclassOf<ABlock> BlockClass, FVector WorldLocation, FRotator Rotation);
+	void Build(const FName& BlockName, FVector WorldLocation, FRotator Rotation);
+	void Build(const FName& BlockName, const FGridCoord& Coordinates);
 
+	TArray<FTrackBlock> GetBlocks() const {	return Blocks; }
 };

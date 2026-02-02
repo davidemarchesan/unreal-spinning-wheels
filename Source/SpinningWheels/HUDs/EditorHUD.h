@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
 #include "SpinningWheels/Core/EditorBuildMenu.h"
+#include "UI/Slate/Overlays/Editor/EditorOverlay.h"
 #include "EditorHUD.generated.h"
 
 class AEditorController;
@@ -23,7 +24,10 @@ private:
 
 	/** Begin Pointers to overlays */
 	TSharedPtr<class SEditorBuildMenuOverlay> EditorBuildMenuOverlay;
+	TSharedPtr<class SEditorOverlay> EditorOverlay;
 	/** End Pointers to overlays */
+	
+	FReply OnSaveTrack(const FString& TrackName);
 
 protected:
 

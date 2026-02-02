@@ -4,18 +4,35 @@
 #include "EditorHUD.h"
 
 #include "SpinningWheels/Controllers/EditorController.h"
+#include "UI/Slate/Overlays/Editor/EditorOverlay.h"
 #include "UI/Slate/Overlays/EditorBuildMenu/EditorBuildMenuOverlay.h"
 
 void AEditorHUD::InitializeOverlays()
-{
-}
-
-void AEditorHUD::InitializeDelegates()
 {
 	if (GEngine == nullptr)
 	{
 		return;
 	}
+
+	EditorOverlay = SNew(SEditorOverlay)
+	.OnSaveTrack_Lambda([this](const FString& TrackName)
+	{
+		if (this)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("HUD lambda EditorOverlay OnSaveTrack_Lambda %s"), *TrackName);
+			return OnSaveTrack(TrackName);
+		}
+
+		return FReply::Unhandled();
+	});
+	if (EditorOverlay.IsValid())
+	{
+		GEngine->GameViewport->AddViewportWidgetContent(EditorOverlay.ToSharedRef());
+	}
+}
+
+void AEditorHUD::InitializeDelegates()
+{
 }
 
 void AEditorHUD::OnMenuSlotSelected(int8 Slot)
@@ -25,6 +42,18 @@ void AEditorHUD::OnMenuSlotSelected(int8 Slot)
 	{
 		EditorBuildMenuOverlay->OnMenuSlotSelected(Slot);
 	}
+}
+
+FReply AEditorHUD::OnSaveTrack(const FString& TrackName)
+{
+	UE_LOG(LogTemp, Warning, TEXT("HUD function EditorOverlay OnSaveTrack_Lambda %s"), *TrackName);
+
+	if (AEditorController* EditorController = Cast<AEditorController>(GetOwningPlayerController()))
+	{
+		EditorController->InputSaveTrack(TrackName);
+	}
+	
+	return FReply::Handled();
 }
 
 void AEditorHUD::BeginPlay()

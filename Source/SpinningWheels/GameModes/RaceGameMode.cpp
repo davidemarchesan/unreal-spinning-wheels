@@ -67,7 +67,8 @@ void ARaceGameMode::OnMatchStateSet()
 
 	if (MatchState == MatchState::EnteringMap)
 	{
-		CurrentTrack = FTrack("qwer-tyui-opas", "Track 1", 2); // todo: these are hard-coded test 
+		const FGuid NewGuid = FGuid::NewGuid();
+		CurrentTrack = FTrack(NewGuid, "Track 1", 2); // todo: these are hard-coded test 
 
 		if (ARaceGameState* RGS = GetGameState<ARaceGameState>())
 		{

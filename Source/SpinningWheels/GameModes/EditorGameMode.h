@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "SpinningWheels/Core/Track.h"
 #include "EditorGameMode.generated.h"
 
 class ATrackGrid;
@@ -19,6 +20,8 @@ private:
 
 	TWeakObjectPtr<ATrackGrid> TrackGrid;
 
+	FTrack CurrentTrack;
+	
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Classes)
@@ -30,5 +33,7 @@ public:
 
 	FOnTrackGridReadySignature OnTrackGridReady;
 	TWeakObjectPtr<ATrackGrid> GetTrackGrid() const { return TrackGrid; }
+
+	void SaveTrack(const FString& TrackName);
 	
 };

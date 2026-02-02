@@ -7,7 +7,6 @@
 #include "EnhancedInputSubsystems.h"
 #include "SpinningWheels/Actors/MainCamera.h"
 #include "SpinningWheels/Actors/TrackGrid.h"
-#include "SpinningWheels/Actors/Blocks/Block.h"
 #include "SpinningWheels/Core/EditorBuildMenu.h"
 #include "SpinningWheels/GameModes/EditorGameMode.h"
 #include "SpinningWheels/HUDs/EditorHUD.h"
@@ -22,8 +21,8 @@ void AEditorController::BeginPlay()
 	bShowMouseCursor = true;
 	SetInputMode(FInputModeGameAndUI());
 
-	HUD = GetHUD<AEditorHUD>();
-	if (AEditorGameMode* GameMode = GetWorld()->GetAuthGameMode<AEditorGameMode>())
+	GameMode = GetWorld()->GetAuthGameMode<AEditorGameMode>();
+	if (GameMode.IsValid())
 	{
 		TrackGrid = GameMode->GetTrackGrid();
 		if (TrackGrid.IsValid() == false)
@@ -31,6 +30,8 @@ void AEditorController::BeginPlay()
 			GameMode->OnTrackGridReady.AddDynamic(this, &AEditorController::OnTrackGridReady);
 		}
 	}
+
+	HUD = GetHUD<AEditorHUD>();
 
 	SetupBuildMenu();
 }
@@ -255,9 +256,9 @@ void AEditorController::InputBuildBlock()
 	FHitResult Hit;
 	if (GetHitResultUnderCursor(ECC_GameTraceChannel1, false, Hit))
 	{
-		if (TrackGrid.IsValid() && BlockClass)
+		if (TrackGrid.IsValid() && BlockToBuildName.IsValid())
 		{
-			TrackGrid->Build(BlockClass, Hit.ImpactPoint, FRotator::ZeroRotator);
+			TrackGrid->Build(BlockToBuildName, Hit.ImpactPoint, FRotator::ZeroRotator);
 		}
 	}
 }
@@ -281,12 +282,6 @@ void AEditorController::PreviewBlock()
 		return;
 	}
 	// todo: to preview
-
-	// FHitResult Hit;
-	// if (GetHitResultUnderCursor(ECC_Camera, false, Hit))
-	// {
-	// 	// UE_LOG(LogTemp, Warning, TEXT("Cursor hit %s"), *Hit.ImpactPoint.ToString());
-	// }
 }
 
 void AEditorController::OnTrackGridReady(ATrackGrid* InTrackGrid)
@@ -327,17 +322,28 @@ void AEditorController::InputSlot(int8 Slot)
 			}
 			else if (Item.BlocksTableRow.IsNull() == false)
 			{
-				if (FBlockRow* BlockRow = Item.BlocksTableRow.GetRow<FBlockRow>("Block Class"))
-				{
-					EnterBuildMode(BlockRow->BlockClass);
-					UE_LOG(LogTemp, Warning, TEXT("it's a block %s, entering build mode"), *BlockRow->Name.ToString());
-				}
+					EnterBuildMode(Item.BlocksTableRow.RowName);
+					UE_LOG(LogTemp, Warning, TEXT("it's a block %s, entering build mode"), *Item.BlocksTableRow.RowName.ToString());
+				// if (FBlockRow* BlockRow = Item.BlocksTableRow.GetRow<FBlockRow>("Block Class"))
+				// {
+				// 	Item.BlocksTableRow.RowName
+				// }
 			}
 		}
 	}
 }
 
-void AEditorController::EnterBuildMode(TSubclassOf<ABlock> NewBlockClass)
+void AEditorController::InputSaveTrack(const FString& TrackName)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Controller input save track %s"), *TrackName);
+
+	if (GameMode.IsValid())
+	{
+		GameMode->SaveTrack(TrackName);
+	}
+}
+
+void AEditorController::EnterBuildMode(const FName& RowName)
 {
 	if (TrackGrid.IsValid() == false)
 	{
@@ -350,7 +356,8 @@ void AEditorController::EnterBuildMode(TSubclassOf<ABlock> NewBlockClass)
 		EnableBuildInputMappingContext();
 	}
 
-	BlockClass = NewBlockClass;
+	BlockToBuildName = RowName;
+	// BlockClass = NewBlockClass;
 }
 
 void AEditorController::ExitBuildMode()

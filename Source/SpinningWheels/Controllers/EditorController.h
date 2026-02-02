@@ -12,6 +12,7 @@ class UEditorInputConfig;
 class UBuildInputConfig;
 class UEditorBuildMenu;
 class AEditorPawn;
+class AEditorGameMode;
 class AEditorHUD;
 class ATrackGrid;
 class ABlock;
@@ -50,9 +51,11 @@ private:
 
 	void PreviewBlock();
 
+	TWeakObjectPtr<AEditorGameMode> GameMode;
 	TWeakObjectPtr<AEditorHUD> HUD;
 	TWeakObjectPtr<ATrackGrid> TrackGrid;
 
+	FName BlockToBuildName;
 	TSubclassOf<ABlock> BlockClass;
 
 	UFUNCTION()
@@ -83,7 +86,7 @@ protected:
 
 	bool bBuildMode = false;
 	
-	void EnterBuildMode(TSubclassOf<ABlock> NewBlockClass);
+	void EnterBuildMode(const FName& RowName);
 	void ExitBuildMode();
 
 	//~ Begin AController Interface
@@ -108,5 +111,6 @@ public:
 	void SetTrackGrid(const TWeakObjectPtr<ATrackGrid> InTrackGrid) { TrackGrid = InTrackGrid;};
 	
 	void InputSlot(int8 Slot);
+	void InputSaveTrack(const FString& TrackName);
 	
 };
