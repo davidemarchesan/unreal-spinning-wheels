@@ -16,7 +16,7 @@ void AEditorGameMode::StartPlay()
 
 		// Simulating a map load (it works)
 		// const FString BaseDir = FPaths::ProjectUserDir() / TEXT("Tracks"); // User/Documents on Live
-		// const FString FileName = TEXT("loadtest.json");
+		// const FString FileName = TEXT("rotation.json");
 		// const FString FilePath = BaseDir / FileName;
 		//
 		// if (FPaths::FileExists(FilePath))

@@ -95,15 +95,26 @@ void ATrackGrid::Initialize(int32 InCols, int32 InRows, const FTrackSaveData& Tr
 
 void ATrackGrid::Build(const FName& BlockName, FVector WorldLocation, FRotator Rotation)
 {
-	const FGridCoord GridCoord = GetTileCoordinates(WorldLocation);
+	FGridCoord Coordinates = GetTileCoordinates(WorldLocation);
+	Coordinates.R = FMath::RoundToInt32(Rotation.Yaw);
 
-	// Avoid to build on an already occupied tile
-	if (Grid[GridCoord.X][GridCoord.Y] == ETileStatus::TS_Busy)
+	if (Grid.IsValidIndex(Coordinates.X) == false)
 	{
 		return;
 	}
 
-	Build(BlockName, GridCoord);
+	if (Grid[Coordinates.X].IsValidIndex(Coordinates.Y) == false)
+	{
+		return;
+	}
+	
+	// Avoid to build on an already occupied tile
+	if (Grid[Coordinates.X][Coordinates.Y] == ETileStatus::TS_Busy)
+	{
+		return;
+	}
+
+	Build(BlockName, Coordinates);
 	
 }
 
@@ -120,7 +131,8 @@ void ATrackGrid::Build(const FName& BlockName, const FGridCoord& Coordinates)
 		if (UWorld* World = GetWorld())
 		{
 			FVector Location = GetTileWorldLocation(Coordinates);
-			ABlock* NewBlock = World->SpawnActor<ABlock>(BlockClass, Location, FRotator::ZeroRotator);
+			FRotator Rotation = FRotator(0.f, Coordinates.R, 0.f);
+			ABlock* NewBlock = World->SpawnActor<ABlock>(BlockClass, Location, Rotation);
 
 			Grid[Coordinates.X][Coordinates.Y] = ETileStatus::TS_Busy;
 

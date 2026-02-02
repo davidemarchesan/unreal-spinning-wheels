@@ -16,12 +16,25 @@ public:
 	UPROPERTY()
 	int32 Y = 0;
 
+	UPROPERTY()
+	int32 R = 0;
+
 	FGridCoord() = default;
 
 	FGridCoord(int32 InX, int32 InY)
 		: X(InX), Y(InY)
 	{
 	}
+
+	FGridCoord(int32 InX, int32 InY, int32 InR)
+		: X(InX), Y(InY), R(InR)
+	{
+	}
+
+	FORCEINLINE FString ToString() const
+	{
+		return FString::Printf(TEXT("X:%d Y:%d R:%d"), X, Y, R);
+	};
 };
 
 USTRUCT()

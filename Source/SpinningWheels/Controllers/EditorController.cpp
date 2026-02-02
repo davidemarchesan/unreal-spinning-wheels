@@ -259,12 +259,17 @@ void AEditorController::InputSlot9()
 
 void AEditorController::InputBuildBlock()
 {
+	if (bBuildMode == false)
+	{
+		return;
+	}
+	
 	FHitResult Hit;
 	if (GetHitResultUnderCursor(ECC_GameTraceChannel1, false, Hit))
 	{
-		if (TrackGrid.IsValid() && BlockToBuildName.IsValid())
+		if (TrackGrid.IsValid() && BlockToBuildName.IsValid() && PreviewedBlock.IsValid())
 		{
-			TrackGrid->Build(BlockToBuildName, Hit.ImpactPoint, FRotator::ZeroRotator);
+			TrackGrid->Build(BlockToBuildName, Hit.ImpactPoint, PreviewedBlock->GetActorRotation());
 		}
 	}
 }
@@ -278,7 +283,14 @@ void AEditorController::InputBuildCancel()
 void AEditorController::InputBuildRotateBlock(const FInputActionValue& Value)
 {
 	FVector2D InputVector = Value.Get<FVector2D>();
-	UE_LOG(LogTemp, Warning, TEXT("AEditorController::InputBuildRotateBlock() %s"), *InputVector.ToString());
+
+	if (PreviewedBlock.IsValid() && PreviewedBlock->IsActorBeingDestroyed() == false)
+	{
+		const float Rotation = InputVector.X * -1;
+
+		FRotator CurrentRotation = PreviewedBlock->GetActorRotation();
+		PreviewedBlock->SetActorRotation(FRotator(CurrentRotation.Pitch, CurrentRotation.Yaw + Rotation * 90.f, CurrentRotation.Roll));
+	}
 }
 
 void AEditorController::PreviewBlock()
