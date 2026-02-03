@@ -111,6 +111,8 @@ public:
 	FOnMenuSlotSelectedSignature OnMenuSlotSelected;
 	FOnExitBuildModeSignature OnExitBuildMode;
 
+	FEditorBuildMenu GetCurrentActiveMenu() const { return CurrentActiveMenu; };
+
 	void SetTrackGrid(const TWeakObjectPtr<ATrackGrid> InTrackGrid) { TrackGrid = InTrackGrid;};
 	
 	void InputSlot(int8 Slot);

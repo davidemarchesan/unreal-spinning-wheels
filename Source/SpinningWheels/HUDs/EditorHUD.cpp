@@ -4,8 +4,19 @@
 #include "EditorHUD.h"
 
 #include "SpinningWheels/Controllers/EditorController.h"
-#include "UI/Slate/Overlays/Editor/EditorOverlay.h"
+#include "UI/Slate/Overlays/EditorActions/EditorActionsOverlay.h"
 #include "UI/Slate/Overlays/EditorBuildMenu/EditorBuildMenuOverlay.h"
+#include "UI/Slate/Styles/MainStyle.h"
+
+void AEditorHUD::BeginPlay()
+{
+	Super::BeginPlay();
+
+	EditorController = Cast<AEditorController>(GetOwningPlayerController());
+
+	InitializeOverlays();
+	InitializeDelegates();
+}
 
 void AEditorHUD::InitializeOverlays()
 {
@@ -14,7 +25,45 @@ void AEditorHUD::InitializeOverlays()
 		return;
 	}
 
-	EditorOverlay = SNew(SEditorOverlay)
+	RootOverlay = SNew(SOverlay)
+		.Visibility(EVisibility::SelfHitTestInvisible);
+	if (RootOverlay.IsValid() == false)
+	{
+		return;
+	}
+
+	RootCanvas = SNew(SConstraintCanvas);
+	if (RootCanvas.IsValid() == false)
+	{
+		return;
+	}
+
+	RootOverlay->AddSlot()
+	           .Padding(FMainStyle::Get().GetMargin("Padding.SafeArea"))
+	[
+		RootCanvas.ToSharedRef()
+	];
+
+	GEngine->GameViewport->AddViewportWidgetContent(RootOverlay.ToSharedRef());
+
+	InitializeOverlayEditorActions();
+	InitializeOverlayBuildMenu();
+}
+
+void AEditorHUD::InitializeOverlayEditorActions()
+{
+	if (RootCanvas.IsValid() == false)
+	{
+		return;
+	}
+
+	// Bottom right: editor buttons
+	RootCanvas->AddSlot()
+	          .Anchors(FAnchors(1.f, 1.f))
+	          .Alignment(FVector2D(1.f, 1.f))
+	          .AutoSize(true)
+	[
+		SAssignNew(EditorActionsOverlay, SEditorActionsOverlay)
 		.OnSaveTrack_Lambda([this](const FString& TrackName)
 		{
 			if (this)
@@ -23,11 +72,54 @@ void AEditorHUD::InitializeOverlays()
 			}
 
 			return FReply::Unhandled();
-		});
-	if (EditorOverlay.IsValid())
+		})
+	];
+}
+
+void AEditorHUD::InitializeOverlayBuildMenu()
+{
+	if (RootCanvas.IsValid() == false || EditorController.IsValid() == false)
 	{
-		GEngine->GameViewport->AddViewportWidgetContent(EditorOverlay.ToSharedRef());
+		return;
 	}
+
+	const FEditorBuildMenu CurrentActiveMenu = EditorController->GetCurrentActiveMenu();
+
+	EditorBuildMenuOverlay = SNew(SEditorBuildMenuOverlay)
+		.Menu(CurrentActiveMenu)
+		.OnMenuSelected_Lambda([this](UEditorBuildMenuDataAsset* Menu)
+		{
+			if (this && Menu)
+			{
+				return OnMenuSelected(Menu);
+			}
+
+			return FReply::Unhandled();
+		})
+		.OnBlockSelected_Lambda([this](const int8 Slot)
+		{
+			if (this)
+			{
+				return OnBlockSelected(Slot);
+			}
+
+			return FReply::Unhandled();
+		});
+
+	if (EditorBuildMenuOverlay.IsValid())
+	{
+		// Bottom center: build menu
+		RootCanvas->AddSlot()
+		          .Anchors(FAnchors(0.5f, 1.f))
+		          .Alignment(FVector2D(.5f, 1.f))
+		          .AutoSize(true)
+		[
+			EditorBuildMenuOverlay.ToSharedRef()
+		];
+	}
+
+	EditorController->OnMenuSlotSelected.AddDynamic(this, &AEditorHUD::OnMenuSlotSelected);
+	EditorController->OnExitBuildMode.AddDynamic(this, &AEditorHUD::OnExitBuildMode);
 }
 
 void AEditorHUD::InitializeDelegates()
@@ -76,59 +168,4 @@ FReply AEditorHUD::OnBlockSelected(const int8 Slot)
 		EditorController->InputSlot(Slot);
 	}
 	return FReply::Handled();
-}
-
-void AEditorHUD::BeginPlay()
-{
-	Super::BeginPlay();
-
-	InitializeOverlays();
-	InitializeDelegates();
-}
-
-void AEditorHUD::InitializeBuildMenu(AEditorController* Controller, const FEditorBuildMenu& CurrentActiveMenu)
-{
-
-	if (Controller == nullptr)
-	{
-		return;
-	}
-
-	EditorController = Controller;
-	
-	if (GEngine == nullptr)
-	{
-		return;
-	}
-
-	EditorBuildMenuOverlay = SNew(SEditorBuildMenuOverlay)
-		.Menu(CurrentActiveMenu)
-		.OnMenuSelected_Lambda([this](UEditorBuildMenuDataAsset* Menu)
-		{
-			if (this && Menu)
-			{
-				return OnMenuSelected(Menu);
-			}
-
-			return FReply::Unhandled();
-		})
-		.OnBlockSelected_Lambda([this](const int8 Slot)
-		{
-			if (this)
-			{
-				return OnBlockSelected(Slot);
-			}
-
-			return FReply::Unhandled();
-		});
-	if (EditorBuildMenuOverlay.IsValid())
-	{
-		GEngine->GameViewport->AddViewportWidgetContent(EditorBuildMenuOverlay.ToSharedRef(), 5);
-	}
-
-	if (Controller)
-	{
-		Controller->OnMenuSlotSelected.AddDynamic(this, &AEditorHUD::OnMenuSlotSelected);
-		Controller->OnExitBuildMode.AddDynamic(this, &AEditorHUD::OnExitBuildMode);
-	}
 }

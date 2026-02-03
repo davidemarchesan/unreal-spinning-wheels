@@ -2,10 +2,10 @@
 
 DECLARE_DELEGATE_RetVal_OneParam(FReply, FOnSaveTrack, const FString& Name)
 
-class SEditorOverlay : public SCompoundWidget
+class SEditorActionsOverlay : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SEditorOverlay)
+	SLATE_BEGIN_ARGS(SEditorActionsOverlay)
 		{
 		}
 

@@ -350,11 +350,6 @@ void AEditorController::SetupBuildMenu()
 	if (EditorBuildMenuData)
 	{
 		CurrentActiveMenu = FEditorBuildMenu(EditorBuildMenuData);
-
-		if (HUD.IsValid())
-		{
-			HUD->InitializeBuildMenu(this, CurrentActiveMenu);
-		}
 	}
 }
 

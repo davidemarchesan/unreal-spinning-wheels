@@ -9,34 +9,27 @@ void SEditorBuildMenuOverlay::Construct(const FArguments& InArgs)
 	OnBlockSelected = InArgs._OnBlockSelected;
 
 	ChildSlot[
-		SNew(SOverlay)
 
-		+ SOverlay::Slot()
-		.VAlign(VAlign_Bottom)
-		.HAlign(HAlign_Fill)
-		.Padding(20.f)
-		[
-			SAssignNew(EditorBuildMenu, SEditorBuildMenu)
-			.OnMenuSelected_Lambda([this](UEditorBuildMenuDataAsset* Menu)
+		SAssignNew(EditorBuildMenu, SEditorBuildMenu)
+		.OnMenuSelected_Lambda([this](UEditorBuildMenuDataAsset* Menu)
+		{
+			if (this && Menu && OnMenuSelected.IsBound())
 			{
-				if (this && Menu && OnMenuSelected.IsBound())
-				{
-					FReply Reply = OnMenuSelected.Execute(Menu);
-					return Reply;
-				}
-				return FReply::Unhandled();
-			})
-			.OnBlockSelected_Lambda([this](const int8 Slot)
+				FReply Reply = OnMenuSelected.Execute(Menu);
+				return Reply;
+			}
+			return FReply::Unhandled();
+		})
+		.OnBlockSelected_Lambda([this](const int8 Slot)
+		{
+			if (this && OnBlockSelected.IsBound())
 			{
-				if (this && OnBlockSelected.IsBound())
-				{
-					FReply Reply = OnBlockSelected.Execute(Slot);
-					return Reply;
-				}
-				return FReply::Unhandled();
-			})
-			.Menu(Menu)
-		]
+				FReply Reply = OnBlockSelected.Execute(Slot);
+				return Reply;
+			}
+			return FReply::Unhandled();
+		})
+		.Menu(Menu)
 	];
 }
 

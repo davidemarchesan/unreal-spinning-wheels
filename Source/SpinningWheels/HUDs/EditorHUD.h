@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
 #include "SpinningWheels/Core/EditorBuildMenu.h"
-#include "UI/Slate/Overlays/Editor/EditorOverlay.h"
+#include "Widgets/Layout/SConstraintCanvas.h"
 #include "EditorHUD.generated.h"
 
 class AEditorController;
@@ -20,14 +20,20 @@ private:
 	TWeakObjectPtr<AEditorController> EditorController;
 	
 	void InitializeOverlays();
+	void InitializeOverlayEditorActions();
+	void InitializeOverlayBuildMenu();
+	
 	void InitializeDelegates();
 
 	UFUNCTION() void OnMenuSlotSelected(int8 Slot);
 	UFUNCTION() void OnExitBuildMode();
 
 	/** Begin Pointers to overlays */
+	TSharedPtr<SOverlay> RootOverlay;
+	TSharedPtr<SConstraintCanvas> RootCanvas;
+	
 	TSharedPtr<class SEditorBuildMenuOverlay> EditorBuildMenuOverlay;
-	TSharedPtr<class SEditorOverlay> EditorOverlay;
+	TSharedPtr<class SEditorActionsOverlay> EditorActionsOverlay;
 	/** End Pointers to overlays */
 	
 	FReply OnSaveTrack(const FString& TrackName);
@@ -39,7 +45,5 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-
-	void InitializeBuildMenu(AEditorController* Controller, const FEditorBuildMenu& CurrentActiveMenu);
 	
 };

@@ -25,14 +25,9 @@ void FMainStyle::Initialize()
 	// InitializeIcons();
 	InitializeBrushes();
 	// InitializeButtons();
+	InitializeConstants();
 
 	FSlateStyleRegistry::RegisterSlateStyle(*StyleInstance);
-
-	UE_LOG(LogTemp, Warning, TEXT("Slate style is initialized"));
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, "Slate style initialize");
-	}
 }
 
 void FMainStyle::Shutdown()
@@ -42,11 +37,6 @@ void FMainStyle::Shutdown()
 		FSlateStyleRegistry::UnRegisterSlateStyle(*StyleInstance);
 		ensure(StyleInstance.IsUnique());
 		StyleInstance.Reset();
-
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, "Slate style shutdown");
-		}
 	}
 }
 
@@ -137,4 +127,12 @@ void FMainStyle::InitializeBrushes()
 	StyleInstance->Set("Brush.Background.Light", new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.AlabasterGrey"), 12.f));
 	StyleInstance->Set("Brush.Background.Dark", new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.CharcoalBlue"), 12.f));
 	StyleInstance->Set("Brush.Background.Black", new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Primary.Dark"), 12.f));
+}
+
+void FMainStyle::InitializeConstants()
+{
+
+	// Paddings
+	StyleInstance->Set("Padding.SafeArea", FMargin(40.f));
+	
 }
