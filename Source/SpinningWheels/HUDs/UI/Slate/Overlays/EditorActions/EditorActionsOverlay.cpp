@@ -13,14 +13,10 @@ void SEditorActionsOverlay::Construct(const FArguments& InArgs)
 		+ SVerticalBox::Slot()
 		[
 			SNew(SButton)
-			.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Primary"))
+			.Text(FText::FromString("Save track"))
 			.OnClicked(this, &SEditorActionsOverlay::ExecuteSaveTrack)
-			[
-				SNew(STextBlock)
-				.Text(FText::FromString("Save track"))
-				.Font(FMainStyle::Get().GetFontStyle("Font.Orbitron.Medium.h4"))
-				.Justification(ETextJustify::Center)
-			]
+			.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Primary.Yellow"))
+			.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.Button.Primary.Yellow"))
 		]
 
 	];

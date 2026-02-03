@@ -7,24 +7,27 @@ void SSaveTrackPopup::Construct(const FArguments& InArgs)
 	OnConfirmSaveTrack = InArgs._OnConfirmSaveTrack;
 	OnCancelSaveTrack = InArgs._OnCancelSaveTrack;
 
+	Temp = FTextBlockStyle();
+	Temp.SetColorAndOpacity(FMainStyle::Get().GetColor("Color.Text.Light.Primary"));
+	Temp.SetFont(FMainStyle::Get().GetFontStyle("Font.Funnel.Regular.h4"));
+
 	ChildSlot[
 
 		SAssignNew(MainBox, SBox)
-		.Visibility(EVisibility::Collapsed)
+		// .Visibility(EVisibility::Collapsed)
 		.MinDesiredWidth(300.f)
 		[
 			SNew(SBorder)
-			.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Black"))
-			.Padding(FMargin(10.f))
+			.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Dark"))
+			.Padding(FMainStyle::Get().GetMargin("Padding.Box"))
 			[
 				SNew(SVerticalBox)
 
 				+ SVerticalBox::Slot()
 				[
 					SNew(STextBlock)
-					.Font(FMainStyle::Get().GetFontStyle("Font.Roboto.Regular.h4"))
-					.ColorAndOpacity(FMainStyle::Get().GetColor("Color.Primary.Light"))
 					.Text(FText::FromString("Track name"))
+					.TextStyle(&Temp)
 				]
 
 				+ SVerticalBox::Slot()

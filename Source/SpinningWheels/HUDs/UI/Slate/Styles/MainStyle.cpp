@@ -24,6 +24,7 @@ void FMainStyle::Initialize()
 	InitializeFonts();
 	// InitializeIcons();
 	InitializeBrushes();
+	InitializeTextStyles();
 	InitializeButtons();
 	InitializeConstants();
 
@@ -54,42 +55,53 @@ void FMainStyle::InitializeColors()
 	const FColor PacificBlue = FColor::FromHex("58A4B0");
 	const FColor CharcoalBlue = FColor::FromHex("373F51");
 	const FColor PowderBlush = FColor::FromHex("DAA49A");
-	
+
 	StyleInstance->Set("Color.AlabasterGrey", FLinearColor(AlabasterGrey));
 	StyleInstance->Set("Color.PowderBlue", FLinearColor(PowderBlue));
 	StyleInstance->Set("Color.PacificBlue", FLinearColor(PacificBlue));
 	StyleInstance->Set("Color.CharcoalBlue", FLinearColor(CharcoalBlue));
 	StyleInstance->Set("Color.PowderBlush", FLinearColor(PowderBlush));
-	
+
 	StyleInstance->Set("Color.Primary.Light", FLinearColor(FColor::FromHex("F5F5F5")));
 	StyleInstance->Set("Color.Primary.Dark", FLinearColor(FColor::FromHex("333333")));
+
 
 	StyleInstance->Set("Color.Time.Purple", FLinearColor(FColor::FromHex("B64CFF")));
 	StyleInstance->Set("Color.Time.Green", FLinearColor(FColor::FromHex("00E676")));
 	StyleInstance->Set("Color.Time.Red", FLinearColor(FColor::FromHex("FF3B30")));
+
+	// New ones
+	StyleInstance->Set("Color.Yellow.Primary", FLinearColor(FColor::FromHex("FFE04D")));
+	StyleInstance->Set("Color.Yellow.Secondary", FLinearColor(FColor::FromHex("FFD400")));
+	StyleInstance->Set("Color.Yellow.Tertiary", FLinearColor(FColor::FromHex("E6BF00")));
+
+	StyleInstance->Set("Color.Black.Primary", FLinearColor(FColor::FromHex("1A1A1A")));
+	StyleInstance->Set("Color.Black.Secondary", FLinearColor(FColor::FromHex("0B0B0B")));
+	StyleInstance->Set("Color.Black.Tertiary", FLinearColor(FColor::FromHex("2A2A2A")));
+
+	StyleInstance->Set("Color.Text.Light.Primary", FLinearColor(FColor::FromHex("F5F5F5")));
+	StyleInstance->Set("Color.Text.Light.Secondary", FLinearColor(FColor::FromHex("BDBDBD")));
+
+	StyleInstance->Set("Color.Text.Dark.Primary", FLinearColor(FColor::FromHex("1A1A1A")));
+	StyleInstance->Set("Color.Text.Dark.Secondary", FLinearColor(FColor::FromHex("4A4A4A")));
+	
+	StyleInstance->Set("Color.Background.Dark", FLinearColor(FColor::FromHex("141414")));
 }
 
 void FMainStyle::InitializeFonts()
 {
 	const TArray<FStyleFontData> StyleFonts = {
+		// Funnel Sans - Standard
 		FStyleFontData(
-			"Roboto.Regular",
-			"/Game/Assets/Fonts/Roboto/Roboto-Regular_Font.Roboto-Regular_Font"
+			"Funnel.Regular",
+			"/Game/Assets/Fonts/Funnel/FunnelSans-Regular.FunnelSans-Regular"
 		),
 		FStyleFontData(
-			"Roboto.SemiBold",
-			"/Game/Assets/Fonts/Roboto/Roboto-SemiBold_Font.Roboto-SemiBold_Font"
+			"Funnel.SemiBold.Italic",
+			"/Game/Assets/Fonts/Funnel/FunnelSans-SemiBoldItalic_Font.FunnelSans-SemiBoldItalic_Font"
 		),
-		
-		FStyleFontData(
-			"Lato.Regular",
-			"/Game/Assets/Fonts/Lato/Lato-Regular_Font.Lato-Regular_Font"
-		),
-		FStyleFontData(
-			"Lato.Bold",
-			"/Game/Assets/Fonts/Lato/Lato-Bold_Font.Lato-Bold_Font"
-		),
-		
+
+		// JetBrains - mono
 		FStyleFontData(
 			"JetBrains.Regular",
 			"/Game/Assets/Fonts/JetBrainsMono/JetBrainsMono-Regular_Font.JetBrainsMono-Regular_Font"
@@ -97,33 +109,7 @@ void FMainStyle::InitializeFonts()
 		FStyleFontData(
 			"JetBrains.Bold",
 			"/Game/Assets/Fonts/JetBrainsMono/JetBrainsMono-Bold_Font.JetBrainsMono-Bold_Font"
-		),
-
-		// Orbitron
-		FStyleFontData(
-			"Orbitron.Regular",
-			"/Game/Assets/Fonts/Orbitron/Orbitron-Regular_Font.Orbitron-Regular_Font"
-		),
-		FStyleFontData(
-			"Orbitron.Medium",
-			"/Game/Assets/Fonts/Orbitron/Orbitron-Medium_Font.Orbitron-Medium_Font"
-		),
-		FStyleFontData(
-			"Orbitron.SemiBold",
-			"/Game/Assets/Fonts/Orbitron/Orbitron-SemiBold_Font.Orbitron-SemiBold_Font"
-		),
-		FStyleFontData(
-			"Orbitron.Bold",
-			"/Game/Assets/Fonts/Orbitron/Orbitron-Bold_Font.Orbitron-Bold_Font"
-		),
-		FStyleFontData(
-			"Orbitron.ExtraBold",
-			"/Game/Assets/Fonts/Orbitron/Orbitron-ExtraBold_Font.Orbitron-ExtraBold_Font"
-		),
-		FStyleFontData(
-			"Orbitron.Black",
-			"/Game/Assets/Fonts/Orbitron/Orbitron-Black_Font.Orbitron-Black_Font"
-		),
+		)
 	};
 
 	const TMap<FString, float> FontSizes = {
@@ -152,34 +138,39 @@ void FMainStyle::InitializeFonts()
 
 void FMainStyle::InitializeBrushes()
 {
-	StyleInstance->Set("Brush.Background.Light", new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.AlabasterGrey"), 12.f));
-	StyleInstance->Set("Brush.Background.Dark", new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.CharcoalBlue"), 12.f));
-	StyleInstance->Set("Brush.Background.Black", new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Primary.Dark"), 12.f));
+	StyleInstance->Set("Brush.Background.Light",
+	                   new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.AlabasterGrey"), 12.f));
+	StyleInstance->Set("Brush.Background.Dark",
+	                   new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Background.Black"), 12.f));
+}
+
+void FMainStyle::InitializeTextStyles()
+{
+	FTextBlockStyle ButtonPrimaryYellowTextStyle = FTextBlockStyle();
+	ButtonPrimaryYellowTextStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.SemiBold.Italic.h4"));
+	ButtonPrimaryYellowTextStyle.SetTransformPolicy(ETextTransformPolicy::ToUpper);
+	ButtonPrimaryYellowTextStyle.SetColorAndOpacity(StyleInstance->GetColor("Color.Black.Secondary"));
+
+	StyleInstance->Set("Text.Button.Primary.Yellow", ButtonPrimaryYellowTextStyle);
+
 }
 
 void FMainStyle::InitializeButtons()
 {
-
-	FButtonStyle ButtonPrimaryStyle = FButtonStyle();
-	ButtonPrimaryStyle.SetNormal(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.PacificBlue"), 12.f));
-	ButtonPrimaryStyle.SetHovered(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.PowderBlue"), 12.f));
-	ButtonPrimaryStyle.SetPressed(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.PowderBlue"), 12.f));
-
-	ButtonPrimaryStyle.SetNormalForeground(StyleInstance->GetColor("Color.Primary.Dark"));
-	ButtonPrimaryStyle.SetHoveredForeground(StyleInstance->GetColor("Color.Primary.Dark"));
-	ButtonPrimaryStyle.SetPressedForeground(StyleInstance->GetColor("Color.Primary.Dark"));
+	FButtonStyle ButtonPrimaryYellowStyle = FButtonStyle();
+	ButtonPrimaryYellowStyle.SetNormal(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Yellow.Secondary"), 12.f));
+	ButtonPrimaryYellowStyle.SetHovered(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Yellow.Primary"), 12.f));
+	ButtonPrimaryYellowStyle.SetPressed(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Yellow.Tertiary"), 12.f));
 	
-	ButtonPrimaryStyle.SetNormalPadding(FMargin(15.f, 5.f));
-	ButtonPrimaryStyle.SetPressedPadding(FMargin(15.f, 5.f));
+	ButtonPrimaryYellowStyle.SetNormalPadding(FMargin(15.f, 5.f));
+	ButtonPrimaryYellowStyle.SetPressedPadding(FMargin(15.f, 5.f));
 
-	StyleInstance->Set("Button.Primary", ButtonPrimaryStyle);
-	
+	StyleInstance->Set("Button.Primary.Yellow", ButtonPrimaryYellowStyle);
 }
 
 void FMainStyle::InitializeConstants()
 {
-
 	// Paddings
 	StyleInstance->Set("Padding.SafeArea", FMargin(40.f));
-	
+	StyleInstance->Set("Padding.Box", FMargin(15.f));
 }
