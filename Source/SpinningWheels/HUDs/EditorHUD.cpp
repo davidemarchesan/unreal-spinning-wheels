@@ -5,6 +5,7 @@
 
 #include "SpinningWheels/Controllers/EditorController.h"
 #include "UI/Slate/Overlays/EditorActions/EditorActionsOverlay.h"
+#include "UI/Slate/Overlays/EditorActions/SaveTrackPopup.h"
 #include "UI/Slate/Overlays/EditorBuildMenu/EditorBuildMenuOverlay.h"
 #include "UI/Slate/Styles/MainStyle.h"
 
@@ -48,6 +49,7 @@ void AEditorHUD::InitializeOverlays()
 
 	InitializeOverlayEditorActions();
 	InitializeOverlayBuildMenu();
+	InitializeOverlaySavePopup();
 }
 
 void AEditorHUD::InitializeOverlayEditorActions()
@@ -64,11 +66,11 @@ void AEditorHUD::InitializeOverlayEditorActions()
 	          .AutoSize(true)
 	[
 		SAssignNew(EditorActionsOverlay, SEditorActionsOverlay)
-		.OnSaveTrack_Lambda([this](const FString& TrackName)
+		.OnSaveTrack_Lambda([this]()
 		{
 			if (this)
 			{
-				return OnSaveTrack(TrackName);
+				return OnSaveTrack();
 			}
 
 			return FReply::Unhandled();
@@ -122,6 +124,40 @@ void AEditorHUD::InitializeOverlayBuildMenu()
 	EditorController->OnExitBuildMode.AddDynamic(this, &AEditorHUD::OnExitBuildMode);
 }
 
+void AEditorHUD::InitializeOverlaySavePopup()
+{
+	if (RootCanvas.IsValid() == false)
+	{
+		return;
+	}
+
+	// Bottom right: editor buttons
+	RootCanvas->AddSlot()
+	          .Anchors(FAnchors(.5f, .5f))
+	          .Alignment(FVector2D(.5f, .5f))
+	          .AutoSize(true)
+	[
+		SAssignNew(SaveTrackPopup, SSaveTrackPopup)
+		.OnConfirmSaveTrack_Lambda([this](const FString& TrackName)
+		{
+			if (this)
+			{
+				OnConfirmSaveTrack(TrackName);
+			}
+			return FReply::Handled();
+		})
+		.OnCancelSaveTrack_Lambda([this]()
+		{
+			if (this)
+			{
+				OnCancelSaveTrack();
+			}
+
+			return FReply::Handled();
+		})
+	];
+}
+
 void AEditorHUD::InitializeDelegates()
 {
 }
@@ -142,13 +178,39 @@ void AEditorHUD::OnExitBuildMode()
 	}
 }
 
-FReply AEditorHUD::OnSaveTrack(const FString& TrackName)
+FReply AEditorHUD::OnSaveTrack()
+{
+	UE_LOG(LogTemp, Warning, TEXT("HUD save track, opening poupup"));
+
+	if (SaveTrackPopup.IsValid())
+	{
+		SaveTrackPopup->Show();
+	}
+	// get current name from controller
+	// show popup with current name (if an edited track)
+	return FReply::Handled();
+}
+
+FReply AEditorHUD::OnConfirmSaveTrack(const FString& TrackName)
 {
 	if (EditorController.IsValid())
 	{
 		EditorController->InputSaveTrack(TrackName);
 	}
+	if (SaveTrackPopup.IsValid())
+	{
+		SaveTrackPopup->Hide();
+	}
 
+	return FReply::Handled();
+}
+
+FReply AEditorHUD::OnCancelSaveTrack()
+{
+	if (SaveTrackPopup.IsValid())
+	{
+		SaveTrackPopup->Hide();
+	}
 	return FReply::Handled();
 }
 

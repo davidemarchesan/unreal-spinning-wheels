@@ -5,7 +5,7 @@
 void SEditorActionsOverlay::Construct(const FArguments& InArgs)
 {
 	OnSaveTrack = InArgs._OnSaveTrack;
-
+	
 	ChildSlot[
 
 		SNew(SVerticalBox)
@@ -13,7 +13,14 @@ void SEditorActionsOverlay::Construct(const FArguments& InArgs)
 		+ SVerticalBox::Slot()
 		[
 			SNew(SButton)
-			.Text(FText::FromString("Save"))
+			.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Primary"))
+			.OnClicked(this, &SEditorActionsOverlay::ExecuteSaveTrack)
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString("Save track"))
+				.Font(FMainStyle::Get().GetFontStyle("Font.Orbitron.Medium.h4"))
+				.Justification(ETextJustify::Center)
+			]
 		]
 
 	];
@@ -21,15 +28,11 @@ void SEditorActionsOverlay::Construct(const FArguments& InArgs)
 
 FReply SEditorActionsOverlay::ExecuteSaveTrack()
 {
-	if (TrackNameEditBox.IsValid())
+	if (OnSaveTrack.IsBound())
 	{
-		if (OnSaveTrack.IsBound())
-		{
-			const FString TrackName = TrackNameEditBox->GetText().ToString();
-			FReply Reply = OnSaveTrack.Execute(TrackName);
-
-			return Reply;
-		}
+		FReply Reply = OnSaveTrack.Execute();
+		return Reply;
 	}
+	
 	return FReply::Unhandled();
 }

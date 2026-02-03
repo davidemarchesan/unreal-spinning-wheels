@@ -24,7 +24,7 @@ void FMainStyle::Initialize()
 	InitializeFonts();
 	// InitializeIcons();
 	InitializeBrushes();
-	// InitializeButtons();
+	InitializeButtons();
 	InitializeConstants();
 
 	FSlateStyleRegistry::RegisterSlateStyle(*StyleInstance);
@@ -80,6 +80,7 @@ void FMainStyle::InitializeFonts()
 			"Roboto.SemiBold",
 			"/Game/Assets/Fonts/Roboto/Roboto-SemiBold_Font.Roboto-SemiBold_Font"
 		),
+		
 		FStyleFontData(
 			"Lato.Regular",
 			"/Game/Assets/Fonts/Lato/Lato-Regular_Font.Lato-Regular_Font"
@@ -88,6 +89,7 @@ void FMainStyle::InitializeFonts()
 			"Lato.Bold",
 			"/Game/Assets/Fonts/Lato/Lato-Bold_Font.Lato-Bold_Font"
 		),
+		
 		FStyleFontData(
 			"JetBrains.Regular",
 			"/Game/Assets/Fonts/JetBrainsMono/JetBrainsMono-Regular_Font.JetBrainsMono-Regular_Font"
@@ -95,6 +97,32 @@ void FMainStyle::InitializeFonts()
 		FStyleFontData(
 			"JetBrains.Bold",
 			"/Game/Assets/Fonts/JetBrainsMono/JetBrainsMono-Bold_Font.JetBrainsMono-Bold_Font"
+		),
+
+		// Orbitron
+		FStyleFontData(
+			"Orbitron.Regular",
+			"/Game/Assets/Fonts/Orbitron/Orbitron-Regular_Font.Orbitron-Regular_Font"
+		),
+		FStyleFontData(
+			"Orbitron.Medium",
+			"/Game/Assets/Fonts/Orbitron/Orbitron-Medium_Font.Orbitron-Medium_Font"
+		),
+		FStyleFontData(
+			"Orbitron.SemiBold",
+			"/Game/Assets/Fonts/Orbitron/Orbitron-SemiBold_Font.Orbitron-SemiBold_Font"
+		),
+		FStyleFontData(
+			"Orbitron.Bold",
+			"/Game/Assets/Fonts/Orbitron/Orbitron-Bold_Font.Orbitron-Bold_Font"
+		),
+		FStyleFontData(
+			"Orbitron.ExtraBold",
+			"/Game/Assets/Fonts/Orbitron/Orbitron-ExtraBold_Font.Orbitron-ExtraBold_Font"
+		),
+		FStyleFontData(
+			"Orbitron.Black",
+			"/Game/Assets/Fonts/Orbitron/Orbitron-Black_Font.Orbitron-Black_Font"
 		),
 	};
 
@@ -127,6 +155,25 @@ void FMainStyle::InitializeBrushes()
 	StyleInstance->Set("Brush.Background.Light", new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.AlabasterGrey"), 12.f));
 	StyleInstance->Set("Brush.Background.Dark", new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.CharcoalBlue"), 12.f));
 	StyleInstance->Set("Brush.Background.Black", new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Primary.Dark"), 12.f));
+}
+
+void FMainStyle::InitializeButtons()
+{
+
+	FButtonStyle ButtonPrimaryStyle = FButtonStyle();
+	ButtonPrimaryStyle.SetNormal(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.PacificBlue"), 12.f));
+	ButtonPrimaryStyle.SetHovered(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.PowderBlue"), 12.f));
+	ButtonPrimaryStyle.SetPressed(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.PowderBlue"), 12.f));
+
+	ButtonPrimaryStyle.SetNormalForeground(StyleInstance->GetColor("Color.Primary.Dark"));
+	ButtonPrimaryStyle.SetHoveredForeground(StyleInstance->GetColor("Color.Primary.Dark"));
+	ButtonPrimaryStyle.SetPressedForeground(StyleInstance->GetColor("Color.Primary.Dark"));
+	
+	ButtonPrimaryStyle.SetNormalPadding(FMargin(15.f, 5.f));
+	ButtonPrimaryStyle.SetPressedPadding(FMargin(15.f, 5.f));
+
+	StyleInstance->Set("Button.Primary", ButtonPrimaryStyle);
+	
 }
 
 void FMainStyle::InitializeConstants()

@@ -17,7 +17,7 @@ private:
 	static void InitializeFonts();
 	// static void InitializeIcons();
 	static void InitializeBrushes();
-	// static void InitializeButtons();
+	static void InitializeButtons();
 	static void InitializeConstants();
 	
 };

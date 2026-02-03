@@ -1,6 +1,6 @@
 #pragma once
 
-DECLARE_DELEGATE_RetVal_OneParam(FReply, FOnSaveTrack, const FString& Name)
+DECLARE_DELEGATE_RetVal(FReply, FOnSaveTrack)
 
 class SEditorActionsOverlay : public SCompoundWidget
 {
@@ -16,9 +16,7 @@ public:
 	void Construct(const FArguments& InArgs);
 
 private:
-
-	TSharedPtr<SEditableTextBox> TrackNameEditBox;
-
+	
 	FOnSaveTrack OnSaveTrack;
 	
 	FReply ExecuteSaveTrack();
