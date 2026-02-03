@@ -4,8 +4,10 @@
 
 void SEditorBuildMenuItem::Construct(const FArguments& InArgs)
 {
-	const int8 Slot = InArgs._Slot;
+	Slot = InArgs._Slot;
 	const FText Name = InArgs._Name;
+
+	OnMenuSlotClicked = InArgs._OnMenuSlotClicked;
 
 	ButtonStyle = FButtonStyle();
 	ButtonStyle.SetNormal(FSlateRoundedBoxBrush(FLinearColor::Transparent, 6.f));
@@ -22,6 +24,7 @@ void SEditorBuildMenuItem::Construct(const FArguments& InArgs)
 		[
 			SNew(SButton)
 			.ButtonStyle(&ButtonStyle)
+			.OnClicked(this, &SEditorBuildMenuItem::OnClicked)
 			[
 				SNew(SVerticalBox)
 
@@ -46,6 +49,16 @@ void SEditorBuildMenuItem::Construct(const FArguments& InArgs)
 		]
 
 	];
+}
+
+FReply SEditorBuildMenuItem::OnClicked()
+{
+	if (OnMenuSlotClicked.IsBound())
+	{
+		FReply Reply = OnMenuSlotClicked.Execute(Slot);
+		return Reply;
+	}
+	return FReply::Unhandled();
 }
 
 void SEditorBuildMenuItem::SetSelected()

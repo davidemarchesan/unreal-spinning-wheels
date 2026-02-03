@@ -383,10 +383,16 @@ void AEditorController::InputSlot(int8 Slot)
 	}
 }
 
+void AEditorController::InputSelectMenu(UEditorBuildMenuDataAsset* Menu)
+{
+	if (Menu)
+	{
+		CurrentActiveMenu = FEditorBuildMenu(Menu);
+	}
+}
+
 void AEditorController::InputSaveTrack(const FString& TrackName)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Controller input save track %s"), *TrackName);
-
 	if (GameMode.IsValid())
 	{
 		GameMode->SaveTrack(TrackName);

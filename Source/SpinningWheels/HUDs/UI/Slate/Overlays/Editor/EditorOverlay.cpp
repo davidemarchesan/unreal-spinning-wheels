@@ -69,8 +69,6 @@ FReply SEditorOverlay::ExecuteSaveTrack()
 {
 	if (TrackNameEditBox.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("SEditorOverlay::OnSaveTrack %s"), *TrackNameEditBox->GetText().ToString());
-
 		if (OnSaveTrack.IsBound())
 		{
 			const FString TrackName = TrackNameEditBox->GetText().ToString();

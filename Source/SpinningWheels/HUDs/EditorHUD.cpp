@@ -15,15 +15,15 @@ void AEditorHUD::InitializeOverlays()
 	}
 
 	EditorOverlay = SNew(SEditorOverlay)
-	.OnSaveTrack_Lambda([this](const FString& TrackName)
-	{
-		if (this)
+		.OnSaveTrack_Lambda([this](const FString& TrackName)
 		{
-			return OnSaveTrack(TrackName);
-		}
+			if (this)
+			{
+				return OnSaveTrack(TrackName);
+			}
 
-		return FReply::Unhandled();
-	});
+			return FReply::Unhandled();
+		});
 	if (EditorOverlay.IsValid())
 	{
 		GEngine->GameViewport->AddViewportWidgetContent(EditorOverlay.ToSharedRef());
@@ -52,11 +52,29 @@ void AEditorHUD::OnExitBuildMode()
 
 FReply AEditorHUD::OnSaveTrack(const FString& TrackName)
 {
-	if (AEditorController* EditorController = Cast<AEditorController>(GetOwningPlayerController()))
+	if (EditorController.IsValid())
 	{
 		EditorController->InputSaveTrack(TrackName);
 	}
-	
+
+	return FReply::Handled();
+}
+
+FReply AEditorHUD::OnMenuSelected(UEditorBuildMenuDataAsset* Menu)
+{
+	if (EditorController.IsValid() && Menu != nullptr)
+	{
+		EditorController->InputSelectMenu(Menu);
+	}
+	return FReply::Handled();
+}
+
+FReply AEditorHUD::OnBlockSelected(const int8 Slot)
+{
+	if (EditorController.IsValid())
+	{
+		EditorController->InputSlot(Slot);
+	}
 	return FReply::Handled();
 }
 
@@ -70,13 +88,39 @@ void AEditorHUD::BeginPlay()
 
 void AEditorHUD::InitializeBuildMenu(AEditorController* Controller, const FEditorBuildMenu& CurrentActiveMenu)
 {
+
+	if (Controller == nullptr)
+	{
+		return;
+	}
+
+	EditorController = Controller;
+	
 	if (GEngine == nullptr)
 	{
 		return;
 	}
 
 	EditorBuildMenuOverlay = SNew(SEditorBuildMenuOverlay)
-		.Menu(CurrentActiveMenu);
+		.Menu(CurrentActiveMenu)
+		.OnMenuSelected_Lambda([this](UEditorBuildMenuDataAsset* Menu)
+		{
+			if (this && Menu)
+			{
+				return OnMenuSelected(Menu);
+			}
+
+			return FReply::Unhandled();
+		})
+		.OnBlockSelected_Lambda([this](const int8 Slot)
+		{
+			if (this)
+			{
+				return OnBlockSelected(Slot);
+			}
+
+			return FReply::Unhandled();
+		});
 	if (EditorBuildMenuOverlay.IsValid())
 	{
 		GEngine->GameViewport->AddViewportWidgetContent(EditorBuildMenuOverlay.ToSharedRef(), 5);

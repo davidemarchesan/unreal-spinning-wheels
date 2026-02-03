@@ -17,6 +17,8 @@ class SPINNINGWHEELS_API AEditorHUD : public AHUD
 
 private:
 
+	TWeakObjectPtr<AEditorController> EditorController;
+	
 	void InitializeOverlays();
 	void InitializeDelegates();
 
@@ -29,6 +31,8 @@ private:
 	/** End Pointers to overlays */
 	
 	FReply OnSaveTrack(const FString& TrackName);
+	FReply OnMenuSelected(UEditorBuildMenuDataAsset* Menu);
+	FReply OnBlockSelected(const int8 Slot);
 
 protected:
 

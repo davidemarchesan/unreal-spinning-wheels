@@ -1,13 +1,13 @@
 #include "EditorBuildMenuOverlay.h"
 
 #include "EditorBuildMenu.h"
-#include "EditorBuildMenuItem.h"
-#include "SpinningWheels/HUDs/UI/Slate/Styles/MainStyle.h"
 
 void SEditorBuildMenuOverlay::Construct(const FArguments& InArgs)
 {
 	Menu = InArgs._Menu;
-	
+	OnMenuSelected = InArgs._OnMenuSelected;
+	OnBlockSelected = InArgs._OnBlockSelected;
+
 	ChildSlot[
 		SNew(SOverlay)
 
@@ -17,6 +17,24 @@ void SEditorBuildMenuOverlay::Construct(const FArguments& InArgs)
 		.Padding(20.f)
 		[
 			SAssignNew(EditorBuildMenu, SEditorBuildMenu)
+			.OnMenuSelected_Lambda([this](UEditorBuildMenuDataAsset* Menu)
+			{
+				if (this && Menu && OnMenuSelected.IsBound())
+				{
+					FReply Reply = OnMenuSelected.Execute(Menu);
+					return Reply;
+				}
+				return FReply::Unhandled();
+			})
+			.OnBlockSelected_Lambda([this](const int8 Slot)
+			{
+				if (this && OnBlockSelected.IsBound())
+				{
+					FReply Reply = OnBlockSelected.Execute(Slot);
+					return Reply;
+				}
+				return FReply::Unhandled();
+			})
 			.Menu(Menu)
 		]
 	];
@@ -37,5 +55,3 @@ void SEditorBuildMenuOverlay::OnExitBuildMode()
 		EditorBuildMenu->CollapseChildren();
 	}
 }
-
-
