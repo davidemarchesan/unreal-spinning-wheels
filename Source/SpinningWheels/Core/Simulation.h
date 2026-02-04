@@ -17,4 +17,10 @@ struct FSimulationFrame
 	UPROPERTY() int8 BrakeInputValue;
 	UPROPERTY() int8 TurnInputValue;
 	UPROPERTY() int8 TurboInputValue;
+
+	FString ToString() const
+	{
+		return FString::Printf(TEXT("%d %d %d %d"), DriveInputValue, BrakeInputValue, TurnInputValue, TurboInputValue);
+	}
+	
 };

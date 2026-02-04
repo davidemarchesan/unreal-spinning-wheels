@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameMode.h"
+#include "RaceGameModeBase.h"
 #include "SpinningWheels/Core/Track.h"
 #include "SpinningWheels/Core/Match.h"
 #include "RaceGameMode.generated.h"
@@ -11,7 +11,7 @@
 class ARaceController;
 
 UCLASS()
-class SPINNINGWHEELS_API ARaceGameMode : public AGameMode
+class SPINNINGWHEELS_API ARaceGameMode : public ARaceGameModeBase
 {
 	GENERATED_BODY()
 
@@ -20,8 +20,6 @@ private:
 	FTimerHandle WaitingForPlayersTimer;
 	void StartWaitingForPlayers();
 	void StopWaitingForPlayers();
-
-	TWeakObjectPtr<class AStartBlock> StartBlock;
 
 protected:
 
@@ -33,7 +31,7 @@ protected:
 	virtual void HandleRaceMatchStateRacing();
 	virtual void HandleRaceMatchStatePodium();
 
-	virtual void PrepareControllerForNewLap(AController* Controller);
+	virtual void PrepareControllerForNewLap(AController* Controller) override;
 
 	// todo: array of maps to play on the server
 	FTrack CurrentTrack;
@@ -64,11 +62,7 @@ public:
 	//~ Begin AGameMode Interface
 	//~ End AGameMode Interface
 
-	//~ Begin AGameModeBase Interface
-	virtual void RestartPlayer(AController* NewPlayer) override;
-	virtual void RestartPlayerAtTransform(AController* NewPlayer, const FTransform& SpawnTransform) override;
-	virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
-	//~ End AGameModeBase Interface
+
 
 	virtual void CancelLap(AController* Controller);
 };

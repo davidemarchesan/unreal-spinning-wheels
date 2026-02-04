@@ -66,6 +66,15 @@ void AEditorHUD::InitializeOverlayEditorActions()
 	          .AutoSize(true)
 	[
 		SAssignNew(EditorActionsOverlay, SEditorActionsOverlay)
+		.OnTestTrack_Lambda([this]()
+		{
+			if (this)
+			{
+				return OnTestTrack();
+			}
+
+			return FReply::Unhandled();
+		})
 		.OnSaveTrack_Lambda([this]()
 		{
 			if (this)
@@ -178,6 +187,15 @@ void AEditorHUD::OnExitBuildMode()
 	}
 }
 
+FReply AEditorHUD::OnTestTrack()
+{
+	if (EditorController.IsValid())
+	{
+		EditorController->InputTestTrack();
+	}
+	return FReply::Handled();
+}
+
 FReply AEditorHUD::OnSaveTrack()
 {
 	UE_LOG(LogTemp, Warning, TEXT("HUD save track, opening poupup"));
@@ -186,7 +204,7 @@ FReply AEditorHUD::OnSaveTrack()
 	{
 		SaveTrackPopup->Show();
 	}
-	// get current name from controller
+	// todo: get current name from controller
 	// show popup with current name (if an edited track)
 	return FReply::Handled();
 }

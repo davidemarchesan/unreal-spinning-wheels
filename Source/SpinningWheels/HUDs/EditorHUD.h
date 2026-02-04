@@ -38,6 +38,7 @@ private:
 	TSharedPtr<class SSaveTrackPopup> SaveTrackPopup;
 	/** End Pointers to overlays */
 	
+	FReply OnTestTrack();
 	FReply OnSaveTrack();
 	FReply OnConfirmSaveTrack(const FString& TrackName);
 	FReply OnCancelSaveTrack();

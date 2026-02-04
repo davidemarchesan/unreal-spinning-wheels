@@ -27,6 +27,11 @@ void AMainCamera::SetupForCar()
 		SetActorRotation(FollowingCar->GetActorRotation());
 		CameraMode = ECameraMode::CAMERAMODE_Car;
 	}
+
+	if (UCameraComponent* Camera = GetCameraComponent())
+	{
+		Camera->SetRelativeRotation(CarCameraRotation);
+	}
 }
 
 void AMainCamera::SetupForEditor()

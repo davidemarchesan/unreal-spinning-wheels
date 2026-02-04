@@ -3,26 +3,45 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
+#include "RaceGameModeBase.h"
 #include "SpinningWheels/Core/Track.h"
 #include "EditorGameMode.generated.h"
 
+UENUM()
+enum class EEditorMode : uint8
+{
+	EM_Editor,
+	EM_TestTrack
+};
+
+class ACar;
+class AEditorPawn;
 class ATrackGrid;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTrackGridReadySignature, ATrackGrid*, TrackGrid);
 
 UCLASS()
-class SPINNINGWHEELS_API AEditorGameMode : public AGameModeBase
+class SPINNINGWHEELS_API AEditorGameMode : public ARaceGameModeBase
 {
 	GENERATED_BODY()
 
 private:
+
+	EEditorMode EditorMode = EEditorMode::EM_Editor;
 
 	TWeakObjectPtr<ATrackGrid> TrackGrid;
 
 	FTrack CurrentTrack;
 	
 protected:
+
+	virtual void PrepareControllerForNewLap(AController* Controller) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Classes)
+	TSubclassOf<ACar> DefaultCarClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Classes)
+	TSubclassOf<AEditorPawn> DefaultEditorClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Classes)
 	TSubclassOf<ATrackGrid> DefaultTrackGridClass;
@@ -37,6 +56,7 @@ public:
 	FOnTrackGridReadySignature OnTrackGridReady;
 	TWeakObjectPtr<ATrackGrid> GetTrackGrid() const { return TrackGrid; }
 
+	void TestTrack(AController* Controller);
 	void SaveTrack(const FString& TrackName);
 	
 };

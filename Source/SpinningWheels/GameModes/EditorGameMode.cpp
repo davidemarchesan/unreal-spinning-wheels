@@ -5,6 +5,18 @@
 
 #include "JsonObjectConverter.h"
 #include "SpinningWheels/Actors/TrackGrid.h"
+#include "SpinningWheels/Controllers/RaceController.h"
+#include "SpinningWheels/Pawns/Car.h"
+
+void AEditorGameMode::PrepareControllerForNewLap(AController* Controller)
+{
+	Super::PrepareControllerForNewLap(Controller);
+
+	if (ARaceController* RC = Cast<ARaceController>(Controller))
+	{
+		RC->PrepareForNewLap(GetWorld()->GetTimeSeconds() + 4.f);
+	}
+}
 
 void AEditorGameMode::StartPlay()
 {
@@ -37,6 +49,16 @@ void AEditorGameMode::StartPlay()
 		TrackGrid->Initialize(GridSize.X, GridSize.Y);
 		OnTrackGridReady.Broadcast(TrackGrid.Get());
 	}
+}
+
+void AEditorGameMode::TestTrack(AController* Controller)
+{
+	DefaultPawnClass = DefaultCarClass;
+	if (APawn* ControlledPawn = Controller->GetPawn())
+	{
+		ControlledPawn->Destroy();
+	}
+	RestartPlayer(Controller);
 }
 
 void AEditorGameMode::SaveTrack(const FString& TrackName)

@@ -61,6 +61,7 @@ void ARaceController::SimulatedTick(float DeltaSeconds)
 			if (RacePlayerState.IsValid())
 			{
 				RacePlayerState->AddSimulationFrame(SimulationFrame);
+				UE_LOG(LogTemp, Log, TEXT("RacePlayerState->AddSimulationFrame %s"), *SimulationFrame.ToString());
 			}
 			
 		}
@@ -193,6 +194,8 @@ void ARaceController::PrepareForNewLap(float InServerStartTime)
 	{
 		return;
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("PrepareForNewLap"));
 	
 	SetPhase(ERaceControllerPhase::RCP_InStartingProcedure);
 	ServerStartDriveTime = InServerStartTime;
@@ -209,7 +212,7 @@ void ARaceController::SetupDriveInputBindings()
 	{
 		if (DriveInputConfig)
 		{
-			EnhancedInput->ClearActionBindings();
+			UE_LOG(LogTemp, Warning, TEXT("setup DriveInputConfig"));
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_Drive, ETriggerEvent::Started, this,
 			                          &ARaceController::InputStartDrive);
@@ -257,6 +260,7 @@ void ARaceController::EnableDriveInputMappingContext()
 		{
 			if (DriveMappingContext)
 			{
+				UE_LOG(LogTemp, Warning, TEXT("enabling drive input mapping context"));
 				InputSystem->AddMappingContext(DriveMappingContext, 1);
 			}
 		}
@@ -344,8 +348,10 @@ void ARaceController::StartDriveProcedure(float DeltaSeconds)
 
 void ARaceController::InputStartDrive()
 {
+	UE_LOG(LogTemp, Log, TEXT("ARaceController::InputStartDrive"));
 	if (Phase == ERaceControllerPhase::RCP_Respawning)
 	{
+		UE_LOG(LogTemp, Log, TEXT("IN RESPAWN"));
 		return;
 	}
 
@@ -395,6 +401,7 @@ void ARaceController::InputTurn(const FInputActionValue& Value)
 
 void ARaceController::InputStartTurbo()
 {
+	UE_LOG(LogTemp, Warning, TEXT("turbo input!"));
 	if (Phase == ERaceControllerPhase::RCP_Respawning)
 	{
 		return;
@@ -468,6 +475,7 @@ void ARaceController::ServerCancelLap_Implementation()
 
 void ARaceController::StartLap()
 {
+	UE_LOG(LogTemp, Warning, TEXT("STart lap"));
 	if (IsLocalController())
 	{
 		// Server-player or client-predict

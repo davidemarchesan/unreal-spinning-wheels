@@ -78,6 +78,9 @@ public:
 	UPROPERTY(Category=Car, EditAnywhere)
 	float CarRotationLerpSpeed;
 
+	UPROPERTY(Category=Car, EditAnywhere)
+	FRotator CarCameraRotation;
+
 	UPROPERTY(Category=Editor, EditAnywhere)
 	FVector EditorOffsetFromPawn;
 

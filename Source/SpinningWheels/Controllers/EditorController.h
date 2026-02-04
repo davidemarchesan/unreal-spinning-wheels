@@ -124,6 +124,7 @@ public:
 	
 	void InputSlot(int8 Slot);
 	void InputSelectMenu(UEditorBuildMenuDataAsset* Menu);
+
+	void InputTestTrack();
 	void InputSaveTrack(const FString& TrackName);
-	
 };

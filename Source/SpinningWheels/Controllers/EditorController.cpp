@@ -65,7 +65,6 @@ void AEditorController::SetupEditorInputBindings()
 	{
 		if (EditorInputConfig)
 		{
-			EnhancedInput->ClearActionBindings();
 
 			EnhancedInput->BindAction(EditorInputConfig->IA_Move, ETriggerEvent::Triggered, this,
 			                          &AEditorController::InputMoveCamera);
@@ -466,6 +465,27 @@ void AEditorController::InputSelectMenu(UEditorBuildMenuDataAsset* Menu)
 	{
 		CurrentActiveMenu = FEditorBuildMenu(Menu);
 	}
+}
+
+void AEditorController::InputTestTrack()
+{
+	UE_LOG(LogTemp, Warning, TEXT("controller test track"));
+
+	if (GameMode.IsValid())
+	{
+		GameMode->TestTrack(this);
+
+		DisableEditorInputMappingContext();
+		EnableDriveInputMappingContext();
+
+		bShowMouseCursor = false;
+		SetInputMode(FInputModeGameOnly());
+	}
+
+	// switch control input
+	// spawn pawn
+	// set pawn control
+	// camera set to car pawn
 }
 
 void AEditorController::InputSaveTrack(const FString& TrackName)
