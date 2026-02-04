@@ -27,6 +27,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Classes)
 	TSubclassOf<ATrackGrid> DefaultTrackGridClass;
 
+	UPROPERTY(EditDefaultsOnly, Category="Track")
+	FVector2D GridSize = FVector2D(10.f, 10.f);
+
 public:
 
 	virtual void StartPlay() override;

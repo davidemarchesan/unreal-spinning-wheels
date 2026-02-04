@@ -34,7 +34,7 @@ void AEditorGameMode::StartPlay()
 		// }
 		// End simulating a map load
 
-		TrackGrid->Initialize(2, 3);
+		TrackGrid->Initialize(GridSize.X, GridSize.Y);
 		OnTrackGridReady.Broadcast(TrackGrid.Get());
 	}
 }

@@ -26,6 +26,9 @@ public:
 	ATrackGrid();
 
 private:
+
+	bool AreValidCoordinates(const FGridCoord& CoordinatesToCheck);
+	
 	UPROPERTY(VisibleAnywhere, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UBoxComponent> BoxComponent;
 
@@ -57,6 +60,8 @@ public:
 
 	void Build(const FName& BlockName, FVector WorldLocation, FRotator Rotation);
 	void Build(const FName& BlockName, const FGridCoord& Coordinates);
+
+	bool Remove(FVector WorldLocation);
 
 	TArray<FTrackBlock> GetBlocks() const {	return Blocks; }
 

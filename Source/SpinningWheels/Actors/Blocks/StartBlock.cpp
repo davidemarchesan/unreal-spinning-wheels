@@ -13,17 +13,18 @@ AStartBlock::AStartBlock()
 		StartSceneComponent->SetupAttachment(RootComponent);
 	}
 
-#if WITH_EDITORONLY_DATA
 	ArrowComponent = CreateDefaultSubobject<UArrowComponent>("Arrow");
 	if (ArrowComponent)
 	{
 		ArrowComponent->ArrowColor = FColor(150, 200, 255);
-		ArrowComponent->ArrowSize = 0.5f;
+		ArrowComponent->ArrowSize = 12.f;
+		ArrowComponent->ArrowLength = 42.f;
 		ArrowComponent->bTreatAsASprite = true;
 		ArrowComponent->SetupAttachment(StartSceneComponent);
 		ArrowComponent->bIsScreenSizeScaled = true;
+		ArrowComponent->SetRelativeLocation(FVector(0.f, 0.f, 70.f));
+		ArrowComponent->SetHiddenInGame(false);
 	}
-#endif
 	
 }
 

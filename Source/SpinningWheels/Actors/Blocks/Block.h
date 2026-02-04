@@ -37,5 +37,8 @@ private:
 protected:
 
 public:
+
+	void ShowOutline();
+	void HideOutline();
 	
 };

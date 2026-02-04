@@ -24,6 +24,21 @@ ATrackGrid::ATrackGrid()
 	
 }
 
+bool ATrackGrid::AreValidCoordinates(const FGridCoord& CoordinatesToCheck)
+{
+	if (Grid.IsValidIndex(CoordinatesToCheck.X) == false)
+	{
+		return false;
+	}
+
+	if (Grid[CoordinatesToCheck.X].IsValidIndex(CoordinatesToCheck.Y) == false)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 FGridCoord ATrackGrid::GetTileCoordinates(FVector WorldLocation)
 {
 	const int32 X = FMath::FloorToInt32(WorldLocation.Y / TileSize);
@@ -52,13 +67,8 @@ bool ATrackGrid::CanBuildOn(FVector WorldLocation)
 {
 
 	FGridCoord Coordinates = GetTileCoordinates(WorldLocation);
-	
-	if (Grid.IsValidIndex(Coordinates.X) == false)
-	{
-		return false;
-	}
 
-	if (Grid[Coordinates.X].IsValidIndex(Coordinates.Y) == false)
+	if (AreValidCoordinates(Coordinates) == false)
 	{
 		return false;
 	}
@@ -98,12 +108,7 @@ void ATrackGrid::Build(const FName& BlockName, FVector WorldLocation, FRotator R
 	FGridCoord Coordinates = GetTileCoordinates(WorldLocation);
 	Coordinates.R = FMath::RoundToInt32(Rotation.Yaw);
 
-	if (Grid.IsValidIndex(Coordinates.X) == false)
-	{
-		return;
-	}
-
-	if (Grid[Coordinates.X].IsValidIndex(Coordinates.Y) == false)
+	if (AreValidCoordinates(Coordinates) == false)
 	{
 		return;
 	}
@@ -136,10 +141,43 @@ void ATrackGrid::Build(const FName& BlockName, const FGridCoord& Coordinates)
 
 			Grid[Coordinates.X][Coordinates.Y] = ETileStatus::TS_Busy;
 
-			FTrackBlock NewTrackBlock(BlockName, Coordinates);
+			const FTrackBlock NewTrackBlock(BlockName, Coordinates);
 			Blocks.Add(NewTrackBlock);
 		}
 	}
+}
+
+bool ATrackGrid::Remove(FVector WorldLocation)
+{
+	FGridCoord Coordinates = GetTileCoordinates(WorldLocation);
+
+	if (AreValidCoordinates(Coordinates) == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("grid remove: coord are not valid"));
+		return false;
+	}
+
+	if (Grid[Coordinates.X][Coordinates.Y] == ETileStatus::TS_Free)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("grid remove: coord are already free"));
+		return false;
+	}
+
+	const int32 Index = Blocks.IndexOfByPredicate([Coordinates](const FTrackBlock& Block)
+	{
+		return Block.Coordinates == Coordinates;
+	});
+
+	if (Index == INDEX_NONE || Blocks.IsValidIndex(Index) == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("grid remove: invalid index %d"), Index);
+		return false;
+	}
+
+	Blocks.RemoveAt(Index);
+	Grid[Coordinates.X][Coordinates.Y] = ETileStatus::TS_Free;
+
+	return true;
 }
 
 void ATrackGrid::InitializeLogicGrid()

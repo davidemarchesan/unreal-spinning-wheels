@@ -20,6 +20,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Move;
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Rotate;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_SelectBlock;
+	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_RemoveBlock;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Slot1;
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Slot2;

@@ -14,7 +14,26 @@ ABlock::ABlock()
 	if (MeshComponent)
 	{
 		MeshComponent->SetupAttachment(RootComponent);
+		MeshComponent->SetCollisionResponseToAllChannels(ECR_Block);
+		MeshComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
 	}
 
+}
+
+void ABlock::ShowOutline()
+{
+	if (MeshComponent)
+	{
+		MeshComponent->SetCustomDepthStencilValue(1);
+		MeshComponent->SetRenderCustomDepth(true);
+	}
+}
+
+void ABlock::HideOutline()
+{
+	if (MeshComponent)
+	{
+		MeshComponent->SetRenderCustomDepth(false);
+	}
 }
 

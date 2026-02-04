@@ -35,6 +35,9 @@ private:
 	void InputMoveCamera(const FInputActionValue& Value);
 	void InputRotateCamera(const FInputActionValue& Value);
 
+	void InputSelectBlock();
+	void InputRemoveBlock();
+
 	void InputSlot1();
 	void InputSlot2();
 	void InputSlot3();
@@ -58,6 +61,9 @@ private:
 
 	void PreviewBlock();
 	TWeakObjectPtr<ABlock> PreviewedBlock;
+
+	void HoverBlock();
+	TWeakObjectPtr<ABlock> HoveredBlock;
 
 	UFUNCTION()
 	void OnTrackGridReady(ATrackGrid* InTrackGrid);
@@ -87,6 +93,7 @@ protected:
 	bool bBuildMode = false;
 	
 	void EnterBuildMode(const FName& RowName, const FBlockRow& BlockRow);
+	void EnterBuildModeWithHovered();
 	void ExitBuildMode();
 
 	//~ Begin AController Interface

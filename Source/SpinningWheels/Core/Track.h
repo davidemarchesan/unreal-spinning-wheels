@@ -9,7 +9,6 @@ struct FGridCoord
 	GENERATED_BODY()
 
 public:
-
 	UPROPERTY()
 	int32 X = 0;
 
@@ -18,6 +17,16 @@ public:
 
 	UPROPERTY()
 	int32 R = 0;
+
+public:
+
+	FORCEINLINE bool operator==(const FGridCoord& Other) const
+	{
+		return (X == Other.X)
+			&& (Y == Other.Y);
+	}
+
+public:
 
 	FGridCoord() = default;
 

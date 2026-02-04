@@ -72,6 +72,11 @@ void AEditorController::SetupEditorInputBindings()
 			EnhancedInput->BindAction(EditorInputConfig->IA_Rotate, ETriggerEvent::Triggered, this,
 			                          &AEditorController::InputRotateCamera);
 
+			EnhancedInput->BindAction(EditorInputConfig->IA_SelectBlock, ETriggerEvent::Triggered, this,
+									  &AEditorController::InputSelectBlock);
+			EnhancedInput->BindAction(EditorInputConfig->IA_RemoveBlock, ETriggerEvent::Triggered, this,
+									  &AEditorController::InputRemoveBlock);
+
 			EnhancedInput->BindAction(EditorInputConfig->IA_Slot1, ETriggerEvent::Triggered, this,
 			                          &AEditorController::InputSlot1);
 			EnhancedInput->BindAction(EditorInputConfig->IA_Slot2, ETriggerEvent::Triggered, this,
@@ -192,6 +197,7 @@ void AEditorController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	PreviewBlock();
+	HoverBlock();
 }
 
 void AEditorController::InputMoveCamera(const FInputActionValue& Value)
@@ -210,6 +216,35 @@ void AEditorController::InputRotateCamera(const FInputActionValue& Value)
 	{
 		EditorPawn->Rotate(InputVector);
 	}
+}
+
+void AEditorController::InputSelectBlock()
+{
+	if (HoveredBlock.IsValid() == false)
+	{
+		return;
+	}
+	
+	if (TrackGrid->Remove(HoveredBlock->GetActorLocation()))
+	{
+		EnterBuildModeWithHovered();
+	}
+	
+}
+
+void AEditorController::InputRemoveBlock()
+{
+	if (HoveredBlock.IsValid() == false || TrackGrid.IsValid() == false)
+	{
+		return;
+	}
+
+	if (TrackGrid->Remove(HoveredBlock->GetActorLocation()))
+	{
+		HoveredBlock->Destroy();
+		HoveredBlock = nullptr;
+	}
+	
 }
 
 void AEditorController::InputSlot1()
@@ -322,6 +357,53 @@ void AEditorController::PreviewBlock()
 	}
 }
 
+void AEditorController::HoverBlock()
+{
+	if (bBuildMode == true)
+	{
+		return;
+	}
+
+	FHitResult Hit;
+	if (GetHitResultUnderCursor(ECC_GameTraceChannel2, false, Hit))
+	{
+		if (Hit.GetActor())
+		{
+			if (HoveredBlock.IsValid())
+			{
+				if (Hit.GetActor() == HoveredBlock.Get())
+				{
+					// Player is hovering the same actor
+					return;
+				}
+				else
+				{
+					// It'a new block, so hide the old one
+					HoveredBlock->HideOutline();
+				}
+			}
+
+			if (ABlock* Block = Cast<ABlock>(Hit.GetActor()))
+			{
+				HoveredBlock = Block;
+				if (HoveredBlock.IsValid())
+				{
+					HoveredBlock->ShowOutline();
+					UE_LOG(LogTemp, Warning, TEXT("Hovering a new block"));
+				}
+			}
+		}
+	}
+	else
+	{
+		if (HoveredBlock.IsValid())
+		{
+			HoveredBlock->HideOutline();
+			HoveredBlock = nullptr;
+		}
+	}
+}
+
 void AEditorController::OnTrackGridReady(ATrackGrid* InTrackGrid)
 {
 	if (InTrackGrid)
@@ -426,6 +508,23 @@ void AEditorController::EnterBuildMode(const FName& RowName, const FBlockRow& Bl
 		PreviewedBlock->SetActorHiddenInGame(true);
 		// Tick function PreviewBlock() will set location, rotation and hiding
 	}
+}
+
+void AEditorController::EnterBuildModeWithHovered()
+{
+	if (TrackGrid.IsValid() == false)
+	{
+		return;
+	}
+	
+	if (bBuildMode == false)
+	{
+		bBuildMode = true;
+		EnableBuildInputMappingContext();
+	}
+
+	PreviewedBlock = HoveredBlock;
+	HoveredBlock = nullptr;
 }
 
 void AEditorController::ExitBuildMode()

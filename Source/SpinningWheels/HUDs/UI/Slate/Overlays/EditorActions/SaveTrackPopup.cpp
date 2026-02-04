@@ -10,7 +10,7 @@ void SSaveTrackPopup::Construct(const FArguments& InArgs)
 	ChildSlot[
 
 		SAssignNew(MainBox, SBox)
-		// .Visibility(EVisibility::Collapsed)
+		.Visibility(EVisibility::Collapsed)
 		.MinDesiredWidth(300.f)
 		[
 			SNew(SBorder)
