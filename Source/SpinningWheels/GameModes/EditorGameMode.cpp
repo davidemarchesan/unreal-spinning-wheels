@@ -10,11 +10,12 @@
 
 void AEditorGameMode::PrepareControllerForNewLap(AController* Controller)
 {
-	Super::PrepareControllerForNewLap(Controller);
-
-	if (ARaceController* RC = Cast<ARaceController>(Controller))
+	if (EditorMode == EEditorMode::EM_TestTrack)
 	{
-		RC->PrepareForNewLap(GetWorld()->GetTimeSeconds() + 4.f);
+		if (ARaceController* RC = Cast<ARaceController>(Controller))
+		{
+			RC->PrepareForNewLap(GetWorld()->GetTimeSeconds() + 4.f);
+		}
 	}
 }
 
@@ -25,7 +26,6 @@ void AEditorGameMode::StartPlay()
 	TrackGrid = GetWorld()->SpawnActor<ATrackGrid>(DefaultTrackGridClass, FVector::ZeroVector, FRotator::ZeroRotator);
 	if (TrackGrid.IsValid())
 	{
-
 		// Simulating a map load (it works)
 		// const FString BaseDir = FPaths::ProjectUserDir() / TEXT("Tracks"); // User/Documents on Live
 		// const FString FileName = TEXT("rotation.json");
@@ -58,6 +58,9 @@ void AEditorGameMode::TestTrack(AController* Controller)
 	{
 		ControlledPawn->Destroy();
 	}
+
+	EditorMode = EEditorMode::EM_TestTrack;
+	
 	RestartPlayer(Controller);
 }
 
@@ -99,7 +102,7 @@ void AEditorGameMode::SaveTrack(const FString& TrackName)
 		bool bSuccess = FJsonObjectConverter::UStructToJsonObjectString(TrackSave, OutputJson);
 
 		UE_LOG(LogTemp, Warning, TEXT("gamemode track to json %d"), bSuccess);
-		
+
 		const FString BaseDir = FPaths::ProjectUserDir() / TEXT("Tracks"); // User/Documents on Live
 		const FString FileName = FPaths::MakeValidFileName(CurrentTrack.Name) + TEXT(".json");
 		const FString FilePath = BaseDir / FileName;
@@ -109,9 +112,8 @@ void AEditorGameMode::SaveTrack(const FString& TrackName)
 		{
 			PlatformFile.CreateDirectory(*BaseDir);
 		}
-		
+
 		bool bSaved = FFileHelper::SaveStringToFile(OutputJson, *FilePath, FFileHelper::EEncodingOptions::ForceUTF8);
 		UE_LOG(LogTemp, Warning, TEXT("gamemode save track on %s success %d"), *FilePath, bSaved);
 	}
-	
 }

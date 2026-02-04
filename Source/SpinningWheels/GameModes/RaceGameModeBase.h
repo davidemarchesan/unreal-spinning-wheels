@@ -29,5 +29,7 @@ public:
 	virtual void RestartPlayerAtTransform(AController* NewPlayer, const FTransform& SpawnTransform) override;
 	virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
 	//~ End AGameModeBase Interface
+
+	virtual void CancelLap(AController* Controller);
 	
 };

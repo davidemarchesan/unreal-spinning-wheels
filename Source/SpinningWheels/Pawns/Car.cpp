@@ -96,7 +96,6 @@ void ACar::BeginPlay()
 
 void ACar::SimulatedTick(float DeltaTime)
 {
-	// todo: reorder ifs
 	if (RacePlayerState.IsValid() == false)
 	{
 		return;
@@ -138,8 +137,9 @@ void ACar::SimulatedTick(float DeltaTime)
 
 				// Actual physics movement component
 				CarMovementComponent->SimulateMovement(CurrentSimulationFrame);
+				CurrentFrameIndex++;
 			}
-			CurrentFrameIndex++;
+			
 		}
 
 		LastSimulationDelta = AccSimulationTime - SimulationConstants::TickFrequency * MaxIterations;

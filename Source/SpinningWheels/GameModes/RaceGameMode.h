@@ -59,10 +59,4 @@ public:
 
 	FTrack GetCurrentTrack() { return CurrentTrack;}
 	
-	//~ Begin AGameMode Interface
-	//~ End AGameMode Interface
-
-
-
-	virtual void CancelLap(AController* Controller);
 };

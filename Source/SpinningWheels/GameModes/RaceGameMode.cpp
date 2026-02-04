@@ -99,12 +99,3 @@ void ARaceGameMode::SetRaceMatchState(ERaceMatchState NewState)
 		GS->SetRaceMatchState(RaceMatchState);
 	}
 }
-
-void ARaceGameMode::CancelLap(AController* Controller)
-{
-	if (APawn* ControlledPawn = Controller->GetPawn())
-	{
-		ControlledPawn->Destroy();
-	}
-	RestartPlayer(Controller);
-}
