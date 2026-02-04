@@ -23,7 +23,7 @@ void SEditorBuildMenu::Construct(const FArguments& InArgs)
 		{
 			// Adding a slot to horizontal box
 			ItemsHorizontalBox->AddSlot()
-			                  .Padding(10.f)
+			                  .Padding(FMargin(5.f, 0.f))
 			[
 				SAssignNew(MenuItems[i], SEditorBuildMenuItem)
 				.Slot(i + 1)
@@ -81,6 +81,12 @@ void SEditorBuildMenu::Construct(const FArguments& InArgs)
 			SubMenuSwitcher.ToSharedRef()
 		]
 
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		[
+			SNew(SSpacer).Size(FVector2D(1.f, 10.f))
+		]
+
 		// Current menu items
 		+ SVerticalBox::Slot()
 		.AutoHeight()
@@ -92,7 +98,8 @@ void SEditorBuildMenu::Construct(const FArguments& InArgs)
 			.VAlign(VAlign_Center)
 			[
 				SNew(SBorder)
-				.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Black"))
+				.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Dark"))
+				.Padding(FMargin(0.f, 5.f))
 				[
 					ItemsHorizontalBox.ToSharedRef()
 				]

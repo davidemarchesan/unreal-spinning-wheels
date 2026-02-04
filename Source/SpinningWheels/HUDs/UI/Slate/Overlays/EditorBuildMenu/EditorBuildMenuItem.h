@@ -19,12 +19,10 @@ public:
 
 private:
 
-	TSharedPtr<SOverlay> MainOverlay;
+	TSharedPtr<SButton> Button;
 
 	int8 Slot = 0;
 	FOnMenuSlotClicked OnMenuSlotClicked;
-
-	FButtonStyle ButtonStyle; // todo: put it on main style
 
 public:
 

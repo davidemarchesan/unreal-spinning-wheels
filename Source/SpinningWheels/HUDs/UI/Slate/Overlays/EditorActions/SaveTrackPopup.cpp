@@ -7,10 +7,6 @@ void SSaveTrackPopup::Construct(const FArguments& InArgs)
 	OnConfirmSaveTrack = InArgs._OnConfirmSaveTrack;
 	OnCancelSaveTrack = InArgs._OnCancelSaveTrack;
 
-	Temp = FTextBlockStyle();
-	Temp.SetColorAndOpacity(FMainStyle::Get().GetColor("Color.Text.Light.Primary"));
-	Temp.SetFont(FMainStyle::Get().GetFontStyle("Font.Funnel.Regular.h4"));
-
 	ChildSlot[
 
 		SAssignNew(MainBox, SBox)
@@ -24,17 +20,33 @@ void SSaveTrackPopup::Construct(const FArguments& InArgs)
 				SNew(SVerticalBox)
 
 				+ SVerticalBox::Slot()
+				.AutoHeight()
 				[
-					SNew(STextBlock)
-					.Text(FText::FromString("Track name"))
-					.TextStyle(&Temp)
+
+					SNew(SVerticalBox)
+
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					[
+						SNew(STextBlock)
+						.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.P"))
+						.Text(FText::FromString("Track name"))
+					]
+
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					[
+						SAssignNew(TrackNameEditBox, SEditableTextBox)
+						.Style(&FMainStyle::Get().GetWidgetStyle<FEditableTextBoxStyle>("Text.Editable"))
+					]
+
 				]
 
 				+ SVerticalBox::Slot()
+				.AutoHeight()
 				[
-					SAssignNew(TrackNameEditBox, SEditableTextBox)
-					.Font(FMainStyle::Get().GetFontStyle("Font.Roboto.Regular.p"))
-
+					SNew(SSpacer)
+					.Size(FVector2D(1.f, 10.f))
 				]
 
 				+ SVerticalBox::Slot()
@@ -46,15 +58,29 @@ void SSaveTrackPopup::Construct(const FArguments& InArgs)
 					[
 						SNew(SButton)
 						.Text(FText::FromString("Confirm"))
+						.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Primary"))
+						.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.Button.Primary"))
+						.HAlign(HAlign_Center)
 						.OnClicked(this, &SSaveTrackPopup::ExecuteConfirmSaveTrack)
+					]
+
+					+ SHorizontalBox::Slot()
+					.AutoWidth()
+					[
+						SNew(SSpacer)
+						.Size(FVector2D(10.f, 1.f))
 					]
 
 					+ SHorizontalBox::Slot()
 					[
 						SNew(SButton)
 						.Text(FText::FromString("Cancel"))
+						.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Secondary"))
+						.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.Button.Secondary"))
+						.HAlign(HAlign_Center)
 						.OnClicked(this, &SSaveTrackPopup::ExecuteCancelSaveTrack)
 					]
+
 				]
 			]
 		]

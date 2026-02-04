@@ -15,8 +15,8 @@ void SEditorActionsOverlay::Construct(const FArguments& InArgs)
 			SNew(SButton)
 			.Text(FText::FromString("Save track"))
 			.OnClicked(this, &SEditorActionsOverlay::ExecuteSaveTrack)
-			.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Primary.Yellow"))
-			.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.Button.Primary.Yellow"))
+			.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Primary.Large"))
+			.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.Button.Primary.Large"))
 		]
 
 	];

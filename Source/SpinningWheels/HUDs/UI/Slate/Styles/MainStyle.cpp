@@ -25,7 +25,7 @@ void FMainStyle::Initialize()
 	// InitializeIcons();
 	InitializeBrushes();
 	InitializeTextStyles();
-	InitializeButtons();
+	InitializeButtonStyles();
 	InitializeConstants();
 
 	FSlateStyleRegistry::RegisterSlateStyle(*StyleInstance);
@@ -50,20 +50,20 @@ const ISlateStyle& FMainStyle::Get()
 void FMainStyle::InitializeColors()
 {
 	// https://coolors.co/d8dbe2-a9bcd0-58a4b0-373f51-daa49a
-	const FColor AlabasterGrey = FColor::FromHex("D8DBE2");
-	const FColor PowderBlue = FColor::FromHex("A9BCD0");
-	const FColor PacificBlue = FColor::FromHex("58A4B0");
-	const FColor CharcoalBlue = FColor::FromHex("373F51");
-	const FColor PowderBlush = FColor::FromHex("DAA49A");
-
-	StyleInstance->Set("Color.AlabasterGrey", FLinearColor(AlabasterGrey));
-	StyleInstance->Set("Color.PowderBlue", FLinearColor(PowderBlue));
-	StyleInstance->Set("Color.PacificBlue", FLinearColor(PacificBlue));
-	StyleInstance->Set("Color.CharcoalBlue", FLinearColor(CharcoalBlue));
-	StyleInstance->Set("Color.PowderBlush", FLinearColor(PowderBlush));
-
-	StyleInstance->Set("Color.Primary.Light", FLinearColor(FColor::FromHex("F5F5F5")));
-	StyleInstance->Set("Color.Primary.Dark", FLinearColor(FColor::FromHex("333333")));
+	// const FColor AlabasterGrey = FColor::FromHex("D8DBE2");
+	// const FColor PowderBlue = FColor::FromHex("A9BCD0");
+	// const FColor PacificBlue = FColor::FromHex("58A4B0");
+	// const FColor CharcoalBlue = FColor::FromHex("373F51");
+	// const FColor PowderBlush = FColor::FromHex("DAA49A");
+	//
+	// StyleInstance->Set("Color.AlabasterGrey", FLinearColor(AlabasterGrey));
+	// StyleInstance->Set("Color.PowderBlue", FLinearColor(PowderBlue));
+	// StyleInstance->Set("Color.PacificBlue", FLinearColor(PacificBlue));
+	// StyleInstance->Set("Color.CharcoalBlue", FLinearColor(CharcoalBlue));
+	// StyleInstance->Set("Color.PowderBlush", FLinearColor(PowderBlush));
+	//
+	// StyleInstance->Set("Color.Primary.Light", FLinearColor(FColor::FromHex("F5F5F5")));
+	// StyleInstance->Set("Color.Primary.Dark", FLinearColor(FColor::FromHex("333333")));
 
 
 	StyleInstance->Set("Color.Time.Purple", FLinearColor(FColor::FromHex("B64CFF")));
@@ -78,6 +78,10 @@ void FMainStyle::InitializeColors()
 	StyleInstance->Set("Color.Black.Primary", FLinearColor(FColor::FromHex("1A1A1A")));
 	StyleInstance->Set("Color.Black.Secondary", FLinearColor(FColor::FromHex("0B0B0B")));
 	StyleInstance->Set("Color.Black.Tertiary", FLinearColor(FColor::FromHex("2A2A2A")));
+
+	StyleInstance->Set("Color.White.Primary", FLinearColor(FColor::FromHex("F5F5F5")));
+	StyleInstance->Set("Color.White.Secondary", FLinearColor(FColor::FromHex("FFFFFF")));
+	StyleInstance->Set("Color.White.Tertiary", FLinearColor(FColor::FromHex("EAEAEA")));
 
 	StyleInstance->Set("Color.Text.Light.Primary", FLinearColor(FColor::FromHex("F5F5F5")));
 	StyleInstance->Set("Color.Text.Light.Secondary", FLinearColor(FColor::FromHex("BDBDBD")));
@@ -94,7 +98,19 @@ void FMainStyle::InitializeFonts()
 		// Funnel Sans - Standard
 		FStyleFontData(
 			"Funnel.Regular",
-			"/Game/Assets/Fonts/Funnel/FunnelSans-Regular.FunnelSans-Regular"
+			"/Game/Assets/Fonts/Funnel/FunnelSans-Regular_Font.FunnelSans-Regular_Font"
+		),
+		FStyleFontData(
+			"Funnel.Regular.Italic",
+			"/Game/Assets/Fonts/Funnel/FunnelSans-Italic_Font.FunnelSans-Italic_Font"
+		),
+		FStyleFontData(
+			"Funnel.Medium",
+			"/Game/Assets/Fonts/Funnel/FunnelSans-Medium_Font.FunnelSans-Medium_Font"
+		),
+		FStyleFontData(
+			"Funnel.Medium.Italic",
+			"/Game/Assets/Fonts/Funnel/FunnelSans-MediumItalic_Font.FunnelSans-MediumItalic_Font"
 		),
 		FStyleFontData(
 			"Funnel.SemiBold.Italic",
@@ -114,11 +130,11 @@ void FMainStyle::InitializeFonts()
 
 	const TMap<FString, float> FontSizes = {
 		{"help", 10.f},
-		{"p", 14.f},
+		{"p", 12.f},
 		{"h1", 29.f},
-		{"h2", 25.f},
-		{"h3", 22.f},
-		{"h4", 18.f},
+		{"h2", 24.f},
+		{"h3", 20.f},
+		{"h4", 16.f},
 	};
 
 	for (const FStyleFontData& StyleFont : StyleFonts)
@@ -141,31 +157,107 @@ void FMainStyle::InitializeBrushes()
 	StyleInstance->Set("Brush.Background.Light",
 	                   new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.AlabasterGrey"), 12.f));
 	StyleInstance->Set("Brush.Background.Dark",
-	                   new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Background.Black"), 12.f));
+	                   new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Background.Dark"), 12.f));
 }
 
 void FMainStyle::InitializeTextStyles()
 {
-	FTextBlockStyle ButtonPrimaryYellowTextStyle = FTextBlockStyle();
-	ButtonPrimaryYellowTextStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.SemiBold.Italic.h4"));
-	ButtonPrimaryYellowTextStyle.SetTransformPolicy(ETextTransformPolicy::ToUpper);
-	ButtonPrimaryYellowTextStyle.SetColorAndOpacity(StyleInstance->GetColor("Color.Black.Secondary"));
 
-	StyleInstance->Set("Text.Button.Primary.Yellow", ButtonPrimaryYellowTextStyle);
+	// Normal text styles
+	FTextBlockStyle BoxTitleTextStyle = FTextBlockStyle();
+	BoxTitleTextStyle.SetColorAndOpacity(StyleInstance->GetColor("Color.Yellow.Primary"));
+	BoxTitleTextStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.Regular.Italic.h4"));
+	StyleInstance->Set("Text.Box.Title", BoxTitleTextStyle);
 
+	FTextBlockStyle PTextStyle = FTextBlockStyle();
+	PTextStyle.SetColorAndOpacity(StyleInstance->GetColor("Color.Text.Light.Primary"));
+	PTextStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.Regular.p"));
+	StyleInstance->Set("Text.P", PTextStyle);
+
+	// Button text styles
+	FTextBlockStyle ButtonPrimaryLargeTextStyle = FTextBlockStyle();
+	ButtonPrimaryLargeTextStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.SemiBold.Italic.h4"));
+	ButtonPrimaryLargeTextStyle.SetTransformPolicy(ETextTransformPolicy::ToUpper);
+	ButtonPrimaryLargeTextStyle.SetColorAndOpacity(StyleInstance->GetColor("Color.Black.Secondary"));
+	StyleInstance->Set("Text.Button.Primary.Large", ButtonPrimaryLargeTextStyle);
+
+	FTextBlockStyle ButtonPrimaryTextStyle = FTextBlockStyle();
+	ButtonPrimaryTextStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.SemiBold.Italic.p"));
+	ButtonPrimaryTextStyle.SetColorAndOpacity(StyleInstance->GetColor("Color.Black.Secondary"));
+	ButtonPrimaryTextStyle.SetTransformPolicy(ETextTransformPolicy::ToUpper);
+	StyleInstance->Set("Text.Button.Primary", ButtonPrimaryTextStyle);
+
+	FTextBlockStyle ButtonSecondaryTextStyle = FTextBlockStyle();
+	ButtonSecondaryTextStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.SemiBold.Italic.p"));
+	ButtonSecondaryTextStyle.SetColorAndOpacity(StyleInstance->GetColor("Color.Text.Light.Primary"));
+	ButtonSecondaryTextStyle.SetTransformPolicy(ETextTransformPolicy::ToUpper);
+	StyleInstance->Set("Text.Button.Secondary", ButtonSecondaryTextStyle);
+
+	// Editable text styles
+	FEditableTextBoxStyle EditableTextBoxStyle = FEditableTextBoxStyle();
+	EditableTextBoxStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.Regular.p"));
+	EditableTextBoxStyle.SetBackgroundImageNormal(FSlateRoundedBoxBrush(
+		StyleInstance->GetColor("Color.Text.Dark.Primary"),
+		6.f,
+		FLinearColor::Transparent,
+		1.f
+	));
+	EditableTextBoxStyle.SetBackgroundImageHovered(FSlateRoundedBoxBrush(
+		StyleInstance->GetColor("Color.Text.Dark.Primary"),
+		6.f,
+		StyleInstance->GetColor("Color.Text.Dark.Secondary"),
+		1.f
+	));
+	EditableTextBoxStyle.SetBackgroundImageFocused(FSlateRoundedBoxBrush(
+		StyleInstance->GetColor("Color.Text.Dark.Primary"),
+		6.f,
+		StyleInstance->GetColor("Color.Yellow.Primary"),
+		1.f
+	));
+	EditableTextBoxStyle.SetPadding(FMargin(7.f, 5));
+	EditableTextBoxStyle.SetForegroundColor(StyleInstance->GetColor("Color.Text.Light.Primary"));
+	EditableTextBoxStyle.SetFocusedForegroundColor(StyleInstance->GetColor("Color.Text.Light.Primary"));
+	StyleInstance->Set("Text.Editable", EditableTextBoxStyle);
+	
 }
 
-void FMainStyle::InitializeButtons()
+void FMainStyle::InitializeButtonStyles()
 {
-	FButtonStyle ButtonPrimaryYellowStyle = FButtonStyle();
-	ButtonPrimaryYellowStyle.SetNormal(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Yellow.Secondary"), 12.f));
-	ButtonPrimaryYellowStyle.SetHovered(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Yellow.Primary"), 12.f));
-	ButtonPrimaryYellowStyle.SetPressed(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Yellow.Tertiary"), 12.f));
-	
-	ButtonPrimaryYellowStyle.SetNormalPadding(FMargin(15.f, 5.f));
-	ButtonPrimaryYellowStyle.SetPressedPadding(FMargin(15.f, 5.f));
+	FButtonStyle ButtonPrimaryLargeStyle = FButtonStyle();
+	ButtonPrimaryLargeStyle.SetNormal(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Yellow.Secondary"), 12.f));
+	ButtonPrimaryLargeStyle.SetHovered(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Yellow.Primary"), 12.f));
+	ButtonPrimaryLargeStyle.SetPressed(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Yellow.Tertiary"), 12.f));
+	ButtonPrimaryLargeStyle.SetNormalPadding(FMargin(15.f, 5.f));
+	ButtonPrimaryLargeStyle.SetPressedPadding(FMargin(15.f, 5.f));
+	StyleInstance->Set("Button.Primary.Large", ButtonPrimaryLargeStyle);
 
-	StyleInstance->Set("Button.Primary.Yellow", ButtonPrimaryYellowStyle);
+	FButtonStyle ButtonPrimaryStyle = FButtonStyle();
+	ButtonPrimaryStyle.SetNormal(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Yellow.Secondary"), 6.f));
+	ButtonPrimaryStyle.SetHovered(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Yellow.Primary"), 6.f));
+	ButtonPrimaryStyle.SetPressed(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Yellow.Tertiary"), 6.f));
+	ButtonPrimaryStyle.SetNormalPadding(FMargin(7.f, 3.f));
+	ButtonPrimaryStyle.SetPressedPadding(FMargin(7.f, 3.f));
+	StyleInstance->Set("Button.Primary", ButtonPrimaryStyle);
+
+	FButtonStyle ButtonSecondaryStyle = FButtonStyle();
+	ButtonSecondaryStyle.SetNormal(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Black.Secondary"), 6.f));
+	ButtonSecondaryStyle.SetHovered(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Black.Primary"), 6.f));
+	ButtonSecondaryStyle.SetPressed(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Black.Tertiary"), 6.f));
+	ButtonSecondaryStyle.SetNormalPadding(FMargin(7.f, 3.f));
+	ButtonSecondaryStyle.SetPressedPadding(FMargin(7.f, 3.f));
+	StyleInstance->Set("Button.Secondary", ButtonSecondaryStyle);
+
+	FButtonStyle ButtonMenuBuildItemStyle = FButtonStyle();
+	ButtonMenuBuildItemStyle.SetNormal(FSlateRoundedBoxBrush(FLinearColor::Transparent, 6.f));
+	ButtonMenuBuildItemStyle.SetHovered(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Black.Primary"), 6.f));
+	ButtonMenuBuildItemStyle.SetPressed(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Black.Tertiary"), 6.f));
+	StyleInstance->Set("Button.Menu.Build.Item", ButtonMenuBuildItemStyle);
+
+	FButtonStyle ButtonMenuBuildItemSelectedStyle = FButtonStyle();
+	ButtonMenuBuildItemSelectedStyle.SetNormal(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Black.Primary"), 6.f));
+	ButtonMenuBuildItemSelectedStyle.SetHovered(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Black.Primary"), 6.f));
+	ButtonMenuBuildItemSelectedStyle.SetPressed(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Black.Tertiary"), 6.f));
+	StyleInstance->Set("Button.Menu.Build.Item.Selected", ButtonMenuBuildItemSelectedStyle);
 }
 
 void FMainStyle::InitializeConstants()

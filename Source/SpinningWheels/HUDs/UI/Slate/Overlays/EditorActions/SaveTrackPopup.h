@@ -27,8 +27,6 @@ private:
 	FReply ExecuteConfirmSaveTrack();
 	FReply ExecuteCancelSaveTrack();
 
-	FTextBlockStyle Temp;
-
 public:
 
 	void Show();

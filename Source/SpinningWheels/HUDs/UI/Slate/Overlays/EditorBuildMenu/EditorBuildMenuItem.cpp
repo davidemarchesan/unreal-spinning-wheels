@@ -8,22 +8,15 @@ void SEditorBuildMenuItem::Construct(const FArguments& InArgs)
 	const FText Name = InArgs._Name;
 
 	OnMenuSlotClicked = InArgs._OnMenuSlotClicked;
-
-	ButtonStyle = FButtonStyle();
-	ButtonStyle.SetNormal(FSlateRoundedBoxBrush(FLinearColor::Transparent, 6.f));
-	ButtonStyle.SetHovered(FSlateRoundedBoxBrush(FLinearColor::Transparent, 6.f));
-	ButtonStyle.SetPressed(FSlateRoundedBoxBrush(FLinearColor::Transparent, 6.f));
-	// ButtonStyle.SetHovered(FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.PacificBlue"), 6.f));
-	// ButtonStyle.SetPressed(FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.AlabasterGrey"), 6.f));
-
+	
 	ChildSlot[
 
 		SNew(SBox)
 		.HeightOverride(50.f)
 		.WidthOverride(50.f)
 		[
-			SNew(SButton)
-			.ButtonStyle(&ButtonStyle)
+			SAssignNew(Button, SButton)
+			.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Menu.Build.Item"))
 			.OnClicked(this, &SEditorBuildMenuItem::OnClicked)
 			[
 				SNew(SVerticalBox)
@@ -31,8 +24,8 @@ void SEditorBuildMenuItem::Construct(const FArguments& InArgs)
 				+ SVerticalBox::Slot()
 				[
 					SNew(STextBlock)
-					.Font(FMainStyle::Get().GetFontStyle("Font.Lato.Bold.p"))
-					.ColorAndOpacity(FMainStyle::Get().GetColor("Color.Primary.Light"))
+					.Font(FMainStyle::Get().GetFontStyle("Font.Funnel.Regular.p"))
+					.ColorAndOpacity(FMainStyle::Get().GetColor("Color.Text.Light.Primary"))
 					.Justification(ETextJustify::Center)
 					.Text(FText::AsNumber(Slot))
 				]
@@ -40,8 +33,8 @@ void SEditorBuildMenuItem::Construct(const FArguments& InArgs)
 				+ SVerticalBox::Slot()
 				[
 					SNew(STextBlock)
-					.Font(FMainStyle::Get().GetFontStyle("Font.Lato.Bold.p"))
-					.ColorAndOpacity(FMainStyle::Get().GetColor("Color.Primary.Light"))
+					.Font(FMainStyle::Get().GetFontStyle("Font.Funnel.Regular.p"))
+					.ColorAndOpacity(FMainStyle::Get().GetColor("Color.Text.Light.Primary"))
 					.Justification(ETextJustify::Center)
 					.Text(Name)
 				]
@@ -63,10 +56,16 @@ FReply SEditorBuildMenuItem::OnClicked()
 
 void SEditorBuildMenuItem::SetSelected()
 {
-	ButtonStyle.SetNormal(FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.PacificBlue"), 6.f));
+	if (Button)
+	{
+		Button->SetButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Menu.Build.Item.Selected"));
+	}
 }
 
 void SEditorBuildMenuItem::SetUnselected()
 {
-	ButtonStyle.SetNormal(FSlateRoundedBoxBrush(FLinearColor::Transparent, 6.f));
+	if (Button)
+	{
+		Button->SetButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Menu.Build.Item"));
+	}
 }
