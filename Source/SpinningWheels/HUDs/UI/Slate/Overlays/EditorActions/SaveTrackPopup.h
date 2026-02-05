@@ -29,6 +29,8 @@ private:
 
 public:
 
+	void SetTrackName(const FString& InTrackName);
+	
 	void Show();
 	void Hide();
 };

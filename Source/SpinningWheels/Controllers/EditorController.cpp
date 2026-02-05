@@ -191,6 +191,18 @@ void AEditorController::SetupTrackGrid()
 	}
 }
 
+void AEditorController::BlockCursor()
+{
+	SetInputMode(FInputModeUIOnly());
+	bIgnoreInput = true;
+}
+
+void AEditorController::UnlockCursor()
+{
+	SetInputMode(FInputModeGameAndUI());
+	bIgnoreInput = false;
+}
+
 void AEditorController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -358,7 +370,7 @@ void AEditorController::PreviewBlock()
 
 void AEditorController::HoverBlock()
 {
-	if (bBuildMode == true)
+	if (bBuildMode == true || bIgnoreInput == true)
 	{
 		return;
 	}
@@ -494,6 +506,16 @@ void AEditorController::InputSaveTrack(const FString& TrackName)
 	{
 		GameMode->SaveTrack(TrackName);
 	}
+}
+
+FString AEditorController::GetTrackName()
+{
+	if (GameMode.IsValid())
+	{
+		return GameMode->GetTrackName();
+	}
+
+	return "";
 }
 
 void AEditorController::EnterBuildMode(const FName& RowName, const FBlockRow& BlockRow)

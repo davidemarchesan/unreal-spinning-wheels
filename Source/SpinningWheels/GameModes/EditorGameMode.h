@@ -19,6 +19,7 @@ class AEditorPawn;
 class ATrackGrid;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTrackGridReadySignature, ATrackGrid*, TrackGrid);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTrackSavedSignature, const FTrack&, CurrentTrack, const bool, bSuccess);
 
 UCLASS()
 class SPINNINGWHEELS_API AEditorGameMode : public ARaceGameModeBase
@@ -54,9 +55,13 @@ public:
 	virtual void StartPlay() override;
 
 	FOnTrackGridReadySignature OnTrackGridReady;
+	FOnTrackSavedSignature OnTrackSaved;
+	
 	TWeakObjectPtr<ATrackGrid> GetTrackGrid() const { return TrackGrid; }
 
 	void TestTrack(AController* Controller);
 	void SaveTrack(const FString& TrackName);
+
+	FString GetTrackName();
 	
 };

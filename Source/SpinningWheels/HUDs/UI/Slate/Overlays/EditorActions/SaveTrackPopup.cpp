@@ -10,7 +10,7 @@ void SSaveTrackPopup::Construct(const FArguments& InArgs)
 	ChildSlot[
 
 		SAssignNew(MainBox, SBox)
-		.Visibility(EVisibility::Collapsed)
+		// .Visibility(EVisibility::Collapsed)
 		.MinDesiredWidth(300.f)
 		[
 			SNew(SBorder)
@@ -109,6 +109,14 @@ FReply SSaveTrackPopup::ExecuteCancelSaveTrack()
 	}
 
 	return FReply::Unhandled();
+}
+
+void SSaveTrackPopup::SetTrackName(const FString& InTrackName)
+{
+	if (TrackNameEditBox.IsValid())
+	{
+		TrackNameEditBox->SetText(FText::FromString(InTrackName));
+	}
 }
 
 void SSaveTrackPopup::Show()

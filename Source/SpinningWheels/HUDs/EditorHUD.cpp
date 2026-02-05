@@ -4,22 +4,26 @@
 #include "EditorHUD.h"
 
 #include "SpinningWheels/Controllers/EditorController.h"
+#include "SpinningWheels/GameModes/EditorGameMode.h"
 #include "UI/Slate/Overlays/EditorActions/EditorActionsOverlay.h"
 #include "UI/Slate/Overlays/EditorActions/SaveTrackPopup.h"
 #include "UI/Slate/Overlays/EditorBuildMenu/EditorBuildMenuOverlay.h"
+#include "UI/Slate/Overlays/EditorTrackData/EditorTrackDataOverlay.h"
 #include "UI/Slate/Styles/MainStyle.h"
+#include "UI/Slate/Widgets/Modals/ModalConfirmWidget.h"
 
 void AEditorHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
+	EditorGameMode = GetWorld()->GetAuthGameMode<AEditorGameMode>();
 	EditorController = Cast<AEditorController>(GetOwningPlayerController());
 
-	InitializeOverlays();
+	InitializeRootOverlay();
 	InitializeDelegates();
 }
 
-void AEditorHUD::InitializeOverlays()
+void AEditorHUD::InitializeRootOverlay()
 {
 	if (GEngine == nullptr)
 	{
@@ -47,8 +51,14 @@ void AEditorHUD::InitializeOverlays()
 
 	GEngine->GameViewport->AddViewportWidgetContent(RootOverlay.ToSharedRef());
 
+	ModalOverlay = SNew(SOverlay)
+		.Visibility(EVisibility::Collapsed);
+
+	GEngine->GameViewport->AddViewportWidgetContent(ModalOverlay.ToSharedRef(), 5);
+
 	InitializeOverlayEditorActions();
 	InitializeOverlayBuildMenu();
+	InitializeOverlayTrackData();
 	InitializeOverlaySavePopup();
 }
 
@@ -133,20 +143,30 @@ void AEditorHUD::InitializeOverlayBuildMenu()
 	EditorController->OnExitBuildMode.AddDynamic(this, &AEditorHUD::OnExitBuildMode);
 }
 
-void AEditorHUD::InitializeOverlaySavePopup()
+void AEditorHUD::InitializeOverlayTrackData()
 {
 	if (RootCanvas.IsValid() == false)
 	{
 		return;
 	}
 
-	// Bottom right: editor buttons
 	RootCanvas->AddSlot()
-	          .Anchors(FAnchors(.5f, .5f))
-	          .Alignment(FVector2D(.5f, .5f))
-	          .AutoSize(true)
+			  .Anchors(FAnchors(0.f, 0.f))
+			  .Alignment(FVector2D(0.f, 0.f))
+			  .AutoSize(true)
 	[
-		SAssignNew(SaveTrackPopup, SSaveTrackPopup)
+		SAssignNew(EditorTrackDataOverlay, SEditorTrackDataOverlay)
+	];
+}
+
+void AEditorHUD::InitializeOverlaySavePopup()
+{
+	if (ModalOverlay.IsValid() == false)
+	{
+		return;
+	}
+
+	SaveTrackPopup = SNew(SSaveTrackPopup)
 		.OnConfirmSaveTrack_Lambda([this](const FString& TrackName)
 		{
 			if (this)
@@ -163,12 +183,50 @@ void AEditorHUD::InitializeOverlaySavePopup()
 			}
 
 			return FReply::Handled();
-		})
-	];
+		});
 }
 
 void AEditorHUD::InitializeDelegates()
 {
+	if (EditorGameMode.IsValid())
+	{
+		EditorGameMode->OnTrackSaved.AddDynamic(this, &AEditorHUD::OnTrackSaved);
+	}
+}
+
+void AEditorHUD::ShowModalOverlay(const TSharedPtr<SWidget>& Widget)
+{
+	if (ModalOverlay.IsValid() && Widget.IsValid())
+	{
+		ModalOverlay->ClearChildren();
+		ModalOverlay->AddSlot()
+		            .VAlign(VAlign_Center)
+		            .HAlign(HAlign_Center)
+		[
+			Widget.ToSharedRef()
+		];
+
+		if (EditorController.IsValid())
+		{
+			EditorController->BlockCursor();
+		}
+
+		ModalOverlay->SetVisibility(EVisibility::Visible);
+	}
+}
+
+void AEditorHUD::HideModalOverlay()
+{
+	if (ModalOverlay.IsValid())
+	{
+		ModalOverlay->SetVisibility(EVisibility::Collapsed);
+		ModalOverlay->ClearChildren();
+
+		if (EditorController.IsValid())
+		{
+			EditorController->UnlockCursor();
+		}
+	}
 }
 
 void AEditorHUD::OnMenuSlotSelected(int8 Slot)
@@ -187,6 +245,26 @@ void AEditorHUD::OnExitBuildMode()
 	}
 }
 
+void AEditorHUD::OnTrackSaved(const FTrack& CurrentTrack, const bool bSuccess)
+{
+
+	TSharedPtr<SModalConfirm> ModalConfirm = SNew(SModalConfirm)
+		.Text(FText::FromString(bSuccess ? "Track saved successfully." : "An error occured while saving the track. Please try again."))
+		.OnConfirm_Lambda([this]()
+		{
+			HideModalOverlay();
+			return FReply::Handled();
+		});
+	
+	ShowModalOverlay(ModalConfirm);
+
+	if (EditorTrackDataOverlay.IsValid())
+	{
+		EditorTrackDataOverlay->Update(CurrentTrack);
+	}
+	
+}
+
 FReply AEditorHUD::OnTestTrack()
 {
 	if (EditorController.IsValid())
@@ -198,26 +276,36 @@ FReply AEditorHUD::OnTestTrack()
 
 FReply AEditorHUD::OnSaveTrack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("HUD save track, opening poupup"));
-
-	if (SaveTrackPopup.IsValid())
+	FString CurrentTrackName = "";
+	if (EditorController.IsValid())
 	{
-		SaveTrackPopup->Show();
+		CurrentTrackName = EditorController->GetTrackName();
 	}
-	// todo: get current name from controller
-	// show popup with current name (if an edited track)
+
+	if (ModalOverlay.IsValid() && SaveTrackPopup.IsValid())
+	{
+		SaveTrackPopup->SetTrackName(CurrentTrackName);
+		ShowModalOverlay(SaveTrackPopup);
+	}
 	return FReply::Handled();
 }
 
 FReply AEditorHUD::OnConfirmSaveTrack(const FString& TrackName)
 {
+
+	TSharedPtr<SModalBase> ModalSaving = SNew(SModalBase)
+		.BodySlot()
+		[
+			SNew(STextBlock)
+			.Text(FText::FromString("Saving..."))
+			.Justification(ETextJustify::Center)
+			.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.P"))
+		];
+	ShowModalOverlay(ModalSaving);
+	
 	if (EditorController.IsValid())
 	{
 		EditorController->InputSaveTrack(TrackName);
-	}
-	if (SaveTrackPopup.IsValid())
-	{
-		SaveTrackPopup->Hide();
 	}
 
 	return FReply::Handled();

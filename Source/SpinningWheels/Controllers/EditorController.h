@@ -31,6 +31,8 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
+
+	bool bIgnoreInput = false;
 	
 	void InputMoveCamera(const FInputActionValue& Value);
 	void InputRotateCamera(const FInputActionValue& Value);
@@ -115,6 +117,9 @@ protected:
 
 public:
 
+	void BlockCursor();
+	void UnlockCursor();
+
 	FOnMenuSlotSelectedSignature OnMenuSlotSelected;
 	FOnExitBuildModeSignature OnExitBuildMode;
 
@@ -127,4 +132,6 @@ public:
 
 	void InputTestTrack();
 	void InputSaveTrack(const FString& TrackName);
+
+	FString GetTrackName();
 };

@@ -68,20 +68,13 @@ void AEditorGameMode::SaveTrack(const FString& TrackName)
 {
 	if (TrackGrid.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("gamemode save track %s"), *TrackName);
-		// access track grid
-		// get tiles status
-		// currentrack.id ? create n save : overwrite
-		// contruct save file (
-		// save
-
-		// todo: check if filename string is empty
 		if (CurrentTrack.IsNull())
 		{
 			const FGuid TrackGuid = FGuid::NewGuid();
-			UE_LOG(LogTemp, Warning, TEXT("current track is null, creating a new id %s"), *TrackGuid.ToString());
 			CurrentTrack = FTrack(TrackGuid, TrackName);
 		}
+
+		CurrentTrack.Name = TrackName;
 
 		FTrackSaveData TrackSave;
 		TrackSave.Version = 1;
@@ -99,12 +92,14 @@ void AEditorGameMode::SaveTrack(const FString& TrackName)
 		TrackSave.Blocks = BlocksSaveData;
 
 		FString OutputJson;
-		bool bSuccess = FJsonObjectConverter::UStructToJsonObjectString(TrackSave, OutputJson);
-
-		UE_LOG(LogTemp, Warning, TEXT("gamemode track to json %d"), bSuccess);
-
+		if (const bool bSuccess = FJsonObjectConverter::UStructToJsonObjectString(TrackSave, OutputJson); bSuccess == false)
+		{
+			OnTrackSaved.Broadcast(CurrentTrack, bSuccess);
+			return;
+		}
+		
 		const FString BaseDir = FPaths::ProjectUserDir() / TEXT("Tracks"); // User/Documents on Live
-		const FString FileName = FPaths::MakeValidFileName(CurrentTrack.Name) + TEXT(".json");
+		const FString FileName = FPaths::MakeValidFileName(CurrentTrack.Id.ToString()) + TEXT(".json");
 		const FString FilePath = BaseDir / FileName;
 
 		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
@@ -113,7 +108,18 @@ void AEditorGameMode::SaveTrack(const FString& TrackName)
 			PlatformFile.CreateDirectory(*BaseDir);
 		}
 
-		bool bSaved = FFileHelper::SaveStringToFile(OutputJson, *FilePath, FFileHelper::EEncodingOptions::ForceUTF8);
-		UE_LOG(LogTemp, Warning, TEXT("gamemode save track on %s success %d"), *FilePath, bSaved);
+		const bool bSaved = FFileHelper::SaveStringToFile(OutputJson, *FilePath, FFileHelper::EEncodingOptions::ForceUTF8);
+		OnTrackSaved.Broadcast(CurrentTrack, bSaved);
+		
 	}
+}
+
+FString AEditorGameMode::GetTrackName()
+{
+	if (CurrentTrack.IsNull())
+	{
+		return "";
+	}
+
+	return CurrentTrack.Name;
 }
