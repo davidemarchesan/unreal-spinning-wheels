@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
 #include "UI/Slate/Pages/Pages.h"
+#include "UI/Slate/Pages/Tracks/TracksPage.h"
 #include "MainHUD.generated.h"
 
 /**
@@ -33,7 +34,7 @@ private:
 
 	// Pages
 	TSharedPtr<SWidget> MainMenuPage;
-	TSharedPtr<SWidget> TracksPage;
+	TSharedPtr<STracksPage> TracksPage;
 
 	void GoTo(const EMenuPage Page);
 	void HandleBack();

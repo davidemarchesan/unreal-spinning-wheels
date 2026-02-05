@@ -26,7 +26,13 @@ void SPageBase::Construct(const FArguments& InArgs)
 		+ SVerticalBox::Slot()
 		.FillHeight(1.f)
 		[
-			InArgs._BodySlot.Widget
+			SNew(SBox)
+			.Padding(FMainStyle::Get().GetMargin("Padding.SafeArea"))
+			[
+				InArgs
+				._BodySlot
+				.Widget
+			]
 		]
 
 		// Footer
@@ -42,7 +48,7 @@ void SPageBase::Construct(const FArguments& InArgs)
 				// Left actions
 				+ SHorizontalBox::Slot()
 				[
-					
+
 					SNew(SButtonAction)
 					.ButtonText(FText::FromString("Esc"))
 					.ActionText(FText::FromString("Back"))

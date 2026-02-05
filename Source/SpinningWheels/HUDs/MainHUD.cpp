@@ -54,7 +54,7 @@ void AMainHUD::InitializePages()
 			}
 			return FReply::Handled();
 		});
-	
+
 	TracksPage = SNew(STracksPage)
 		.OnPageBack_Lambda([this]()
 		{
@@ -67,13 +67,13 @@ void AMainHUD::InitializePages()
 		MainSwitcher->AddSlot()[MainMenuPage.ToSharedRef()];
 		MainSwitcher->AddSlot()[TracksPage.ToSharedRef()];
 
-		GoTo(EMenuPage::MP_None);
+		// GoTo(EMenuPage::MP_None); // Should be this one
+		GoTo(EMenuPage::MP_Tracks); // Testing
 	}
 }
 
 void AMainHUD::GoTo(const EMenuPage Page)
 {
-
 	PagesHistory.Add(CurrentPage);
 	CurrentPage = Page;
 
@@ -84,7 +84,11 @@ void AMainHUD::GoTo(const EMenuPage Page)
 
 	case EMenuPage::MP_Tracks:
 		MainSwitcher->SetActiveWidget(TracksPage.ToSharedRef());
-		FSlateApplication::Get().SetKeyboardFocus(TracksPage);
+		// FSlateApplication::Get().SetKeyboardFocus(TracksPage);
+		if (TracksPage->GetFocusWidget().IsValid())
+		{
+			FSlateApplication::Get().SetKeyboardFocus(TracksPage->GetFocusWidget());
+		}
 		break;
 
 	default:
@@ -101,7 +105,7 @@ void AMainHUD::HandleBack()
 		const EMenuPage PreviousPage = PagesHistory.Top();
 		PagesHistory.Pop(EAllowShrinking::No);
 		GoTo(PreviousPage);
-		
+
 		return;
 	}
 
