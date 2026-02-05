@@ -113,6 +113,10 @@ void FMainStyle::InitializeFonts()
 			"/Game/Assets/Fonts/Funnel/FunnelSans-MediumItalic_Font.FunnelSans-MediumItalic_Font"
 		),
 		FStyleFontData(
+			"Funnel.SemiBold",
+			"/Game/Assets/Fonts/Funnel/FunnelSans-SemiBold_Font.FunnelSans-SemiBold_Font"
+		),
+		FStyleFontData(
 			"Funnel.SemiBold.Italic",
 			"/Game/Assets/Fonts/Funnel/FunnelSans-SemiBoldItalic_Font.FunnelSans-SemiBoldItalic_Font"
 		),
@@ -158,12 +162,26 @@ void FMainStyle::InitializeBrushes()
 	                   new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.AlabasterGrey"), 12.f));
 	StyleInstance->Set("Brush.Background.Dark",
 	                   new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Background.Dark"), 12.f));
+
+	StyleInstance->Set("Brush.ButtonAction.Button",
+					   new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.White.Primary"), 6.f));
 }
 
 void FMainStyle::InitializeTextStyles()
 {
 
 	// Normal text styles
+	FTextBlockStyle GameTitleTextStyle = FTextBlockStyle();
+	GameTitleTextStyle.SetColorAndOpacity(StyleInstance->GetColor("Color.Yellow.Primary"));
+	GameTitleTextStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.SemiBold.Italic.h1"));
+	GameTitleTextStyle.SetTransformPolicy(ETextTransformPolicy::ToUpper);
+	StyleInstance->Set("Text.Game.Title", GameTitleTextStyle);
+	
+	FTextBlockStyle PageTitleTextStyle = FTextBlockStyle();
+	PageTitleTextStyle.SetColorAndOpacity(StyleInstance->GetColor("Color.Yellow.Primary"));
+	PageTitleTextStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.Regular.Italic.h2"));
+	StyleInstance->Set("Text.Page.Title", PageTitleTextStyle);
+	
 	FTextBlockStyle BoxTitleTextStyle = FTextBlockStyle();
 	BoxTitleTextStyle.SetColorAndOpacity(StyleInstance->GetColor("Color.Yellow.Primary"));
 	BoxTitleTextStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.Regular.Italic.h4"));
@@ -173,6 +191,18 @@ void FMainStyle::InitializeTextStyles()
 	PTextStyle.SetColorAndOpacity(StyleInstance->GetColor("Color.Text.Light.Primary"));
 	PTextStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.Regular.p"));
 	StyleInstance->Set("Text.P", PTextStyle);
+
+	FTextBlockStyle ButtonActionButtonTextStyle = FTextBlockStyle();
+	ButtonActionButtonTextStyle.SetColorAndOpacity(FMainStyle::Get().GetColor("Color.Black.Secondary"));
+	ButtonActionButtonTextStyle.SetFont(FMainStyle::Get().GetFontStyle("Font.Funnel.SemiBold.Italic.p"));
+	ButtonActionButtonTextStyle.SetTransformPolicy(ETextTransformPolicy::ToUpper);
+	StyleInstance->Set("Text.ButtonAction.Button", ButtonActionButtonTextStyle);
+
+	FTextBlockStyle ButtonActionActionTextStyle = FTextBlockStyle();
+	ButtonActionActionTextStyle.SetColorAndOpacity(FMainStyle::Get().GetColor("Color.White.Primary"));
+	ButtonActionActionTextStyle.SetFont(FMainStyle::Get().GetFontStyle("Font.Funnel.SemiBold.p"));
+	ButtonActionActionTextStyle.SetTransformPolicy(ETextTransformPolicy::ToUpper);
+	StyleInstance->Set("Text.ButtonAction.Action", ButtonActionActionTextStyle);
 
 	// Button text styles
 	FTextBlockStyle ButtonPrimaryLargeTextStyle = FTextBlockStyle();
