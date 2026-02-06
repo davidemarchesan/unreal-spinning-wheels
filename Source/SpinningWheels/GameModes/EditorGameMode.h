@@ -54,6 +54,8 @@ public:
 
 	virtual void StartPlay() override;
 
+	void InitializeGrid();
+
 	FOnTrackGridReadySignature OnTrackGridReady;
 	FOnTrackSavedSignature OnTrackSaved;
 	

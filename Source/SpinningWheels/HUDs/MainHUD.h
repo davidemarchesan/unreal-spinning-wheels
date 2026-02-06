@@ -20,14 +20,22 @@ class SPINNINGWHEELS_API AMainHUD : public AHUD
 public:
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
 
 	void InitializeMainHUD();
-
+	
+	// Subsystems
+	TWeakObjectPtr<class UGameInstance> GameInstance;
+	TWeakObjectPtr<class ULoadingSubsystem> LoadingSubsystem;
+	TWeakObjectPtr<class UTracksSubsystem> TracksSubsystem;
+	TWeakObjectPtr<class UTrackEditorSubsystem> TrackEditorSubsystem;
+	
 	void InitializeLoadingOverlay();
 	TSharedPtr<SLoadingOverlay> LoadingOverlay;
 
+	// Main overlay
 	bool bRootInitialized = false;
 	bool InitializeRootOverlay();
 
@@ -43,8 +51,15 @@ private:
 	void GoTo(const EMenuPage Page);
 	void HandleBack();
 
+	void OnCreateTrack();
+	void OnEditTrack(const FTrackSaveData& Track);
+
 	// History
 	EMenuPage CurrentPage = EMenuPage::MP_None;
 	TArray<EMenuPage> PagesHistory;
+
+	// Delegates
+	void OnLoadingSubsystemReady();
+	FDelegateHandle OnLoadingSubsystemReadyDelegateHandle;
 	
 };

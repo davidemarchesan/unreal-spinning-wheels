@@ -1,23 +1,19 @@
 #include "TracksPage.h"
 
 #include "TrackItemWidget.h"
+#include "SpinningWheels/Core/Track.h"
 #include "SpinningWheels/HUDs/UI/Slate/Pages/PageBase.h"
 #include "SpinningWheels/HUDs/UI/Slate/Styles/MainStyle.h"
 #include "Widgets/Layout/SWrapBox.h"
 
 void STracksPage::Construct(const FArguments& InArgs)
 {
-	OnPageBack = InArgs._OnPageBack;
+	Tracks = InArgs._Tracks;
 
-	TArray<FString> Tracks = {
-		FString("Track 1"),
-		FString("Track 2"),
-		FString("Track 3"),
-		FString("Track 4"),
-		FString("Track 5"),
-		FString("Track 6"),
-		FString("Track 7"),
-	};
+	OnCreateTrack = InArgs._OnCreateTrack;
+	OnEditTrack = InArgs._OnEditTrack;
+	
+	OnPageBack = InArgs._OnPageBack;
 
 	WrapBox = SNew(SWrapBox)
 		.Orientation(Orient_Horizontal)
@@ -28,7 +24,7 @@ void STracksPage::Construct(const FArguments& InArgs)
 	for (int32 i = 0; i < Tracks.Num(); i++)
 	{
 		TSharedPtr<STrackItem> Item = SNew(STrackItem)
-			.Text(FText::FromString(Tracks[i]))
+			.Text(FText::FromString(Tracks[i].Name))
 			.IsSelectable(true)
 			.OnSelected_Lambda([this, i]()
 			{
@@ -76,6 +72,7 @@ void STracksPage::Construct(const FArguments& InArgs)
 				.Text(FText::FromString("Edit"))
 				.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Primary"))
 				.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.Button.Primary"))
+				.OnClicked(this, &STracksPage::ExecuteEditTrack)
 			]
 		]
 
@@ -126,6 +123,17 @@ void STracksPage::SetSelectedTrackIndex(const int32 Index)
 {
 	SelectedTrackIndex = Index;
 	UpdateContextActions();
+}
+
+FReply STracksPage::ExecuteEditTrack()
+{
+	if (Tracks.IsValidIndex(SelectedTrackIndex) && OnEditTrack.IsBound())
+	{
+		OnEditTrack.Execute(Tracks[SelectedTrackIndex]);
+		return FReply::Handled();
+	}
+
+	return FReply::Unhandled();
 }
 
 bool STracksPage::SupportsKeyboardFocus() const

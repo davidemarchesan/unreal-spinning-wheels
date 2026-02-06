@@ -1,7 +1,10 @@
 #pragma once
 #include "TrackItemWidget.h"
+#include "SpinningWheels/Core/Track.h"
 #include "SpinningWheels/HUDs/UI/Slate/Pages/Pages.h"
 #include "Widgets/Layout/SWrapBox.h"
+
+DECLARE_DELEGATE_OneParam(FOnEditTrack, const FTrackSaveData&)
 
 class STracksPage : public SCompoundWidget
 {
@@ -9,6 +12,11 @@ public:
 
 	SLATE_BEGIN_ARGS(STracksPage) {}
 
+		SLATE_ARGUMENT(TArray<FTrackSaveData>, Tracks)
+
+		SLATE_EVENT(FSimpleDelegate, OnCreateTrack)
+		SLATE_EVENT(FOnEditTrack, OnEditTrack)
+		
 		SLATE_EVENT(FOnPageBack, OnPageBack)
 		
 	SLATE_END_ARGS()
@@ -23,6 +31,8 @@ private:
 
 	TSharedPtr<SBox> ContextActionsBox;
 
+	TArray<FTrackSaveData> Tracks;
+
 	FOnPageBack OnPageBack;
 
 	void OnTrackSelected(const int32 Index);
@@ -35,12 +45,15 @@ private:
 	void SetSelectedTrackIndex(const int32 Index);
 	int32 SelectedTrackIndex = INDEX_NONE;
 
+	FSimpleDelegate OnCreateTrack;
+	FOnEditTrack OnEditTrack;
+
+	FReply ExecuteEditTrack();
+
 public:
-
-	virtual bool SupportsKeyboardFocus() const override;
 	
+	virtual bool SupportsKeyboardFocus() const override;
 	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
-
 	// virtual FReply OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent) override;
 
 	TSharedPtr<SWidget> GetFocusWidget() { return DefaultTrackItem; }

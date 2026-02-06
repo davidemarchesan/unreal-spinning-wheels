@@ -7,6 +7,7 @@
 #include "SpinningWheels/Actors/TrackGrid.h"
 #include "SpinningWheels/Controllers/RaceController.h"
 #include "SpinningWheels/Pawns/Car.h"
+#include "SpinningWheels/Subsystems/GameInstance/TrackEditorSubsystem.h"
 
 void AEditorGameMode::PrepareControllerForNewLap(AController* Controller)
 {
@@ -23,9 +24,29 @@ void AEditorGameMode::StartPlay()
 {
 	Super::StartPlay();
 
+	InitializeGrid();
+}
+
+void AEditorGameMode::InitializeGrid()
+{
 	TrackGrid = GetWorld()->SpawnActor<ATrackGrid>(DefaultTrackGridClass, FVector::ZeroVector, FRotator::ZeroRotator);
 	if (TrackGrid.IsValid())
 	{
+
+		if (UGameInstance* GameInstance = GetGameInstance())
+		{
+			if (UTrackEditorSubsystem* TrackEditorSubsystem = GameInstance->GetSubsystem<UTrackEditorSubsystem>())
+			{
+				TOptional<FTrackSaveData> TrackToLoad = TrackEditorSubsystem->GetTrackToLoad(true);
+				if (TrackToLoad.IsSet())
+				{
+					TrackGrid->Initialize(GridSize.X, GridSize.Y, TrackToLoad.GetValue());
+					OnTrackGridReady.Broadcast(TrackGrid.Get());
+					return;
+				}
+			}
+		}
+		
 		// Simulating a map load (it works)
 		// const FString BaseDir = FPaths::ProjectUserDir() / TEXT("Tracks"); // User/Documents on Live
 		// const FString FileName = TEXT("rotation.json");

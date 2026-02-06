@@ -3,6 +3,10 @@
 
 #include "MainHUD.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "SpinningWheels/Subsystems/GameInstance/LoadingSubsystem.h"
+#include "SpinningWheels/Subsystems/GameInstance/TrackEditorSubsystem.h"
+#include "SpinningWheels/Subsystems/GameInstance/TracksSubsystem.h"
 #include "UI/Slate/Pages/MainMenu/MainMenuPage.h"
 #include "UI/Slate/Pages/Tracks/TracksPage.h"
 #include "Widgets/Layout/SWidgetSwitcher.h"
@@ -14,18 +18,39 @@ void AMainHUD::BeginPlay()
 	InitializeMainHUD();
 }
 
+void AMainHUD::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (OnLoadingSubsystemReadyDelegateHandle.IsValid())
+	{
+		OnLoadingSubsystemReadyDelegateHandle.Reset();
+	}
+}
+
 void AMainHUD::InitializeMainHUD()
 {
-
 	InitializeLoadingOverlay();
 
-	// todo: init root widget switcher when everything is loaded
-	// bRootInitialized = InitializeRootOverlay();
-	//
-	// if (bRootInitialized)
-	// {
-	// 	InitializePages();
-	// }
+	GameInstance = GetGameInstance();
+	if (GameInstance.IsValid())
+	{
+		LoadingSubsystem = GameInstance->GetSubsystem<ULoadingSubsystem>();
+		TracksSubsystem = GameInstance->GetSubsystem<UTracksSubsystem>();
+		TrackEditorSubsystem = GameInstance->GetSubsystem<UTrackEditorSubsystem>();
+
+		if (LoadingSubsystem.IsValid())
+		{
+			if (LoadingSubsystem.Get()->IsReady())
+			{
+				OnLoadingSubsystemReady();
+			}
+			else
+			{
+				LoadingSubsystem->OnLoadingSubsystemReady.AddUObject(this, &AMainHUD::OnLoadingSubsystemReady);
+			}
+		}
+	}
 }
 
 void AMainHUD::InitializeLoadingOverlay()
@@ -76,20 +101,30 @@ void AMainHUD::InitializePages()
 			return FReply::Handled();
 		});
 
-	TracksPage = SNew(STracksPage)
-		.OnPageBack_Lambda([this]()
-		{
-			HandleBack();
-			return FReply::Handled();
-		});
+	if (TracksSubsystem.IsValid())
+	{
+		TracksPage = SNew(STracksPage)
+			.Tracks(TracksSubsystem->GetTracks())
+			.OnCreateTrack_Lambda([]()
+			{
+			})
+			.OnEditTrack_Lambda([this](const FTrackSaveData& Track)
+			{
+				OnEditTrack(Track);
+			})
+			.OnPageBack_Lambda([this]()
+			{
+				HandleBack();
+				return FReply::Handled();
+			});
+	}
 
 	if (MainSwitcher.IsValid())
 	{
 		MainSwitcher->AddSlot()[MainMenuPage.ToSharedRef()];
 		MainSwitcher->AddSlot()[TracksPage.ToSharedRef()];
 
-		// GoTo(EMenuPage::MP_None); // Should be this one
-		GoTo(EMenuPage::MP_Tracks); // Testing
+		GoTo(EMenuPage::MP_None); // Should be this one
 	}
 }
 
@@ -104,11 +139,12 @@ void AMainHUD::GoTo(const EMenuPage Page)
 		break;
 
 	case EMenuPage::MP_Tracks:
-		MainSwitcher->SetActiveWidget(TracksPage.ToSharedRef());
-		// FSlateApplication::Get().SetKeyboardFocus(TracksPage);
-		if (TracksPage->GetFocusWidget().IsValid())
 		{
-			FSlateApplication::Get().SetKeyboardFocus(TracksPage->GetFocusWidget());
+			MainSwitcher->SetActiveWidget(TracksPage.ToSharedRef());
+			if (TracksPage->GetFocusWidget().IsValid())
+			{
+				FSlateApplication::Get().SetKeyboardFocus(TracksPage->GetFocusWidget());
+			}
 		}
 		break;
 
@@ -131,4 +167,31 @@ void AMainHUD::HandleBack()
 	}
 
 	GoTo(EMenuPage::MP_None);
+}
+
+void AMainHUD::OnCreateTrack()
+{
+}
+
+void AMainHUD::OnEditTrack(const FTrackSaveData& Track)
+{
+	if (TrackEditorSubsystem.IsValid())
+	{
+		TrackEditorSubsystem->SetNextTrackToLoad(Track);
+
+		GEngine->GameViewport->RemoveAllViewportWidgets();
+		UGameplayStatics::OpenLevel(GetWorld(),"L_Editor");
+	}
+}
+
+void AMainHUD::OnLoadingSubsystemReady()
+{
+	bRootInitialized = InitializeRootOverlay();
+
+	if (bRootInitialized)
+	{
+		InitializePages();
+
+		GEngine->GameViewport->RemoveViewportWidgetContent(LoadingOverlay.ToSharedRef());
+	}
 }

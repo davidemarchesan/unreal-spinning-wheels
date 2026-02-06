@@ -400,7 +400,6 @@ void AEditorController::HoverBlock()
 				if (HoveredBlock.IsValid())
 				{
 					HoveredBlock->ShowOutline();
-					UE_LOG(LogTemp, Warning, TEXT("Hovering a new block"));
 				}
 			}
 		}
