@@ -10,6 +10,7 @@ public:
 		SLATE_ARGUMENT(FText, PageTitleText)
 
 		SLATE_NAMED_SLOT(FArguments, BodySlot)
+		SLATE_NAMED_SLOT(FArguments, ContextActionsSlot)
 
 	SLATE_END_ARGS()
 

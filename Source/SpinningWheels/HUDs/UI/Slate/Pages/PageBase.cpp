@@ -47,6 +47,7 @@ void SPageBase::Construct(const FArguments& InArgs)
 
 				// Left actions
 				+ SHorizontalBox::Slot()
+				.AutoWidth()
 				[
 
 					SNew(SButtonAction)
@@ -55,9 +56,13 @@ void SPageBase::Construct(const FArguments& InArgs)
 
 				]
 
-				// Right actions
+				// Context actions (or right actions)
 				+ SHorizontalBox::Slot()
-
+				.FillContentWidth(1.f)
+				.HAlign(HAlign_Right)
+				[
+					InArgs._ContextActionsSlot.Widget
+				]
 
 			]
 		]

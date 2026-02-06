@@ -16,12 +16,33 @@ void AMainHUD::BeginPlay()
 
 void AMainHUD::InitializeMainHUD()
 {
-	bRootInitialized = InitializeRootOverlay();
 
-	if (bRootInitialized)
+	InitializeLoadingOverlay();
+
+	// todo: init root widget switcher when everything is loaded
+	// bRootInitialized = InitializeRootOverlay();
+	//
+	// if (bRootInitialized)
+	// {
+	// 	InitializePages();
+	// }
+}
+
+void AMainHUD::InitializeLoadingOverlay()
+{
+	if (GEngine == nullptr)
 	{
-		InitializePages();
+		return;
 	}
+
+	if (GEngine->GameViewport == nullptr)
+	{
+		return;
+	}
+
+	LoadingOverlay = SNew(SLoadingOverlay);
+
+	GEngine->GameViewport->AddViewportWidgetContent(LoadingOverlay.ToSharedRef(), 100);
 }
 
 bool AMainHUD::InitializeRootOverlay()

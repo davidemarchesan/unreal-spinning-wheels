@@ -4,6 +4,11 @@
 
 void STrackItem::Construct(const FArguments& InArgs)
 {
+
+	bIsSelectable = InArgs._IsSelectable;
+
+	OnSelected = InArgs._OnSelected;
+	OnUnselected = InArgs._OnUnselected;
 	
 	ChildSlot[
 
@@ -12,11 +17,10 @@ void STrackItem::Construct(const FArguments& InArgs)
 		[
 			SAssignNew(Border, SBorder)
 			.BorderImage(new FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.Black.Secondary"), 6.f, FLinearColor::Transparent, 2.f))
-			// .BorderImage(new FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.Black.Secondary"), 6.f, FMainStyle::Get().GetColor("Color.Text.Light.Primary"), 2.f))
 			.Padding(FMargin(20.f, 14.f))
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString(TEXT("Track Name")))
+				.Text(InArgs._Text)
 				.Font(FMainStyle::Get().GetFontStyle("Font.Funnel.Medium.h3"))
 				.ColorAndOpacity(FMainStyle::Get().GetColor("Color.Text.Light.Primary"))
 				.Justification(ETextJustify::Center)
@@ -26,18 +30,52 @@ void STrackItem::Construct(const FArguments& InArgs)
 	];
 }
 
+void STrackItem::ExecuteOnSelected()
+{
+	if (OnSelected.IsBound())
+	{
+		OnSelected.Execute();
+	}
+}
+
+void STrackItem::ExecuteOnUnselected()
+{
+	if (OnUnselected.IsBound())
+	{
+		OnUnselected.Execute();
+	}
+}
+
 void STrackItem::UpdateStyle()
 {
-	if (bFocused == true)
+	if (bSelected)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("TrackItemWidget::UpdateStyle::Focus"));
-		Border->SetBorderImage(new FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.Black.Secondary"), 6.f, FMainStyle::Get().GetColor("Color.Text.Light.Primary"), 2.f));
+		Border->SetBorderImage(new FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.Black.Primary"), 6.f, FMainStyle::Get().GetColor("Color.Text.Light.Primary"), 2.f));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("TrackItemWidget::UpdateStyle::Normal"));
 		Border->SetBorderImage(new FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.Black.Secondary"), 6.f, FLinearColor::Transparent, 2.f));
 	}
+	// if (bFocused == true)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("TrackItemWidget::UpdateStyle::Focus"));
+	// 	Border->SetBorderImage(new FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.Black.Primary"), 6.f, FMainStyle::Get().GetColor("Color.Text.Light.Primary"), 2.f));
+	// }
+	// else if (bHovered == true)
+	// {
+	// 	Border->SetBorderImage(new FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.Black.Primary"), 6.f, FLinearColor::Transparent, 2.f));
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("TrackItemWidget::UpdateStyle::Normal"));
+	// 	Border->SetBorderImage(new FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.Black.Secondary"), 6.f, FLinearColor::Transparent, 2.f));
+	// }
+}
+
+void STrackItem::SetSelected(bool bInSelected)
+{
+	bSelected = bInSelected;
+	UpdateStyle();
 }
 
 bool STrackItem::SupportsKeyboardFocus() const
@@ -47,17 +85,17 @@ bool STrackItem::SupportsKeyboardFocus() const
 
 FReply STrackItem::OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent)
 {
-	UE_LOG(LogTemp, Warning, TEXT("TrackItemWidget::OnFocusReceived"));
 	bFocused = true;
 	UpdateStyle();
+	
 	return SCompoundWidget::OnFocusReceived(MyGeometry, InFocusEvent);
 }
 
 void STrackItem::OnFocusLost(const FFocusEvent& InFocusEvent)
 {
-	UE_LOG(LogTemp, Warning, TEXT("TrackItemWidget::OnFocusLost"));
 	bFocused = false;
 	UpdateStyle();
+	
 	SCompoundWidget::OnFocusLost(InFocusEvent);
 }
 
@@ -73,6 +111,25 @@ FReply STrackItem::OnKeyUp(const FGeometry& MyGeometry, const FKeyEvent& InKeyEv
 
 FReply STrackItem::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
+
+	if (IsEnabled())
+	{
+		if (bIsSelectable)
+		{
+			bSelected = !bSelected;
+			UpdateStyle();
+
+			if (bSelected)
+			{
+				ExecuteOnSelected();
+			}
+			else
+			{
+				ExecuteOnUnselected();
+			}
+		}
+	}
+	
 	return SCompoundWidget::OnMouseButtonDown(MyGeometry, MouseEvent);
 }
 
@@ -83,10 +140,16 @@ FReply STrackItem::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEv
 
 void STrackItem::OnMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
+	bHovered = true;
+	UpdateStyle();
+	
 	SCompoundWidget::OnMouseEnter(MyGeometry, MouseEvent);
 }
 
 void STrackItem::OnMouseLeave(const FPointerEvent& MouseEvent)
 {
+	bHovered = false;
+	UpdateStyle();
+	
 	SCompoundWidget::OnMouseLeave(MouseEvent);
 }

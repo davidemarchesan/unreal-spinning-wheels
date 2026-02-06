@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "UI/Slate/Overlays/Loading/LoadingOverlay.h"
 #include "UI/Slate/Pages/Pages.h"
 #include "UI/Slate/Pages/Tracks/TracksPage.h"
 #include "MainHUD.generated.h"
@@ -23,6 +24,9 @@ public:
 private:
 
 	void InitializeMainHUD();
+
+	void InitializeLoadingOverlay();
+	TSharedPtr<SLoadingOverlay> LoadingOverlay;
 
 	bool bRootInitialized = false;
 	bool InitializeRootOverlay();
