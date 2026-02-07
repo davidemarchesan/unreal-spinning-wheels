@@ -105,17 +105,32 @@ void AMainHUD::InitializePages()
 	{
 		TracksPage = SNew(STracksPage)
 			.Tracks(TracksSubsystem->GetTracks())
-			.OnCreateTrack_Lambda([]()
+			.OnCreateTrack_Lambda([this]()
 			{
+				if (this)
+				{
+					OnCreateTrack();
+					return FReply::Handled();
+				}
+				return FReply::Unhandled();
 			})
 			.OnEditTrack_Lambda([this](const FTrackSaveData& Track)
 			{
-				OnEditTrack(Track);
+				if (this)
+				{
+					OnEditTrack(Track);
+					return FReply::Handled();
+				}
+				return FReply::Unhandled();
 			})
 			.OnPageBack_Lambda([this]()
 			{
-				HandleBack();
-				return FReply::Handled();
+				if (this)
+				{
+					HandleBack();
+					return FReply::Handled();
+				}
+				return FReply::Unhandled();
 			});
 	}
 
@@ -124,7 +139,8 @@ void AMainHUD::InitializePages()
 		MainSwitcher->AddSlot()[MainMenuPage.ToSharedRef()];
 		MainSwitcher->AddSlot()[TracksPage.ToSharedRef()];
 
-		GoTo(EMenuPage::MP_None); // Should be this one
+		// GoTo(EMenuPage::MP_None); // Should be this one
+		GoTo(EMenuPage::MP_Tracks); // Testing
 	}
 }
 
@@ -141,10 +157,10 @@ void AMainHUD::GoTo(const EMenuPage Page)
 	case EMenuPage::MP_Tracks:
 		{
 			MainSwitcher->SetActiveWidget(TracksPage.ToSharedRef());
-			if (TracksPage->GetFocusWidget().IsValid())
-			{
-				FSlateApplication::Get().SetKeyboardFocus(TracksPage->GetFocusWidget());
-			}
+			// if (TracksPage->GetFocusWidget().IsValid())
+			// {
+			// 	FSlateApplication::Get().SetKeyboardFocus(TracksPage->GetFocusWidget());
+			// }
 		}
 		break;
 
@@ -171,6 +187,13 @@ void AMainHUD::HandleBack()
 
 void AMainHUD::OnCreateTrack()
 {
+	if (TrackEditorSubsystem.IsValid())
+	{
+		TrackEditorSubsystem->Clear();
+
+		GEngine->GameViewport->RemoveAllViewportWidgets();
+		UGameplayStatics::OpenLevel(GetWorld(), "L_Editor");
+	}
 }
 
 void AMainHUD::OnEditTrack(const FTrackSaveData& Track)
@@ -180,7 +203,7 @@ void AMainHUD::OnEditTrack(const FTrackSaveData& Track)
 		TrackEditorSubsystem->SetNextTrackToLoad(Track);
 
 		GEngine->GameViewport->RemoveAllViewportWidgets();
-		UGameplayStatics::OpenLevel(GetWorld(),"L_Editor");
+		UGameplayStatics::OpenLevel(GetWorld(), "L_Editor");
 	}
 }
 

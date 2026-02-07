@@ -1,10 +1,7 @@
 #pragma once
-#include "TrackItemWidget.h"
+#include "TracksEditOverlay.h"
+#include "TracksMainOverlay.h"
 #include "SpinningWheels/Core/Track.h"
-#include "SpinningWheels/HUDs/UI/Slate/Pages/Pages.h"
-#include "Widgets/Layout/SWrapBox.h"
-
-DECLARE_DELEGATE_OneParam(FOnEditTrack, const FTrackSaveData&)
 
 class STracksPage : public SCompoundWidget
 {
@@ -14,10 +11,10 @@ public:
 
 		SLATE_ARGUMENT(TArray<FTrackSaveData>, Tracks)
 
-		SLATE_EVENT(FSimpleDelegate, OnCreateTrack)
+		SLATE_EVENT(FOnReply, OnCreateTrack)
 		SLATE_EVENT(FOnEditTrack, OnEditTrack)
 		
-		SLATE_EVENT(FOnPageBack, OnPageBack)
+		SLATE_EVENT(FOnReply, OnPageBack)
 		
 	SLATE_END_ARGS()
 
@@ -25,30 +22,29 @@ public:
 
 private:
 
-	TSharedPtr<SWrapBox> WrapBox;
-	TArray<TSharedPtr<STrackItem>> TrackItems;
-	TSharedPtr<STrackItem> DefaultTrackItem;
-
+	TSharedPtr<SWidgetSwitcher> MainSwitcher;
+	TSharedPtr<STracksMainOverlay> TracksMainOverlay;
+	TSharedPtr<STracksEditOverlay> TracksEditOverlay;
 	TSharedPtr<SBox> ContextActionsBox;
 
+	bool bInSubPage = false;
+	FReply GoToTracksSubPage();
+	
 	TArray<FTrackSaveData> Tracks;
 
-	FOnPageBack OnPageBack;
+	FOnReply OnPageBack;
+
+	void UpdateContextActions();
+	
+	FOnEditTrack OnEditTrack;
+
+	FReply ExecuteEditTrack();
 
 	void OnTrackSelected(const int32 Index);
 	void OnTrackUnselected(const int32 Index);
 
-	void DeselectTracks(int32 Except = INDEX_NONE);
-
-	void UpdateContextActions();
-
 	void SetSelectedTrackIndex(const int32 Index);
 	int32 SelectedTrackIndex = INDEX_NONE;
-
-	FSimpleDelegate OnCreateTrack;
-	FOnEditTrack OnEditTrack;
-
-	FReply ExecuteEditTrack();
 
 public:
 	
@@ -56,6 +52,6 @@ public:
 	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
 	// virtual FReply OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent) override;
 
-	TSharedPtr<SWidget> GetFocusWidget() { return DefaultTrackItem; }
+	// TSharedPtr<SWidget> GetFocusWidget() { return DefaultTrackItem; }
 	
 };

@@ -88,7 +88,7 @@ void FMainStyle::InitializeColors()
 
 	StyleInstance->Set("Color.Text.Dark.Primary", FLinearColor(FColor::FromHex("1A1A1A")));
 	StyleInstance->Set("Color.Text.Dark.Secondary", FLinearColor(FColor::FromHex("4A4A4A")));
-	
+
 	StyleInstance->Set("Color.Background.Dark", FLinearColor(FColor::FromHex("141414")));
 }
 
@@ -164,24 +164,41 @@ void FMainStyle::InitializeBrushes()
 	                   new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Background.Dark"), 12.f));
 
 	StyleInstance->Set("Brush.ButtonAction.Button",
-					   new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.White.Primary"), 6.f));
+	                   new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.White.Primary"), 6.f));
+
+
+	StyleInstance->Set("Brush.Card.Normal",
+	                   new FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.Black.Secondary"), 12.f,
+	                                             FLinearColor::Transparent, 4.f));
+	StyleInstance->Set("Brush.Card.Hovered",
+	                   new FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.Black.Secondary"), 12.f,
+	                                             FMainStyle::Get().GetColor("Color.Text.Light.Primary"), 4.f));
+
+	StyleInstance->Set("Brush.TrackCard.Normal",
+	                   new FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.Black.Secondary"), 12.f,
+	                                             FLinearColor::Transparent, 4.f));
+	StyleInstance->Set("Brush.TrackCard.Hovered",
+	                   new FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.Black.Primary"), 12.f,
+	                                             FLinearColor::Transparent, 4.f));
+	StyleInstance->Set("Brush.TrackCard.Selected",
+	                   new FSlateRoundedBoxBrush(FMainStyle::Get().GetColor("Color.Black.Primary"), 12.f,
+	                                             FMainStyle::Get().GetColor("Color.Text.Light.Primary"), 4.f));
 }
 
 void FMainStyle::InitializeTextStyles()
 {
-
 	// Normal text styles
 	FTextBlockStyle GameTitleTextStyle = FTextBlockStyle();
 	GameTitleTextStyle.SetColorAndOpacity(StyleInstance->GetColor("Color.Yellow.Primary"));
 	GameTitleTextStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.SemiBold.Italic.h1"));
 	GameTitleTextStyle.SetTransformPolicy(ETextTransformPolicy::ToUpper);
 	StyleInstance->Set("Text.Game.Title", GameTitleTextStyle);
-	
+
 	FTextBlockStyle PageTitleTextStyle = FTextBlockStyle();
 	PageTitleTextStyle.SetColorAndOpacity(StyleInstance->GetColor("Color.Yellow.Primary"));
 	PageTitleTextStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.Regular.Italic.h2"));
 	StyleInstance->Set("Text.Page.Title", PageTitleTextStyle);
-	
+
 	FTextBlockStyle BoxTitleTextStyle = FTextBlockStyle();
 	BoxTitleTextStyle.SetColorAndOpacity(StyleInstance->GetColor("Color.Yellow.Primary"));
 	BoxTitleTextStyle.SetFont(StyleInstance->GetFontStyle("Font.Funnel.Regular.Italic.h4"));
@@ -248,7 +265,6 @@ void FMainStyle::InitializeTextStyles()
 	EditableTextBoxStyle.SetForegroundColor(StyleInstance->GetColor("Color.Text.Light.Primary"));
 	EditableTextBoxStyle.SetFocusedForegroundColor(StyleInstance->GetColor("Color.Text.Light.Primary"));
 	StyleInstance->Set("Text.Editable", EditableTextBoxStyle);
-	
 }
 
 void FMainStyle::InitializeButtonStyles()
@@ -284,9 +300,12 @@ void FMainStyle::InitializeButtonStyles()
 	StyleInstance->Set("Button.Menu.Build.Item", ButtonMenuBuildItemStyle);
 
 	FButtonStyle ButtonMenuBuildItemSelectedStyle = FButtonStyle();
-	ButtonMenuBuildItemSelectedStyle.SetNormal(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Black.Primary"), 6.f));
-	ButtonMenuBuildItemSelectedStyle.SetHovered(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Black.Primary"), 6.f));
-	ButtonMenuBuildItemSelectedStyle.SetPressed(FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Black.Tertiary"), 6.f));
+	ButtonMenuBuildItemSelectedStyle.SetNormal(
+		FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Black.Primary"), 6.f));
+	ButtonMenuBuildItemSelectedStyle.SetHovered(
+		FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Black.Primary"), 6.f));
+	ButtonMenuBuildItemSelectedStyle.SetPressed(
+		FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Black.Tertiary"), 6.f));
 	StyleInstance->Set("Button.Menu.Build.Item.Selected", ButtonMenuBuildItemSelectedStyle);
 }
 

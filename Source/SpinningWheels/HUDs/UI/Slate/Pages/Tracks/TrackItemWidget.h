@@ -1,6 +1,8 @@
 #pragma once
+#include "SpinningWheels/Core/Slate.h"
+#include "SpinningWheels/HUDs/UI/Slate/Widgets/FocusableWidget.h"
 
-class STrackItem : public SCompoundWidget
+class STrackItem : public SFocusableBase
 {
 public:
 	SLATE_BEGIN_ARGS(STrackItem)
@@ -12,8 +14,8 @@ public:
 
 		SLATE_ARGUMENT(bool, IsSelectable)
 
-		SLATE_EVENT(FSimpleDelegate, OnSelected)
-		SLATE_EVENT(FSimpleDelegate, OnUnselected)
+		SLATE_EVENT(FOnReply, OnSelected)
+		SLATE_EVENT(FOnReply, OnUnselected)
 
 	SLATE_END_ARGS()
 
@@ -21,39 +23,20 @@ public:
 
 private:
 
-	bool bIsSelectable = false;
-
 	TSharedPtr<SBorder> Border;
+	
+	FOnReply OnSelected;
+	FOnReply OnUnselected;
 
-	bool bSelected = false;
-	bool bHovered = false;
-	bool bFocused = false;
+protected:
 
-	FSimpleDelegate OnSelected;
-	FSimpleDelegate OnUnselected;
+	virtual FReply ExecuteOnSelect() override;
+	virtual FReply ExecuteOnUnselect() override;
 
-	void ExecuteOnSelected();
-	void ExecuteOnUnselected();
-
-	void UpdateStyle();
+	virtual void UpdateStyle() override;
 
 public:
 
-	void SetSelected(bool bInSelected);
-	void SetHovered(bool bInHovered);
-	void SetFocused(bool bInFocused);
-
-	//~ SWidget overrides
-	virtual bool SupportsKeyboardFocus() const override;
-	virtual FReply OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent) override;
-	virtual void OnFocusLost(const FFocusEvent& InFocusEvent) override;
-	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
-	virtual FReply OnKeyUp(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
-	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
-	virtual FReply OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
-	virtual void OnMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
-	virtual void OnMouseLeave(const FPointerEvent& MouseEvent) override;
-
-	
+	void SetSelected(const bool bInSelected);
 	
 };
