@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "SpinningWheels/Core/EditorBuildMenu.h"
 #include "SpinningWheels/Core/Track.h"
+#include "SpinningWheels/GameModes/EditorGameMode.h"
 #include "Widgets/Layout/SConstraintCanvas.h"
 #include "EditorHUD.generated.h"
 
@@ -28,16 +29,21 @@ private:
 	void InitializeOverlayEditorSavePopup();
 	void InitializeOverlayEditorMenu();
 	void InitializeOverlayEditorTrackData();
-	
-	void InitializeDelegates();
 
-	void ShowModalOverlay(const TSharedPtr<SWidget>& Widget);
+	void ShowModalOverlay(const TSharedPtr<SWidget>& Widget, const bool bFocus = true);
 	void HideModalOverlay();
 
+	/** Begin delegates bindings */
+	void InitializeDelegates();
+	void DeinitializeDelegates();
+	
 	UFUNCTION() void OnMenuSlotSelected(int8 Slot);
 	UFUNCTION() void OnExitBuildMode();
 
+	UFUNCTION() void OnTrackLoaded(const FTrack& CurrentTrack);
 	UFUNCTION() void OnTrackSaved(const FTrack& CurrentTrack, const bool bSuccess);
+	UFUNCTION() void OnEditorModeChanged(const EEditorMode EditorMode);
+	/** End delegates bindings */
 
 	/** Begin Pointers to overlays */
 	TSharedPtr<SOverlay> RootOverlay;
@@ -47,23 +53,24 @@ private:
 	TSharedPtr<class SEditorBuildMenuOverlay> EditorBuildMenuOverlay;
 	TSharedPtr<class SEditorActionsOverlay> EditorActionsOverlay;
 	TSharedPtr<class SEditorTrackDataOverlay> EditorTrackDataOverlay;
-	TSharedPtr<class SSaveTrackPopup> SaveTrackPopup;
+	TSharedPtr<class SEditorSaveTrackPopup> SaveTrackPopup;
 	TSharedPtr<class SEditorMenuPopup> EditorMenuPopup;
 	/** End Pointers to overlays */
 	
 	FReply OnTestTrack();
 	FReply OnSaveTrack();
 	FReply OnConfirmSaveTrack(const FString& TrackName);
-	FReply OnCancelSaveTrack();
 	
 	FReply OnMenuSelected(UEditorBuildMenuDataAsset* Menu);
 	FReply OnBlockSelected(const int8 Slot);
 
+	FReply OnReturnToEditor();
 	FReply OnGoToMainMenu();
 
 protected:
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
 

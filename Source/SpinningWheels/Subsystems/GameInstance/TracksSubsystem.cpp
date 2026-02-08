@@ -10,6 +10,18 @@ void UTracksSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	
+	LoadTracks();
+	ImReady();
+		
+}
+
+void UTracksSubsystem::Deinitialize()
+{
+	Super::Deinitialize();
+}
+
+void UTracksSubsystem::LoadTracks()
+{
 	const FString BaseDir = FPaths::ProjectUserDir() / TEXT("Tracks"); // User/Documents on Live
 	const FString FileExt = "json";
 
@@ -17,6 +29,8 @@ void UTracksSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	TArray<FString> FoundFiles;
 	PlatformFile.FindFiles(FoundFiles, *BaseDir, *FileExt);
+
+	TArray<FTrackSaveData> TempTracks;
 
 	for (int32 i = 0; i < FoundFiles.Num(); i++)
 	{
@@ -28,23 +42,24 @@ void UTracksSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 				FTrackSaveData TrackSave;
 				if (FJsonObjectConverter::JsonObjectStringToUStruct(OutString, &TrackSave))
 				{
-					Tracks.Push(TrackSave);
+					TempTracks.Push(TrackSave);
 				}
 			}
 		}
 	}
 
-	ImReady();
-		
-}
-
-void UTracksSubsystem::Deinitialize()
-{
-	Super::Deinitialize();
+	Tracks = TempTracks;
+	TempTracks.Empty(); // Not needed anymre
+	
 }
 
 void UTracksSubsystem::ImReady()
 {
 	bReady = true;
 	OnReady.Broadcast();
+}
+
+void UTracksSubsystem::RefreshTracks()
+{
+	LoadTracks();
 }

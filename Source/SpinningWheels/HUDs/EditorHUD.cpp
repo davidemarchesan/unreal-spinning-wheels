@@ -7,7 +7,7 @@
 #include "SpinningWheels/Controllers/EditorController.h"
 #include "SpinningWheels/GameModes/EditorGameMode.h"
 #include "UI/Slate/Overlays/EditorActions/EditorActionsOverlay.h"
-#include "UI/Slate/Overlays/EditorActions/SaveTrackPopup.h"
+#include "UI/Slate/Overlays/EditorActions/EditorSaveTrackPopup.h"
 #include "UI/Slate/Overlays/EditorBuildMenu/EditorBuildMenuOverlay.h"
 #include "UI/Slate/Overlays/EditorMenu/EditorMenuPopup.h"
 #include "UI/Slate/Overlays/EditorTrackData/EditorTrackDataOverlay.h"
@@ -25,12 +25,19 @@ void AEditorHUD::BeginPlay()
 	InitializeDelegates();
 }
 
+void AEditorHUD::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+
+	DeinitializeDelegates();
+	
+	Super::EndPlay(EndPlayReason);
+}
+
 void AEditorHUD::InputOpenMenu()
 {
 	if (EditorMenuPopup)
 	{
 		ShowModalOverlay(EditorMenuPopup);
-		FSlateApplication::Get().SetKeyboardFocus(EditorMenuPopup.ToSharedRef());
 	}
 }
 
@@ -180,7 +187,7 @@ void AEditorHUD::InitializeOverlayEditorSavePopup()
 		return;
 	}
 
-	SaveTrackPopup = SNew(SSaveTrackPopup)
+	SaveTrackPopup = SNew(SEditorSaveTrackPopup)
 		.OnConfirmSaveTrack_Lambda([this](const FString& TrackName)
 		{
 			if (this)
@@ -189,13 +196,12 @@ void AEditorHUD::InitializeOverlayEditorSavePopup()
 			}
 			return FReply::Handled();
 		})
-		.OnCancelSaveTrack_Lambda([this]()
+		.OnBack_Lambda([this]()
 		{
 			if (this)
 			{
-				OnCancelSaveTrack();
+				HideModalOverlay();
 			}
-
 			return FReply::Handled();
 		});
 }
@@ -207,6 +213,7 @@ void AEditorHUD::InitializeOverlayEditorMenu()
 		return;
 	}
 
+	// todo: change callbacks to a single fonaction (see core/slate.h)
 	EditorMenuPopup = SNew(SEditorMenuPopup)
 		.OnBack_Lambda([this]()
 		{
@@ -236,6 +243,15 @@ void AEditorHUD::InitializeOverlayEditorMenu()
 
 			return FReply::Unhandled();
 		})
+		.OnReturnToEditor_Lambda([this]()
+		{
+			if (this)
+			{
+				HideModalOverlay();
+				return OnReturnToEditor();
+			}
+			return FReply::Unhandled();
+		})
 		.OnGoToMainMenu_Lambda([this]()
 		{
 			if (this)
@@ -250,11 +266,23 @@ void AEditorHUD::InitializeDelegates()
 {
 	if (EditorGameMode.IsValid())
 	{
-		EditorGameMode->OnTrackSaved.AddDynamic(this, &AEditorHUD::OnTrackSaved); // todo: remove binding
+		EditorGameMode->OnTrackLoaded.AddDynamic(this, &AEditorHUD::OnTrackLoaded);
+		EditorGameMode->OnTrackSaved.AddDynamic(this, &AEditorHUD::OnTrackSaved);
+		EditorGameMode->OnEditorModeChanged.AddDynamic(this, &AEditorHUD::OnEditorModeChanged);
 	}
 }
 
-void AEditorHUD::ShowModalOverlay(const TSharedPtr<SWidget>& Widget)
+void AEditorHUD::DeinitializeDelegates()
+{
+	if (EditorGameMode.IsValid())
+	{
+		EditorGameMode->OnTrackLoaded.RemoveDynamic(this, &AEditorHUD::OnTrackLoaded);
+		EditorGameMode->OnTrackSaved.RemoveDynamic(this, &AEditorHUD::OnTrackSaved);
+		EditorGameMode->OnEditorModeChanged.RemoveDynamic(this, &AEditorHUD::OnEditorModeChanged);
+	}
+}
+
+void AEditorHUD::ShowModalOverlay(const TSharedPtr<SWidget>& Widget, const bool bFocus)
 {
 	if (ModalOverlay.IsValid() && Widget.IsValid())
 	{
@@ -272,6 +300,11 @@ void AEditorHUD::ShowModalOverlay(const TSharedPtr<SWidget>& Widget)
 		}
 
 		ModalOverlay->SetVisibility(EVisibility::Visible);
+
+		if (bFocus == true)
+		{
+			FSlateApplication::Get().SetKeyboardFocus(Widget.ToSharedRef());
+		}
 	}
 }
 
@@ -305,6 +338,14 @@ void AEditorHUD::OnExitBuildMode()
 	}
 }
 
+void AEditorHUD::OnTrackLoaded(const FTrack& CurrentTrack)
+{
+	if (EditorTrackDataOverlay.IsValid())
+	{
+		EditorTrackDataOverlay->Update(CurrentTrack);
+	}
+}
+
 void AEditorHUD::OnTrackSaved(const FTrack& CurrentTrack, const bool bSuccess)
 {
 	TSharedPtr<SModalConfirm> ModalConfirm = SNew(SModalConfirm)
@@ -323,6 +364,11 @@ void AEditorHUD::OnTrackSaved(const FTrack& CurrentTrack, const bool bSuccess)
 	{
 		EditorTrackDataOverlay->Update(CurrentTrack);
 	}
+}
+
+void AEditorHUD::OnEditorModeChanged(const EEditorMode EditorMode)
+{
+	// todo
 }
 
 FReply AEditorHUD::OnTestTrack()
@@ -370,15 +416,6 @@ FReply AEditorHUD::OnConfirmSaveTrack(const FString& TrackName)
 	return FReply::Handled();
 }
 
-FReply AEditorHUD::OnCancelSaveTrack()
-{
-	if (SaveTrackPopup.IsValid())
-	{
-		SaveTrackPopup->Hide();
-	}
-	return FReply::Handled();
-}
-
 FReply AEditorHUD::OnMenuSelected(UEditorBuildMenuDataAsset* Menu)
 {
 	if (EditorController.IsValid() && Menu != nullptr)
@@ -393,6 +430,15 @@ FReply AEditorHUD::OnBlockSelected(const int8 Slot)
 	if (EditorController.IsValid())
 	{
 		EditorController->InputSlot(Slot);
+	}
+	return FReply::Handled();
+}
+
+FReply AEditorHUD::OnReturnToEditor()
+{
+	if (EditorController.IsValid())
+	{
+		EditorController->InputReturnToEditor();
 	}
 	return FReply::Handled();
 }

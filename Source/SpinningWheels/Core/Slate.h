@@ -2,6 +2,7 @@
 #include "Track.h"
 
 DECLARE_DELEGATE_RetVal(FReply, FOnReply)
+DECLARE_DELEGATE_RetVal_OneParam(FReply, FOnAction, const FName&)
 
 DECLARE_DELEGATE_RetVal_OneParam(FReply, FOnEditTrack, const FTrackSaveData&)
 

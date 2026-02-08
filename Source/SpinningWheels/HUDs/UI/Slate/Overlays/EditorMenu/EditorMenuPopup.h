@@ -12,6 +12,7 @@ public:
 		SLATE_EVENT(FOnReply, OnBack)
 		SLATE_EVENT(FOnReply, OnSaveTrack)
 		SLATE_EVENT(FOnReply, OnTestTrack)
+		SLATE_EVENT(FOnReply, OnReturnToEditor)
 		SLATE_EVENT(FOnReply, OnGoToMainMenu)
 
 	SLATE_END_ARGS()

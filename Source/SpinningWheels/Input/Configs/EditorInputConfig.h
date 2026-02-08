@@ -34,5 +34,5 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Slot8;
 	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_Slot9;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_OpenMenu;
+	// UPROPERTY(EditDefaultsOnly, Category = "Input") UInputAction* IA_OpenMenu;
 };

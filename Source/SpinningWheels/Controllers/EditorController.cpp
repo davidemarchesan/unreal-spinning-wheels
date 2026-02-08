@@ -22,12 +22,20 @@ void AEditorController::BeginPlay()
 	bShowMouseCursor = true;
 	SetInputMode(FInputModeGameAndUI());
 
-	GameMode = GetWorld()->GetAuthGameMode<AEditorGameMode>();
+	EditorGameMode = GetWorld()->GetAuthGameMode<AEditorGameMode>();
 	SetupTrackGrid();
 
 	EditorHUD = GetHUD<AEditorHUD>();
-
 	SetupBuildMenu();
+
+	InitializeDelegates();
+}
+
+void AEditorController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	DeinitializeDelegates();
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void AEditorController::SetPawn(APawn* InPawn)
@@ -65,16 +73,15 @@ void AEditorController::SetupEditorInputBindings()
 	{
 		if (EditorInputConfig)
 		{
-
 			EnhancedInput->BindAction(EditorInputConfig->IA_Move, ETriggerEvent::Triggered, this,
 			                          &AEditorController::InputMoveCamera);
 			EnhancedInput->BindAction(EditorInputConfig->IA_Rotate, ETriggerEvent::Triggered, this,
 			                          &AEditorController::InputRotateCamera);
 
 			EnhancedInput->BindAction(EditorInputConfig->IA_SelectBlock, ETriggerEvent::Triggered, this,
-									  &AEditorController::InputSelectBlock);
+			                          &AEditorController::InputSelectBlock);
 			EnhancedInput->BindAction(EditorInputConfig->IA_RemoveBlock, ETriggerEvent::Triggered, this,
-									  &AEditorController::InputRemoveBlock);
+			                          &AEditorController::InputRemoveBlock);
 
 			EnhancedInput->BindAction(EditorInputConfig->IA_Slot1, ETriggerEvent::Triggered, this,
 			                          &AEditorController::InputSlot1);
@@ -94,9 +101,6 @@ void AEditorController::SetupEditorInputBindings()
 			                          &AEditorController::InputSlot8);
 			EnhancedInput->BindAction(EditorInputConfig->IA_Slot9, ETriggerEvent::Triggered, this,
 			                          &AEditorController::InputSlot9);
-
-			EnhancedInput->BindAction(EditorInputConfig->IA_OpenMenu, ETriggerEvent::Triggered, this,
-									  &AEditorController::InputOpenMenu);
 		}
 	}
 }
@@ -120,6 +124,7 @@ void AEditorController::SetupBuildInputBindings()
 void AEditorController::EnableDefaultInputMappingContext()
 {
 	EnableEditorInputMappingContext();
+	EnableGeneralInputMappingContext();
 }
 
 void AEditorController::EnableEditorInputMappingContext()
@@ -131,7 +136,7 @@ void AEditorController::EnableEditorInputMappingContext()
 		{
 			if (EditorMappingContext)
 			{
-				InputSystem->AddMappingContext(EditorMappingContext, 1);
+				InputSystem->AddMappingContext(EditorMappingContext, 10);
 			}
 		}
 	}
@@ -161,7 +166,7 @@ void AEditorController::EnableBuildInputMappingContext()
 		{
 			if (EditorBuildMappingContext)
 			{
-				InputSystem->AddMappingContext(EditorBuildMappingContext, 1);
+				InputSystem->AddMappingContext(EditorBuildMappingContext, 10);
 			}
 		}
 	}
@@ -182,14 +187,22 @@ void AEditorController::DisableBuildInputMappingContext()
 	}
 }
 
+void AEditorController::InputOpenMenu()
+{
+	if (EditorHUD.IsValid())
+	{
+		EditorHUD->InputOpenMenu();
+	}
+}
+
 void AEditorController::SetupTrackGrid()
 {
-	if (GameMode.IsValid())
+	if (EditorGameMode.IsValid())
 	{
-		TrackGrid = GameMode->GetTrackGrid();
+		TrackGrid = EditorGameMode->GetTrackGrid();
 		if (TrackGrid.IsValid() == false)
 		{
-			GameMode->OnTrackGridReady.AddDynamic(this, &AEditorController::OnTrackGridReady);
+			EditorGameMode->OnTrackGridReady.AddDynamic(this, &AEditorController::OnTrackGridReady);
 		}
 	}
 }
@@ -238,12 +251,11 @@ void AEditorController::InputSelectBlock()
 	{
 		return;
 	}
-	
+
 	if (TrackGrid->Remove(HoveredBlock->GetActorLocation()))
 	{
 		EnterBuildModeWithHovered();
 	}
-	
 }
 
 void AEditorController::InputRemoveBlock()
@@ -258,7 +270,6 @@ void AEditorController::InputRemoveBlock()
 		HoveredBlock->Destroy();
 		HoveredBlock = nullptr;
 	}
-	
 }
 
 void AEditorController::InputSlot1()
@@ -306,15 +317,6 @@ void AEditorController::InputSlot9()
 	InputSlot(9);
 }
 
-void AEditorController::InputOpenMenu()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Open menu"));
-	if (EditorHUD.IsValid())
-	{
-		EditorHUD->InputOpenMenu();
-	}
-}
-
 void AEditorController::InputBuildBlock()
 {
 	if (bBuildMode == false)
@@ -328,6 +330,12 @@ void AEditorController::InputBuildBlock()
 		if (TrackGrid.IsValid() && BlockToBuildName.IsValid() && PreviewedBlock.IsValid())
 		{
 			TrackGrid->Build(BlockToBuildName, Hit.ImpactPoint, PreviewedBlock->GetActorRotation());
+
+			if (bMovingBlock == true)
+			{
+				bMovingBlock = false;
+				ExitBuildMode();
+			}
 		}
 	}
 }
@@ -382,7 +390,7 @@ void AEditorController::PreviewBlock()
 
 void AEditorController::HoverBlock()
 {
-	if (bBuildMode == true || bIgnoreInput == true)
+	if (bBuildMode == true || bIgnoreInput == true || EditorMode != EEditorMode::EM_Editor)
 	{
 		return;
 	}
@@ -426,6 +434,23 @@ void AEditorController::HoverBlock()
 	}
 }
 
+void AEditorController::InitializeDelegates()
+{
+	if (EditorGameMode.IsValid())
+	{
+		EditorGameMode->OnEditorModeChanged.AddDynamic(this, &AEditorController::OnEditorModeChanged);
+	}
+}
+
+void AEditorController::DeinitializeDelegates()
+{
+	if (EditorGameMode.IsValid())
+	{
+		EditorGameMode->OnTrackGridReady.RemoveDynamic(this, &AEditorController::OnTrackGridReady);
+		EditorGameMode->OnEditorModeChanged.RemoveDynamic(this, &AEditorController::OnEditorModeChanged);
+	}
+}
+
 void AEditorController::OnTrackGridReady(ATrackGrid* InTrackGrid)
 {
 	if (InTrackGrid)
@@ -436,6 +461,28 @@ void AEditorController::OnTrackGridReady(ATrackGrid* InTrackGrid)
 		{
 			MovePawnAtCenter();
 		}
+	}
+}
+
+void AEditorController::OnEditorModeChanged(const EEditorMode NewEditorMode)
+{
+	EditorMode = NewEditorMode;
+	
+	if (EditorMode == EEditorMode::EM_TestTrack)
+	{
+		DisableEditorInputMappingContext();
+		EnableDriveInputMappingContext();
+
+		bShowMouseCursor = false;
+		SetInputMode(FInputModeGameOnly());
+	}
+	else
+	{
+		DisableDriveInputMappingContext();
+		EnableEditorInputMappingContext();
+
+		bShowMouseCursor = true;
+		SetInputMode(FInputModeGameAndUI());
 	}
 }
 
@@ -492,38 +539,42 @@ void AEditorController::InputSelectMenu(UEditorBuildMenuDataAsset* Menu)
 
 void AEditorController::InputTestTrack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("controller test track"));
-
-	if (GameMode.IsValid())
+	if (EditorGameMode.IsValid())
 	{
-		GameMode->TestTrack(this);
-
-		DisableEditorInputMappingContext();
-		EnableDriveInputMappingContext();
-
-		bShowMouseCursor = false;
-		SetInputMode(FInputModeGameOnly());
+		EditorGameMode->TestTrack(this);
 	}
+}
 
-	// switch control input
-	// spawn pawn
-	// set pawn control
-	// camera set to car pawn
+void AEditorController::InputReturnToEditor()
+{
+	if (EditorGameMode.IsValid())
+	{
+		EditorGameMode->ReturnToEditor(this);
+	}
 }
 
 void AEditorController::InputSaveTrack(const FString& TrackName)
 {
-	if (GameMode.IsValid())
+	if (EditorGameMode.IsValid())
 	{
-		GameMode->SaveTrack(TrackName);
+		EditorGameMode->SaveTrack(TrackName);
 	}
+}
+
+FTrack AEditorController::GetCurrentTrack()
+{
+	if (EditorGameMode.IsValid())
+	{
+		return EditorGameMode->GetCurrentTrack();
+	}
+	return FTrack();
 }
 
 FString AEditorController::GetTrackName()
 {
-	if (GameMode.IsValid())
+	if (EditorGameMode.IsValid())
 	{
-		return GameMode->GetTrackName();
+		return EditorGameMode->GetTrackName();
 	}
 
 	return "";
@@ -569,12 +620,14 @@ void AEditorController::EnterBuildModeWithHovered()
 	{
 		return;
 	}
-	
+
 	if (bBuildMode == false)
 	{
 		bBuildMode = true;
 		EnableBuildInputMappingContext();
 	}
+
+	bMovingBlock = true;
 
 	PreviewedBlock = HoveredBlock;
 	HoveredBlock = nullptr;

@@ -4,42 +4,45 @@
 
 void SModalBase::Construct(const FArguments& InArgs)
 {
-
 	ChildSlot[
-
-		SAssignNew(MainBox, SBox)
-		.MinDesiredWidth(300.f)
+		SNew(SBox)
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Center)
 		[
-			SNew(SBorder)
-			.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Dark"))
-			.Padding(FMainStyle::Get().GetMargin("Padding.Box"))
+			SAssignNew(MainBox, SBox)
+			.MinDesiredWidth(300.f)
 			[
-				SNew(SVerticalBox)
-				
-				+ SVerticalBox::Slot()
-				.AutoHeight()
+				SNew(SBorder)
+				.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Dark"))
+				.Padding(FMainStyle::Get().GetMargin("Padding.Box"))
 				[
-					InArgs
-					._HeaderSlot
-					.Widget
-				]
-				
-				+ SVerticalBox::Slot()
-				.AutoHeight()
-				[
-					InArgs
-					._BodySlot
-					.Widget
-				]
-				
-				+ SVerticalBox::Slot()
-				.AutoHeight()
-				[
-					InArgs
-					._FooterSlot
-					.Widget
-				]
+					SNew(SVerticalBox)
 
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					[
+						InArgs
+						._HeaderSlot
+						.Widget
+					]
+
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					[
+						InArgs
+						._BodySlot
+						.Widget
+					]
+
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					[
+						InArgs
+						._FooterSlot
+						.Widget
+					]
+
+				]
 			]
 		]
 	];

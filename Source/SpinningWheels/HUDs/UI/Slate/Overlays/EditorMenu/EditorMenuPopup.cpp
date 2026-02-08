@@ -49,6 +49,14 @@ void SEditorMenuPopup::Construct(const FArguments& InArgs)
 					+ SVerticalBox::Slot()
 					.AutoHeight()
 					[
+						SNew(SMenuItem)
+						.Text(FText::FromString("Return to editor"))
+						.OnClicked(InArgs._OnReturnToEditor)
+					]
+
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					[
 						SNew(SSpacer)
 						.Size(FVector2D(1.f, 20.f))
 					]

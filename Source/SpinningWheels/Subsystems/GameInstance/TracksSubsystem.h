@@ -21,6 +21,8 @@ public:
 
 private:
 
+	void LoadTracks();
+
 	void ImReady();
 
 	bool bReady = false;
@@ -35,6 +37,8 @@ public:
 	FOnTracksSubsystemReadySignature OnReady;
 	
 	TArray<FTrackSaveData> GetTracks() const { return Tracks; }
+
+	void RefreshTracks();
 
 	FOnTracksSubsystemReadySignature OnTracksSubsystemReady;
 	

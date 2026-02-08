@@ -19,7 +19,9 @@ class AEditorPawn;
 class ATrackGrid;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTrackGridReadySignature, ATrackGrid*, TrackGrid);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTrackLoadedSignature, const FTrack&, CurrentTrack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTrackSavedSignature, const FTrack&, CurrentTrack, const bool, bSuccess);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEditorModeChangedSignature, const EEditorMode, EditorMode);
 
 UCLASS()
 class SPINNINGWHEELS_API AEditorGameMode : public ARaceGameModeBase
@@ -30,9 +32,13 @@ private:
 
 	EEditorMode EditorMode = EEditorMode::EM_Editor;
 
+	void SetEditorMode(EEditorMode NewEditorMode);
+
 	TWeakObjectPtr<ATrackGrid> TrackGrid;
 
 	FTrack CurrentTrack;
+
+	void TriggerRefreshTracks();
 	
 protected:
 
@@ -57,13 +63,17 @@ public:
 	void InitializeGrid();
 
 	FOnTrackGridReadySignature OnTrackGridReady;
+	FOnTrackLoadedSignature OnTrackLoaded;
 	FOnTrackSavedSignature OnTrackSaved;
+	FOnEditorModeChangedSignature OnEditorModeChanged;
 	
 	TWeakObjectPtr<ATrackGrid> GetTrackGrid() const { return TrackGrid; }
 
 	void TestTrack(AController* Controller);
+	void ReturnToEditor(AController* Controller);
 	void SaveTrack(const FString& TrackName);
 
+	FTrack GetCurrentTrack() { return CurrentTrack; }
 	FString GetTrackName();
 	
 };

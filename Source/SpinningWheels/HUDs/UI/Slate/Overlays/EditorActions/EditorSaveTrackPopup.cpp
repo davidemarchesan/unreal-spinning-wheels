@@ -1,11 +1,11 @@
-#include "SaveTrackPopup.h"
+#include "EditorSaveTrackPopup.h"
 
 #include "SpinningWheels/HUDs/UI/Slate/Styles/MainStyle.h"
 
-void SSaveTrackPopup::Construct(const FArguments& InArgs)
+void SEditorSaveTrackPopup::Construct(const FArguments& InArgs)
 {
 	OnConfirmSaveTrack = InArgs._OnConfirmSaveTrack;
-	OnCancelSaveTrack = InArgs._OnCancelSaveTrack;
+	OnBack = InArgs._OnBack;
 
 	ChildSlot[
 		SNew(SBox)
@@ -13,7 +13,7 @@ void SSaveTrackPopup::Construct(const FArguments& InArgs)
 		.VAlign(VAlign_Center)
 		[
 
-			SAssignNew(MainBox, SBox)
+			SNew(SBox)
 			.MinDesiredWidth(300.f)
 			[
 				SNew(SBorder)
@@ -64,7 +64,7 @@ void SSaveTrackPopup::Construct(const FArguments& InArgs)
 							.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Primary"))
 							.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.Button.Primary"))
 							.HAlign(HAlign_Center)
-							.OnClicked(this, &SSaveTrackPopup::ExecuteConfirmSaveTrack)
+							.OnClicked(this, &SEditorSaveTrackPopup::ExecuteConfirmSaveTrack)
 						]
 
 						+ SHorizontalBox::Slot()
@@ -81,19 +81,19 @@ void SSaveTrackPopup::Construct(const FArguments& InArgs)
 							.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Secondary"))
 							.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.Button.Secondary"))
 							.HAlign(HAlign_Center)
-							.OnClicked(this, &SSaveTrackPopup::ExecuteCancelSaveTrack)
+							.OnClicked(InArgs._OnBack)
 						]
 
 					]
 				]
 			]
 		]
-
-
 	];
+
+	
 }
 
-FReply SSaveTrackPopup::ExecuteConfirmSaveTrack()
+FReply SEditorSaveTrackPopup::ExecuteConfirmSaveTrack()
 {
 	if (TrackNameEditBox.IsValid())
 	{
@@ -105,36 +105,28 @@ FReply SSaveTrackPopup::ExecuteConfirmSaveTrack()
 	return FReply::Unhandled();
 }
 
-FReply SSaveTrackPopup::ExecuteCancelSaveTrack()
+FReply SEditorSaveTrackPopup::ExecuteOnBack()
 {
-	if (OnCancelSaveTrack.IsBound())
+	if (OnBack.IsBound())
 	{
-		FReply Reply = OnCancelSaveTrack.Execute();
+		return OnBack.Execute();
 	}
-
 	return FReply::Unhandled();
 }
 
-void SSaveTrackPopup::SetTrackName(const FString& InTrackName)
+FReply SEditorSaveTrackPopup::ExecuteOnFocusReceive()
+{
+	if (TrackNameEditBox.IsValid())
+	{
+		FSlateApplication::Get().SetKeyboardFocus(TrackNameEditBox.ToSharedRef());
+	}
+	return FReply::Handled();
+}
+
+void SEditorSaveTrackPopup::SetTrackName(const FString& InTrackName)
 {
 	if (TrackNameEditBox.IsValid())
 	{
 		TrackNameEditBox->SetText(FText::FromString(InTrackName));
-	}
-}
-
-void SSaveTrackPopup::Show()
-{
-	if (MainBox.IsValid())
-	{
-		MainBox->SetVisibility(EVisibility::Visible);
-	}
-}
-
-void SSaveTrackPopup::Hide()
-{
-	if (MainBox.IsValid())
-	{
-		MainBox->SetVisibility(EVisibility::Collapsed);
 	}
 }

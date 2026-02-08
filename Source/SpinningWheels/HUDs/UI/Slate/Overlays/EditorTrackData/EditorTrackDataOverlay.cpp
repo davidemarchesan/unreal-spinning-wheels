@@ -42,6 +42,12 @@ void SEditorTrackDataOverlay::Construct(const FArguments& InArgs)
 
 void SEditorTrackDataOverlay::Update(const FTrack& CurrentTrack)
 {
+
+	if (CurrentTrack.IsNull())
+	{
+		return;
+	}
+	
 	if (IdTextBlock.IsValid())
 	{
 		IdTextBlock->SetText(FText::FromString(FString::Printf(TEXT("Track ID: %s"), *CurrentTrack.Id.ToString())));

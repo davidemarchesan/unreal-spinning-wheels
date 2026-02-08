@@ -9,6 +9,7 @@
 
 class UInputMappingContext;
 class UDriveInputConfig;
+class UGeneralInputConfig;
 class ACar;
 class AMainCamera;
 
@@ -103,6 +104,12 @@ protected:
 	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UDriveInputConfig> DriveInputConfig;
 
+	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UInputMappingContext> GeneralMappingContext;
+
+	UPROPERTY(Category=Input, EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UGeneralInputConfig> GeneralInputConfig;
+
 	//~ Begin AController Interface
 	virtual void BeginPlay() override;
 	virtual void SetPawn(APawn* InPawn) override;
@@ -111,10 +118,13 @@ protected:
 
 	virtual void SetupInputBindings();
 	virtual void SetupDriveInputBindings();
+	virtual void SetupGeneralInputBindings();
 
 	virtual void EnableDefaultInputMappingContext();
 	virtual void EnableDriveInputMappingContext();
 	virtual void DisableDriveInputMappingContext();
+	virtual void EnableGeneralInputMappingContext();
+	virtual void DisableGeneralInputMappingContext();
 
 	void CreateCamera();
 
@@ -133,6 +143,9 @@ protected:
 	ARaceGameMode* GetRaceGameMode();
 	ARaceGameState* GetRaceGameState();
 	ARacePlayerState* GetRacePlayerState();
+
+	/** Input Actions handler - Drive */
+	virtual void InputOpenMenu();
 
 public:
 	

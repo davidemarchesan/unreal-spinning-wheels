@@ -6,6 +6,7 @@
 #include "RaceController.h"
 #include "SpinningWheels/Actors/Blocks/Block.h"
 #include "SpinningWheels/Core/EditorBuildMenu.h"
+#include "SpinningWheels/GameModes/EditorGameMode.h"
 #include "EditorController.generated.h"
 
 class UInputMappingContext;
@@ -32,6 +33,8 @@ public:
 
 private:
 
+	EEditorMode EditorMode = EEditorMode::EM_Editor;;
+
 	bool bIgnoreInput = false;
 	
 	void InputMoveCamera(const FInputActionValue& Value);
@@ -50,14 +53,12 @@ private:
 	void InputSlot8();
 	void InputSlot9();
 
-	void InputOpenMenu();
-
 	void InputBuildBlock();
 	void InputBuildCancel();
 	void InputBuildRotateBlock(const FInputActionValue& Value);
 
 	TWeakObjectPtr<AEditorPawn> EditorPawn;
-	TWeakObjectPtr<AEditorGameMode> GameMode;
+	TWeakObjectPtr<AEditorGameMode> EditorGameMode;
 	TWeakObjectPtr<AEditorHUD> EditorHUD;
 	TWeakObjectPtr<ATrackGrid> TrackGrid;
 
@@ -69,8 +70,11 @@ private:
 	void HoverBlock();
 	TWeakObjectPtr<ABlock> HoveredBlock;
 
-	UFUNCTION()
-	void OnTrackGridReady(ATrackGrid* InTrackGrid);
+	void InitializeDelegates();
+	void DeinitializeDelegates();
+
+	UFUNCTION() void OnTrackGridReady(ATrackGrid* InTrackGrid);
+	UFUNCTION() void OnEditorModeChanged(const EEditorMode NewEditorMode);
 
 	void MovePawnAtCenter();
 	
@@ -95,6 +99,7 @@ protected:
 	FEditorBuildMenu CurrentActiveMenu;
 
 	bool bBuildMode = false;
+	bool bMovingBlock = false;
 	
 	void EnterBuildMode(const FName& RowName, const FBlockRow& BlockRow);
 	void EnterBuildModeWithHovered();
@@ -102,6 +107,7 @@ protected:
 
 	//~ Begin AController Interface
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void SetPawn(APawn* InPawn) override;
 	//~ End AController Interface
 
@@ -115,6 +121,8 @@ protected:
 	void EnableBuildInputMappingContext();
 	void DisableBuildInputMappingContext();
 
+	virtual void InputOpenMenu() override;
+	
 	void SetupTrackGrid();
 
 public:
@@ -133,7 +141,9 @@ public:
 	void InputSelectMenu(UEditorBuildMenuDataAsset* Menu);
 
 	void InputTestTrack();
+	void InputReturnToEditor();
 	void InputSaveTrack(const FString& TrackName);
 
+	FTrack GetCurrentTrack();
 	FString GetTrackName();
 };

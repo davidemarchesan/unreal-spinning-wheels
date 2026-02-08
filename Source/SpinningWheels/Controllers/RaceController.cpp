@@ -11,6 +11,7 @@
 #include "SpinningWheels/GameStates/RaceGameState.h"
 #include "SpinningWheels/HUDs/RaceHUD.h"
 #include "SpinningWheels/Input/Configs/DriveInputConfig.h"
+#include "SpinningWheels/Input/Configs/GeneralInputConfig.h"
 #include "SpinningWheels/Pawns/Car.h"
 #include "SpinningWheels/PlayerStates/RacePlayerState.h"
 
@@ -90,6 +91,10 @@ ARaceGameState* ARaceController::GetRaceGameState()
 ARacePlayerState* ARaceController::GetRacePlayerState()
 {
 	return GetPlayerState<ARacePlayerState>();
+}
+
+void ARaceController::InputOpenMenu()
+{
 }
 
 void ARaceController::BeginPlay()
@@ -203,6 +208,7 @@ void ARaceController::PrepareForNewLap(float InServerStartTime)
 void ARaceController::SetupInputBindings()
 {
 	SetupDriveInputBindings();
+	SetupGeneralInputBindings();
 }
 
 void ARaceController::SetupDriveInputBindings()
@@ -244,9 +250,23 @@ void ARaceController::SetupDriveInputBindings()
 	}
 }
 
+void ARaceController::SetupGeneralInputBindings()
+{
+	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		if (GeneralInputConfig)
+		{
+
+			EnhancedInput->BindAction(GeneralInputConfig->IA_OpenMenu, ETriggerEvent::Triggered, this,
+									  &ARaceController::InputOpenMenu);
+		}
+	}
+}
+
 void ARaceController::EnableDefaultInputMappingContext()
 {
 	EnableDriveInputMappingContext();
+	EnableGeneralInputMappingContext();
 }
 
 void ARaceController::EnableDriveInputMappingContext()
@@ -258,7 +278,7 @@ void ARaceController::EnableDriveInputMappingContext()
 		{
 			if (DriveMappingContext)
 			{
-				InputSystem->AddMappingContext(DriveMappingContext, 1);
+				InputSystem->AddMappingContext(DriveMappingContext, 10);
 			}
 		}
 	}
@@ -274,6 +294,36 @@ void ARaceController::DisableDriveInputMappingContext()
 			if (DriveMappingContext)
 			{
 				InputSystem->RemoveMappingContext(DriveMappingContext);
+			}
+		}
+	}
+}
+
+void ARaceController::EnableGeneralInputMappingContext()
+{
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>())
+		{
+			if (GeneralMappingContext)
+			{
+				InputSystem->AddMappingContext(GeneralMappingContext, 1);
+			}
+		}
+	}
+}
+
+void ARaceController::DisableGeneralInputMappingContext()
+{
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>())
+		{
+			if (GeneralMappingContext)
+			{
+				InputSystem->RemoveMappingContext(GeneralMappingContext);
 			}
 		}
 	}

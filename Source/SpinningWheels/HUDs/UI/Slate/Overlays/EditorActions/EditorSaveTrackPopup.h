@@ -1,36 +1,39 @@
 #pragma once
+#include "SpinningWheels/Core/Slate.h"
+#include "SpinningWheels/HUDs/UI/Slate/Widgets/PopupWidget.h"
 
 DECLARE_DELEGATE_RetVal_OneParam(FReply, FOnConfirmSaveTrack, const FString& TrackName)
-DECLARE_DELEGATE_RetVal(FReply, FOnCancelSaveTrack)
 
-class SSaveTrackPopup : public SCompoundWidget
+class SEditorSaveTrackPopup : public SPopupBase
 {
 public:
-	SLATE_BEGIN_ARGS(SSaveTrackPopup)
+	SLATE_BEGIN_ARGS(SEditorSaveTrackPopup)
 		{
 		}
 		
 		SLATE_EVENT(FOnConfirmSaveTrack, OnConfirmSaveTrack)
-		SLATE_EVENT(FOnCancelSaveTrack, OnCancelSaveTrack)
+		SLATE_EVENT(FOnReply, OnBack)
 
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
 
 private:
-	TSharedPtr<SBox> MainBox;
 	TSharedPtr<SEditableTextBox> TrackNameEditBox;
 
 	FOnConfirmSaveTrack OnConfirmSaveTrack;
-	FOnCancelSaveTrack OnCancelSaveTrack;
+	FOnReply OnBack;
 
 	FReply ExecuteConfirmSaveTrack();
-	FReply ExecuteCancelSaveTrack();
+
+protected:
+
+	virtual FReply ExecuteOnBack() override;
+
+	virtual FReply ExecuteOnFocusReceive() override;
 
 public:
 
 	void SetTrackName(const FString& InTrackName);
-	
-	void Show();
-	void Hide();
+
 };
