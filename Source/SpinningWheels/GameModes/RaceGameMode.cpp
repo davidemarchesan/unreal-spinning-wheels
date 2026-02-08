@@ -3,11 +3,11 @@
 
 #include "RaceGameMode.h"
 
-#include "EngineUtils.h"
-#include "GameFramework/PlayerState.h"
-#include "SpinningWheels/Actors/Blocks/StartBlock.h"
-#include "SpinningWheels/Controllers/RaceController.h"
 #include "SpinningWheels/GameStates/RaceGameState.h"
+
+void ARaceGameMode::InitializeGrid()
+{
+}
 
 void ARaceGameMode::StartWaitingForPlayers()
 {
@@ -83,6 +83,11 @@ void ARaceGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 	StartWaitingForPlayers();
+}
+
+bool ARaceGameMode::ReadyToStartMatch()
+{
+	return false;
 }
 
 void ARaceGameMode::SetRaceMatchState(ERaceMatchState NewState)

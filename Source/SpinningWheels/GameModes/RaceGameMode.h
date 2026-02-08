@@ -17,6 +17,8 @@ class SPINNINGWHEELS_API ARaceGameMode : public ARaceGameModeBase
 
 private:
 
+	void InitializeGrid();
+
 	FTimerHandle WaitingForPlayersTimer;
 	void StartWaitingForPlayers();
 	void StopWaitingForPlayers();

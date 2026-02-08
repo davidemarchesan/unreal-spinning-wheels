@@ -5,6 +5,7 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "SpinningWheels/Subsystems/GameInstance/LoadingSubsystem.h"
+#include "SpinningWheels/Subsystems/GameInstance/RaceServerSubsystem.h"
 #include "SpinningWheels/Subsystems/GameInstance/TrackEditorSubsystem.h"
 #include "SpinningWheels/Subsystems/GameInstance/TracksSubsystem.h"
 #include "UI/Slate/Pages/MainMenu/MainMenuPage.h"
@@ -38,6 +39,7 @@ void AMainHUD::InitializeMainHUD()
 		LoadingSubsystem = GameInstance->GetSubsystem<ULoadingSubsystem>();
 		TracksSubsystem = GameInstance->GetSubsystem<UTracksSubsystem>();
 		TrackEditorSubsystem = GameInstance->GetSubsystem<UTrackEditorSubsystem>();
+		RaceServerSubsystem = GameInstance->GetSubsystem<URaceServerSubsystem>();
 
 		if (LoadingSubsystem.IsValid())
 		{
@@ -134,9 +136,26 @@ void AMainHUD::InitializePages()
 			});
 	}
 
+	PlayPage = SNew(SPlayPage)
+		.OnHost_Lambda([this]()
+		{
+			if (this)
+			{
+				OnHost();
+				return FReply::Handled();
+			}
+			return FReply::Unhandled();
+		})
+		.OnJoin_Lambda([this]()
+		{
+			UE_LOG(LogTemp, Warning, TEXT("on join"));
+			return FReply::Handled();
+		});
+
 	if (MainSwitcher.IsValid())
 	{
 		MainSwitcher->AddSlot()[MainMenuPage.ToSharedRef()];
+		MainSwitcher->AddSlot()[PlayPage.ToSharedRef()];
 		MainSwitcher->AddSlot()[TracksPage.ToSharedRef()];
 
 		GoTo(EMenuPage::MP_None); // Should be this one
@@ -152,6 +171,7 @@ void AMainHUD::GoTo(const EMenuPage Page)
 	switch (Page)
 	{
 	case EMenuPage::MP_Play:
+		MainSwitcher->SetActiveWidget(PlayPage.ToSharedRef());
 		break;
 
 	case EMenuPage::MP_Tracks:
@@ -204,6 +224,18 @@ void AMainHUD::OnEditTrack(const FTrackSaveData& Track)
 
 		GEngine->GameViewport->RemoveAllViewportWidgets();
 		UGameplayStatics::OpenLevel(GetWorld(), "L_Editor");
+	}
+}
+
+void AMainHUD::OnHost()
+{
+	// Load all tracks
+	if (RaceServerSubsystem.IsValid() && TracksSubsystem.IsValid())
+	{
+		RaceServerSubsystem->SetTracksPlaylist(TracksSubsystem->GetTracks());
+		
+		GEngine->GameViewport->RemoveAllViewportWidgets();
+		UGameplayStatics::OpenLevel(GetWorld(), "L_Race");
 	}
 }
 

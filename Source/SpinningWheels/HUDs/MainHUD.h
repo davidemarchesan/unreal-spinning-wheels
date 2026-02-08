@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "UI/Slate/Overlays/Loading/LoadingOverlay.h"
 #include "UI/Slate/Pages/Pages.h"
+#include "UI/Slate/Pages/Play/PlayPage.h"
 #include "UI/Slate/Pages/Tracks/TracksPage.h"
 #include "MainHUD.generated.h"
 
@@ -31,6 +32,7 @@ private:
 	TWeakObjectPtr<class ULoadingSubsystem> LoadingSubsystem;
 	TWeakObjectPtr<class UTracksSubsystem> TracksSubsystem;
 	TWeakObjectPtr<class UTrackEditorSubsystem> TrackEditorSubsystem;
+	TWeakObjectPtr<class URaceServerSubsystem> RaceServerSubsystem;
 	
 	void InitializeLoadingOverlay();
 	TSharedPtr<SLoadingOverlay> LoadingOverlay;
@@ -46,6 +48,7 @@ private:
 
 	// Pages
 	TSharedPtr<SWidget> MainMenuPage;
+	TSharedPtr<SPlayPage> PlayPage;
 	TSharedPtr<STracksPage> TracksPage;
 
 	void GoTo(const EMenuPage Page);
@@ -53,6 +56,8 @@ private:
 
 	void OnCreateTrack();
 	void OnEditTrack(const FTrackSaveData& Track);
+
+	void OnHost();
 
 	// History
 	EMenuPage CurrentPage = EMenuPage::MP_None;
