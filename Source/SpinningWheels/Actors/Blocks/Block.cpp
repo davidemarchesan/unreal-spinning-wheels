@@ -17,7 +17,6 @@ ABlock::ABlock()
 		MeshComponent->SetCollisionResponseToAllChannels(ECR_Block);
 		MeshComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
 	}
-
 }
 
 void ABlock::ShowOutline()
@@ -37,3 +36,12 @@ void ABlock::HideOutline()
 	}
 }
 
+FName ABlock::GetBlockId() const
+{
+	if (BlocksTableRow.IsNull() == false)
+	{
+		return BlocksTableRow.RowName;
+	}
+
+	return ""; // todo: fname::empty?
+}

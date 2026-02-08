@@ -14,7 +14,7 @@ struct FBlockRow : public FTableRowBase
 public:
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<ABlock> BlockClass;
+	TSubclassOf<class ABlock> BlockClass;
 
 	UPROPERTY(EditAnywhere)
 	FText Name;
@@ -36,9 +36,14 @@ private:
 
 protected:
 
+	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess="true"))
+	FDataTableRowHandle BlocksTableRow;
+
 public:
 
 	void ShowOutline();
 	void HideOutline();
+
+	FName GetBlockId() const;
 	
 };

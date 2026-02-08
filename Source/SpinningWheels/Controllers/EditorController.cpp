@@ -566,6 +566,8 @@ void AEditorController::EnterBuildModeWithHovered()
 
 	PreviewedBlock = HoveredBlock;
 	HoveredBlock = nullptr;
+
+	BlockToBuildName = PreviewedBlock->GetBlockId();
 }
 
 void AEditorController::ExitBuildMode()
