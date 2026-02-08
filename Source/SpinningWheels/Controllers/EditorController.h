@@ -50,13 +50,15 @@ private:
 	void InputSlot8();
 	void InputSlot9();
 
+	void InputOpenMenu();
+
 	void InputBuildBlock();
 	void InputBuildCancel();
 	void InputBuildRotateBlock(const FInputActionValue& Value);
 
 	TWeakObjectPtr<AEditorPawn> EditorPawn;
 	TWeakObjectPtr<AEditorGameMode> GameMode;
-	TWeakObjectPtr<AEditorHUD> HUD;
+	TWeakObjectPtr<AEditorHUD> EditorHUD;
 	TWeakObjectPtr<ATrackGrid> TrackGrid;
 
 	FName BlockToBuildName;

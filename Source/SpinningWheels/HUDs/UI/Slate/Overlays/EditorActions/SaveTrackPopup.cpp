@@ -8,79 +8,83 @@ void SSaveTrackPopup::Construct(const FArguments& InArgs)
 	OnCancelSaveTrack = InArgs._OnCancelSaveTrack;
 
 	ChildSlot[
-
-		SAssignNew(MainBox, SBox)
-		// .Visibility(EVisibility::Collapsed)
-		.MinDesiredWidth(300.f)
+		SNew(SBox)
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Center)
 		[
-			SNew(SBorder)
-			.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Dark"))
-			.Padding(FMainStyle::Get().GetMargin("Padding.Box"))
+
+			SAssignNew(MainBox, SBox)
+			.MinDesiredWidth(300.f)
 			[
-				SNew(SVerticalBox)
-
-				+ SVerticalBox::Slot()
-				.AutoHeight()
+				SNew(SBorder)
+				.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Dark"))
+				.Padding(FMainStyle::Get().GetMargin("Padding.Box"))
 				[
-
 					SNew(SVerticalBox)
 
 					+ SVerticalBox::Slot()
 					.AutoHeight()
 					[
-						SNew(STextBlock)
-						.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.P"))
-						.Text(FText::FromString("Track name"))
+
+						SNew(SVerticalBox)
+
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						[
+							SNew(STextBlock)
+							.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.P"))
+							.Text(FText::FromString("Track name"))
+						]
+
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						[
+							SAssignNew(TrackNameEditBox, SEditableTextBox)
+							.Style(&FMainStyle::Get().GetWidgetStyle<FEditableTextBoxStyle>("Text.Editable"))
+						]
+
 					]
 
 					+ SVerticalBox::Slot()
 					.AutoHeight()
 					[
-						SAssignNew(TrackNameEditBox, SEditableTextBox)
-						.Style(&FMainStyle::Get().GetWidgetStyle<FEditableTextBoxStyle>("Text.Editable"))
-					]
-
-				]
-
-				+ SVerticalBox::Slot()
-				.AutoHeight()
-				[
-					SNew(SSpacer)
-					.Size(FVector2D(1.f, 10.f))
-				]
-
-				+ SVerticalBox::Slot()
-				[
-
-					SNew(SHorizontalBox)
-
-					+ SHorizontalBox::Slot()
-					[
-						SNew(SButton)
-						.Text(FText::FromString("Confirm"))
-						.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Primary"))
-						.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.Button.Primary"))
-						.HAlign(HAlign_Center)
-						.OnClicked(this, &SSaveTrackPopup::ExecuteConfirmSaveTrack)
-					]
-
-					+ SHorizontalBox::Slot()
-					.AutoWidth()
-					[
 						SNew(SSpacer)
-						.Size(FVector2D(10.f, 1.f))
+						.Size(FVector2D(1.f, 10.f))
 					]
 
-					+ SHorizontalBox::Slot()
+					+ SVerticalBox::Slot()
 					[
-						SNew(SButton)
-						.Text(FText::FromString("Cancel"))
-						.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Secondary"))
-						.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.Button.Secondary"))
-						.HAlign(HAlign_Center)
-						.OnClicked(this, &SSaveTrackPopup::ExecuteCancelSaveTrack)
-					]
 
+						SNew(SHorizontalBox)
+
+						+ SHorizontalBox::Slot()
+						[
+							SNew(SButton)
+							.Text(FText::FromString("Confirm"))
+							.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Primary"))
+							.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.Button.Primary"))
+							.HAlign(HAlign_Center)
+							.OnClicked(this, &SSaveTrackPopup::ExecuteConfirmSaveTrack)
+						]
+
+						+ SHorizontalBox::Slot()
+						.AutoWidth()
+						[
+							SNew(SSpacer)
+							.Size(FVector2D(10.f, 1.f))
+						]
+
+						+ SHorizontalBox::Slot()
+						[
+							SNew(SButton)
+							.Text(FText::FromString("Cancel"))
+							.ButtonStyle(&FMainStyle::Get().GetWidgetStyle<FButtonStyle>("Button.Secondary"))
+							.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.Button.Secondary"))
+							.HAlign(HAlign_Center)
+							.OnClicked(this, &SSaveTrackPopup::ExecuteCancelSaveTrack)
+						]
+
+					]
 				]
 			]
 		]

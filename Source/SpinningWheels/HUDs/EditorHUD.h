@@ -24,9 +24,10 @@ private:
 	
 	void InitializeRootOverlay();
 	void InitializeOverlayEditorActions();
-	void InitializeOverlayBuildMenu();
-	void InitializeOverlaySavePopup();
-	void InitializeOverlayTrackData();
+	void InitializeOverlayEditorBuildMenu();
+	void InitializeOverlayEditorSavePopup();
+	void InitializeOverlayEditorMenu();
+	void InitializeOverlayEditorTrackData();
 	
 	void InitializeDelegates();
 
@@ -47,6 +48,7 @@ private:
 	TSharedPtr<class SEditorActionsOverlay> EditorActionsOverlay;
 	TSharedPtr<class SEditorTrackDataOverlay> EditorTrackDataOverlay;
 	TSharedPtr<class SSaveTrackPopup> SaveTrackPopup;
+	TSharedPtr<class SEditorMenuPopup> EditorMenuPopup;
 	/** End Pointers to overlays */
 	
 	FReply OnTestTrack();
@@ -57,10 +59,14 @@ private:
 	FReply OnMenuSelected(UEditorBuildMenuDataAsset* Menu);
 	FReply OnBlockSelected(const int8 Slot);
 
+	FReply OnGoToMainMenu();
+
 protected:
 
 	virtual void BeginPlay() override;
 
 public:
+
+	void InputOpenMenu();	
 	
 };

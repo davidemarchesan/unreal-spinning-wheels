@@ -139,8 +139,8 @@ void AMainHUD::InitializePages()
 		MainSwitcher->AddSlot()[MainMenuPage.ToSharedRef()];
 		MainSwitcher->AddSlot()[TracksPage.ToSharedRef()];
 
-		// GoTo(EMenuPage::MP_None); // Should be this one
-		GoTo(EMenuPage::MP_Tracks); // Testing
+		GoTo(EMenuPage::MP_None); // Should be this one
+		// GoTo(EMenuPage::MP_Tracks); // Testing
 	}
 }
 

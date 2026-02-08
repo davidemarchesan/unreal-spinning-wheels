@@ -25,7 +25,7 @@ void AEditorController::BeginPlay()
 	GameMode = GetWorld()->GetAuthGameMode<AEditorGameMode>();
 	SetupTrackGrid();
 
-	HUD = GetHUD<AEditorHUD>();
+	EditorHUD = GetHUD<AEditorHUD>();
 
 	SetupBuildMenu();
 }
@@ -94,6 +94,9 @@ void AEditorController::SetupEditorInputBindings()
 			                          &AEditorController::InputSlot8);
 			EnhancedInput->BindAction(EditorInputConfig->IA_Slot9, ETriggerEvent::Triggered, this,
 			                          &AEditorController::InputSlot9);
+
+			EnhancedInput->BindAction(EditorInputConfig->IA_OpenMenu, ETriggerEvent::Triggered, this,
+									  &AEditorController::InputOpenMenu);
 		}
 	}
 }
@@ -301,6 +304,15 @@ void AEditorController::InputSlot8()
 void AEditorController::InputSlot9()
 {
 	InputSlot(9);
+}
+
+void AEditorController::InputOpenMenu()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Open menu"));
+	if (EditorHUD.IsValid())
+	{
+		EditorHUD->InputOpenMenu();
+	}
 }
 
 void AEditorController::InputBuildBlock()

@@ -10,6 +10,11 @@ AMainCamera::AMainCamera()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PostPhysics;
+
+	if (UCameraComponent* Camera = GetCameraComponent())
+	{
+		Camera->SetConstraintAspectRatio(false);
+	}
 }
 
 void AMainCamera::Tick(float DeltaSeconds)

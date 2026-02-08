@@ -3,11 +3,13 @@
 
 #include "EditorHUD.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "SpinningWheels/Controllers/EditorController.h"
 #include "SpinningWheels/GameModes/EditorGameMode.h"
 #include "UI/Slate/Overlays/EditorActions/EditorActionsOverlay.h"
 #include "UI/Slate/Overlays/EditorActions/SaveTrackPopup.h"
 #include "UI/Slate/Overlays/EditorBuildMenu/EditorBuildMenuOverlay.h"
+#include "UI/Slate/Overlays/EditorMenu/EditorMenuPopup.h"
 #include "UI/Slate/Overlays/EditorTrackData/EditorTrackDataOverlay.h"
 #include "UI/Slate/Styles/MainStyle.h"
 #include "UI/Slate/Widgets/Modals/ModalConfirmWidget.h"
@@ -21,6 +23,15 @@ void AEditorHUD::BeginPlay()
 
 	InitializeRootOverlay();
 	InitializeDelegates();
+}
+
+void AEditorHUD::InputOpenMenu()
+{
+	if (EditorMenuPopup)
+	{
+		ShowModalOverlay(EditorMenuPopup);
+		FSlateApplication::Get().SetKeyboardFocus(EditorMenuPopup.ToSharedRef());
+	}
 }
 
 void AEditorHUD::InitializeRootOverlay()
@@ -57,9 +68,10 @@ void AEditorHUD::InitializeRootOverlay()
 	GEngine->GameViewport->AddViewportWidgetContent(ModalOverlay.ToSharedRef(), 5);
 
 	InitializeOverlayEditorActions();
-	InitializeOverlayBuildMenu();
-	InitializeOverlayTrackData();
-	InitializeOverlaySavePopup();
+	InitializeOverlayEditorBuildMenu();
+	InitializeOverlayEditorTrackData();
+	InitializeOverlayEditorSavePopup();
+	InitializeOverlayEditorMenu();
 }
 
 void AEditorHUD::InitializeOverlayEditorActions()
@@ -97,7 +109,7 @@ void AEditorHUD::InitializeOverlayEditorActions()
 	];
 }
 
-void AEditorHUD::InitializeOverlayBuildMenu()
+void AEditorHUD::InitializeOverlayEditorBuildMenu()
 {
 	if (RootCanvas.IsValid() == false || EditorController.IsValid() == false)
 	{
@@ -140,10 +152,12 @@ void AEditorHUD::InitializeOverlayBuildMenu()
 	}
 
 	EditorController->OnMenuSlotSelected.AddDynamic(this, &AEditorHUD::OnMenuSlotSelected);
+	// todo: transform to public method, avoid using delegate
 	EditorController->OnExitBuildMode.AddDynamic(this, &AEditorHUD::OnExitBuildMode);
+	// todo: transform to public method, avoid using delegate
 }
 
-void AEditorHUD::InitializeOverlayTrackData()
+void AEditorHUD::InitializeOverlayEditorTrackData()
 {
 	if (RootCanvas.IsValid() == false)
 	{
@@ -151,15 +165,15 @@ void AEditorHUD::InitializeOverlayTrackData()
 	}
 
 	RootCanvas->AddSlot()
-			  .Anchors(FAnchors(0.f, 0.f))
-			  .Alignment(FVector2D(0.f, 0.f))
-			  .AutoSize(true)
+	          .Anchors(FAnchors(0.f, 0.f))
+	          .Alignment(FVector2D(0.f, 0.f))
+	          .AutoSize(true)
 	[
 		SAssignNew(EditorTrackDataOverlay, SEditorTrackDataOverlay)
 	];
 }
 
-void AEditorHUD::InitializeOverlaySavePopup()
+void AEditorHUD::InitializeOverlayEditorSavePopup()
 {
 	if (ModalOverlay.IsValid() == false)
 	{
@@ -186,11 +200,57 @@ void AEditorHUD::InitializeOverlaySavePopup()
 		});
 }
 
+void AEditorHUD::InitializeOverlayEditorMenu()
+{
+	if (ModalOverlay.IsValid() == false)
+	{
+		return;
+	}
+
+	EditorMenuPopup = SNew(SEditorMenuPopup)
+		.OnBack_Lambda([this]()
+		{
+			if (this)
+			{
+				HideModalOverlay();
+			}
+			return FReply::Handled();
+		})
+		.OnSaveTrack_Lambda([this]()
+		{
+			if (this)
+			{
+				HideModalOverlay();
+				return OnSaveTrack();
+			}
+
+			return FReply::Unhandled();
+		})
+		.OnTestTrack_Lambda([this]()
+		{
+			if (this)
+			{
+				HideModalOverlay();
+				return OnTestTrack();
+			}
+
+			return FReply::Unhandled();
+		})
+		.OnGoToMainMenu_Lambda([this]()
+		{
+			if (this)
+			{
+				return OnGoToMainMenu();
+			}
+			return FReply::Unhandled();
+		});
+}
+
 void AEditorHUD::InitializeDelegates()
 {
 	if (EditorGameMode.IsValid())
 	{
-		EditorGameMode->OnTrackSaved.AddDynamic(this, &AEditorHUD::OnTrackSaved);
+		EditorGameMode->OnTrackSaved.AddDynamic(this, &AEditorHUD::OnTrackSaved); // todo: remove binding
 	}
 }
 
@@ -200,8 +260,8 @@ void AEditorHUD::ShowModalOverlay(const TSharedPtr<SWidget>& Widget)
 	{
 		ModalOverlay->ClearChildren();
 		ModalOverlay->AddSlot()
-		            .VAlign(VAlign_Center)
-		            .HAlign(HAlign_Center)
+		            .VAlign(VAlign_Fill)
+		            .HAlign(HAlign_Fill)
 		[
 			Widget.ToSharedRef()
 		];
@@ -247,22 +307,22 @@ void AEditorHUD::OnExitBuildMode()
 
 void AEditorHUD::OnTrackSaved(const FTrack& CurrentTrack, const bool bSuccess)
 {
-
 	TSharedPtr<SModalConfirm> ModalConfirm = SNew(SModalConfirm)
-		.Text(FText::FromString(bSuccess ? "Track saved successfully." : "An error occured while saving the track. Please try again."))
+		.Text(FText::FromString(bSuccess
+			                        ? "Track saved successfully."
+			                        : "An error occured while saving the track. Please try again."))
 		.OnConfirm_Lambda([this]()
 		{
 			HideModalOverlay();
 			return FReply::Handled();
 		});
-	
+
 	ShowModalOverlay(ModalConfirm);
 
 	if (EditorTrackDataOverlay.IsValid())
 	{
 		EditorTrackDataOverlay->Update(CurrentTrack);
 	}
-	
 }
 
 FReply AEditorHUD::OnTestTrack()
@@ -292,7 +352,6 @@ FReply AEditorHUD::OnSaveTrack()
 
 FReply AEditorHUD::OnConfirmSaveTrack(const FString& TrackName)
 {
-
 	TSharedPtr<SModalBase> ModalSaving = SNew(SModalBase)
 		.BodySlot()
 		[
@@ -302,7 +361,7 @@ FReply AEditorHUD::OnConfirmSaveTrack(const FString& TrackName)
 			.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.P"))
 		];
 	ShowModalOverlay(ModalSaving);
-	
+
 	if (EditorController.IsValid())
 	{
 		EditorController->InputSaveTrack(TrackName);
@@ -335,5 +394,12 @@ FReply AEditorHUD::OnBlockSelected(const int8 Slot)
 	{
 		EditorController->InputSlot(Slot);
 	}
+	return FReply::Handled();
+}
+
+FReply AEditorHUD::OnGoToMainMenu()
+{
+	GEngine->GameViewport->RemoveAllViewportWidgets();
+	UGameplayStatics::OpenLevel(GetWorld(), "L_Main");
 	return FReply::Handled();
 }
