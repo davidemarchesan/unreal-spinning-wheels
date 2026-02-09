@@ -6,39 +6,31 @@
 
 void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 {
+	static FTableViewStyle ListViewStyle = FTableViewStyle().SetBackgroundBrush(
+		FSlateColorBrush(FLinearColor::Transparent));
 
-	static FTableViewStyle ListViewStyle = FTableViewStyle().SetBackgroundBrush(FSlateColorBrush(FLinearColor::Transparent));
-	
 	ChildSlot[
-		SAssignNew(MainOverlay, SOverlay)
+		SAssignNew(MainBox, SBox)
 		.Visibility(EVisibility::Collapsed)
-
-		+ SOverlay::Slot()
-		.VAlign(VAlign_Center)
-		.HAlign(HAlign_Center)
+		.WidthOverride(900.f)
+		.HeightOverride(700.f)
 		[
-
-			SNew(SBox)
-			.WidthOverride(900.f)
-			.HeightOverride(700.f)
+			SNew(SBorder)
+			.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Dark"))
+			.Padding(FMainStyle::Get().GetMargin("Padding.Box"))
 			[
-				SNew(SBorder)
-				.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Black"))
-				[
 
-					SNew(SBox)
-					.Padding(10.f)
-					[
-						SAssignNew(LeaderboardListView, SListView<TSharedPtr<FRaceLap>>)
-						.ListItemsSource(&PlayersBestLap)
-						.OnGenerateRow(this, &SLeaderboardOverlay::GenerateRow)
-						.ListViewStyle(&ListViewStyle)
-						
-					]
+				SNew(SBox)
+				.Padding(10.f)
+				[
+					SAssignNew(LeaderboardListView, SListView<TSharedPtr<FRaceLap>>)
+					.ListItemsSource(&PlayersBestLap)
+					.OnGenerateRow(this, &SLeaderboardOverlay::GenerateRow)
+					.ListViewStyle(&ListViewStyle)
 
 				]
-			]
 
+			]
 		]
 	];
 }
@@ -46,9 +38,8 @@ void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 TSharedRef<ITableRow> SLeaderboardOverlay::GenerateRow(TSharedPtr<FRaceLap> Lap,
                                                        const TSharedRef<class STableViewBase>& OwningWidget)
 {
-
 	const int32 Index = PlayersBestLap.IndexOfByKey(Lap);
-	
+
 	FSlateLapTimeRow NewRow;
 	NewRow.Name = FText::FromString(FString::Printf(TEXT("#%d - %d"), Index + 1, Lap->GetPlayerId()));
 	NewRow.LapTime = FSlateTime(FText::FromString(Lap->GetLapTimeFormat()));
@@ -105,16 +96,16 @@ void SLeaderboardOverlay::OnLeaderboardUpdate(FTimeAttackLeaderboard InLeaderboa
 
 void SLeaderboardOverlay::Show()
 {
-	if (MainOverlay.IsValid())
+	if (MainBox.IsValid())
 	{
-		MainOverlay->SetVisibility(EVisibility::Visible);
+		MainBox->SetVisibility(EVisibility::Visible);
 	}
 }
 
 void SLeaderboardOverlay::Hide()
 {
-	if (MainOverlay.IsValid())
+	if (MainBox.IsValid())
 	{
-		MainOverlay->SetVisibility(EVisibility::Collapsed);
+		MainBox->SetVisibility(EVisibility::Collapsed);
 	}
 }

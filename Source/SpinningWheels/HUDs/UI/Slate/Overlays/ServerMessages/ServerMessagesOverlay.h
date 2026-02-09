@@ -13,7 +13,7 @@ public:
 
 private:
 
-	TSharedPtr<SOverlay> MainOverlay;
+	TSharedPtr<SBox> MainBox;
 	TSharedPtr<STextBlock> TextBlock;
 
 	bool bTemporary = false;

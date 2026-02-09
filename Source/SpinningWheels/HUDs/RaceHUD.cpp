@@ -12,6 +12,23 @@
 #include "UI/Slate/Overlays/LapTime/LapTimeOverlay.h"
 #include "UI/Slate/Overlays/Leaderboard/LeaderboardOverlay.h"
 #include "UI/Slate/Overlays/ServerMessages/ServerMessagesOverlay.h"
+#include "UI/Slate/Styles/MainStyle.h"
+
+void ARaceHUD::BeginPlay()
+{
+	Super::BeginPlay();
+
+	RaceController = Cast<ARaceController>(GetOwningPlayerController());
+
+	InitializeRootOverlay();
+	InitializeDelegates();
+}
+
+void ARaceHUD::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	DeinitializeDelegates();
+	Super::EndPlay(EndPlayReason);
+}
 
 void ARaceHUD::OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard)
 {
@@ -23,7 +40,6 @@ void ARaceHUD::OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard)
 	if (LapTimeOverlay.IsValid())
 	{
 		LapTimeOverlay->OnLeaderboardUpdate(Leaderboard);
-		
 	}
 }
 
@@ -73,10 +89,12 @@ void ARaceHUD::OnUpdateLapCountdown(int32 Seconds)
 	}
 }
 
-void ARaceHUD::OnUpdateRacePlayerState(ARacePlayerState* RacePlayerState)
+void ARaceHUD::OnUpdateRacePlayerState(ARacePlayerState* InRacePlayerState)
 {
-	if (RacePlayerState)
+	if (InRacePlayerState)
 	{
+		RacePlayerState = InRacePlayerState;
+		
 		// todo: this code repeats on initialize delegates
 		OnPlayerIdSet(RacePlayerState->GetPlayerId());
 		RacePlayerState->OnPlayerIdSet.AddDynamic(this, &ARaceHUD::OnPlayerIdSet);
@@ -87,7 +105,7 @@ void ARaceHUD::OnUpdateRacePlayerState(ARacePlayerState* RacePlayerState)
 void ARaceHUD::OnPlayerIdSet(int32 InPlayerId)
 {
 	PlayerId = InPlayerId;
-	
+
 	if (InfoOverlay.IsValid())
 	{
 		InfoOverlay->SetPlayerId(PlayerId);
@@ -112,48 +130,169 @@ void ARaceHUD::OnCurrentLapUpdate(const FRaceLap& CurrentLap)
 	}
 }
 
-void ARaceHUD::BeginPlay()
-{
-	Super::BeginPlay();
-
-	InitializeOverlays();
-	InitializeDelegates();
-}
-
-void ARaceHUD::InitializeOverlays()
+void ARaceHUD::InitializeRootOverlay()
 {
 	if (GEngine == nullptr)
 	{
 		return;
 	}
-	LeaderboardOverlay = SNew(SLeaderboardOverlay);
-	if (LeaderboardOverlay.IsValid())
+
+	RootOverlay = SNew(SOverlay)
+		.Visibility(EVisibility::SelfHitTestInvisible);
+	if (RootOverlay.IsValid() == false)
 	{
-		GEngine->GameViewport->AddViewportWidgetContent(LeaderboardOverlay.ToSharedRef());
+		return;
 	}
 
-	ServerMessagesOverlay = SNew(SServerMessagesOverlay);
-	if (ServerMessagesOverlay.IsValid())
+	RootCanvas = SNew(SConstraintCanvas);
+	if (RootCanvas.IsValid() == false)
 	{
-		GEngine->GameViewport->AddViewportWidgetContent(ServerMessagesOverlay.ToSharedRef());
+		return;
 	}
 
-	CountdownOverlay = SNew(SCountdownOverlay);
-	if (CountdownOverlay.IsValid())
+	RootOverlay->AddSlot()
+	           .Padding(FMainStyle::Get().GetMargin("Padding.SafeArea"))
+	[
+		RootCanvas.ToSharedRef()
+	];
+
+	GEngine->GameViewport->AddViewportWidgetContent(RootOverlay.ToSharedRef());
+
+	ModalOverlay = SNew(SOverlay)
+		.Visibility(EVisibility::Collapsed);
+
+	GEngine->GameViewport->AddViewportWidgetContent(ModalOverlay.ToSharedRef(), 5);
+
+	InitializeOverlayLeaderboard();
+	InitializeOverlayServerMessages();
+	InitializeOverlayCountdown();
+	InitializeOverlayInfo();
+	InitializeOverlayLapTime();
+	InitializeOverlayRacingTime();
+		
+}
+
+void ARaceHUD::InitializeOverlayLeaderboard()
+{
+	if (RootCanvas.IsValid() == false)
 	{
-		GEngine->GameViewport->AddViewportWidgetContent(CountdownOverlay.ToSharedRef());
+		return;
 	}
 
-	InfoOverlay = SNew(SInfoOverlay);
-	if (InfoOverlay.IsValid())
+	RootCanvas->AddSlot()
+	          .Anchors(FAnchors(0.5f, 0.5f))
+	          .Alignment(FVector2D(0.5f, 0.5f))
+	          .AutoSize(true)
+	[
+		SAssignNew(LeaderboardOverlay, SLeaderboardOverlay)
+	];
+}
+
+void ARaceHUD::InitializeOverlayServerMessages()
+{
+	if (RootCanvas.IsValid() == false)
 	{
-		GEngine->GameViewport->AddViewportWidgetContent(InfoOverlay.ToSharedRef());
+		return;
 	}
 
-	LapTimeOverlay = SNew(SLapTimeOverlay);
-	if (LapTimeOverlay.IsValid())
+	RootCanvas->AddSlot()
+			  .Anchors(FAnchors(0.5f, 0.2f))
+			  .Alignment(FVector2D(0.5f, 0.5f))
+			  .AutoSize(true)
+	[
+		SAssignNew(ServerMessagesOverlay, SServerMessagesOverlay)
+	];
+}
+
+void ARaceHUD::InitializeOverlayCountdown()
+{
+	if (RootCanvas.IsValid() == false)
 	{
-		GEngine->GameViewport->AddViewportWidgetContent(LapTimeOverlay.ToSharedRef());
+		return;
+	}
+
+	RootCanvas->AddSlot()
+			  .Anchors(FAnchors(0.5f, 0.5f))
+			  .Alignment(FVector2D(0.5f, 0.5f))
+			  .AutoSize(true)
+	[
+		SAssignNew(CountdownOverlay, SCountdownOverlay)
+	];
+}
+
+void ARaceHUD::InitializeOverlayInfo()
+{
+	if (RootCanvas.IsValid() == false)
+	{
+		return;
+	}
+
+	RootCanvas->AddSlot()
+			  .Anchors(FAnchors(0.f, 1.f))
+			  .Alignment(FVector2D(0.f, 1.f))
+			  .AutoSize(true)
+	[
+		SAssignNew(InfoOverlay, SInfoOverlay)
+	];
+}
+
+void ARaceHUD::InitializeOverlayLapTime()
+{
+	if (RootCanvas.IsValid() == false)
+	{
+		return;
+	}
+
+	RootCanvas->AddSlot()
+			  .Anchors(FAnchors(0.5f, 0.f))
+			  .Alignment(FVector2D(0.5f, 0.f))
+			  .AutoSize(true)
+	[
+		SAssignNew(LapTimeOverlay, SLapTimeOverlay)
+	];
+}
+
+void ARaceHUD::InitializeOverlayRacingTime()
+{
+}
+
+void ARaceHUD::ShowModalOverlay(const TSharedPtr<SWidget>& Widget, const bool bFocus)
+{
+	if (ModalOverlay.IsValid() && Widget.IsValid())
+	{
+		ModalOverlay->ClearChildren();
+		ModalOverlay->AddSlot()
+		            .VAlign(VAlign_Fill)
+		            .HAlign(HAlign_Fill)
+		[
+			Widget.ToSharedRef()
+		];
+
+		if (RaceController.IsValid())
+		{
+			// RaceController->BlockCursor();
+		}
+
+		ModalOverlay->SetVisibility(EVisibility::Visible);
+
+		if (bFocus == true)
+		{
+			FSlateApplication::Get().SetKeyboardFocus(Widget.ToSharedRef());
+		}
+	}
+}
+
+void ARaceHUD::HideModalOverlay()
+{
+	if (ModalOverlay.IsValid())
+	{
+		ModalOverlay->SetVisibility(EVisibility::Collapsed);
+		ModalOverlay->ClearChildren();
+
+		if (RaceController.IsValid())
+		{
+			// RaceController->UnlockCursor();
+		}
 	}
 }
 
@@ -188,8 +327,11 @@ void ARaceHUD::InitializeDelegates()
 				RC->OnUpdateRacePlayerState.AddDynamic(this, &ARaceHUD::OnUpdateRacePlayerState);
 			}
 		}
-
 	}
+}
+
+void ARaceHUD::DeinitializeDelegates()
+{
 }
 
 void ARaceHUD::ShowLeaderboard()

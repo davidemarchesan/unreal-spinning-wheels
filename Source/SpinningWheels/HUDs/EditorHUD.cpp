@@ -27,9 +27,7 @@ void AEditorHUD::BeginPlay()
 
 void AEditorHUD::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-
 	DeinitializeDelegates();
-	
 	Super::EndPlay(EndPlayReason);
 }
 

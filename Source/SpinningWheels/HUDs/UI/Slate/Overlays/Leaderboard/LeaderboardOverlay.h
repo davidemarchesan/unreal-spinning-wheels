@@ -15,7 +15,7 @@ public:
 
 private:
 
-	TSharedPtr<SOverlay> MainOverlay;
+	TSharedPtr<SBox> MainBox;
 	TSharedPtr<SListView<TSharedPtr<FRaceLap>>> LeaderboardListView;
 
 	TArray<TSharedPtr<FRaceLap>> PlayersBestLap;

@@ -6,9 +6,12 @@
 #include "GameFramework/HUD.h"
 #include "SpinningWheels/Core/Leaderboard.h"
 #include "SpinningWheels/Core/Match.h"
+#include "Widgets/Layout/SConstraintCanvas.h"
 #include "RaceHUD.generated.h"
 
+class ARaceGameMode;
 class ARacePlayerState;
+class ARaceController;
 
 UCLASS()
 class SPINNINGWHEELS_API ARaceHUD : public AHUD
@@ -17,10 +20,37 @@ class SPINNINGWHEELS_API ARaceHUD : public AHUD
 
 private:
 
-	void InitializeOverlays();
+	TWeakObjectPtr<ARacePlayerState> RacePlayerState;
+	TWeakObjectPtr<ARaceController> RaceController;
+
+	void InitializeRootOverlay();
+	void InitializeOverlayLeaderboard();
+	void InitializeOverlayServerMessages();
+	void InitializeOverlayCountdown();
+	void InitializeOverlayInfo();
+	void InitializeOverlayLapTime();
+	void InitializeOverlayRacingTime();
+
+	void ShowModalOverlay(const TSharedPtr<SWidget>& Widget, const bool bFocus = true);
+	void HideModalOverlay();
+
+	/** Begin delegates bindings */
 	void InitializeDelegates();
+	void DeinitializeDelegates();
+
+	UFUNCTION() void OnUpdateLapCountdown(int32 Seconds);
+	UFUNCTION() void OnUpdateRacePlayerState(ARacePlayerState* InRacePlayerState);
+	UFUNCTION() void OnPlayerIdSet(int32 InPlayerId);
+	UFUNCTION() void OnCurrentLapUpdate(const FRaceLap& CurrentLap);
+	UFUNCTION() void OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard);
+	UFUNCTION() void OnRaceMatchStateUpdate(ERaceMatchState NewState);
+	/** End delegates bindings */
 
 	/** Begin Pointers to overlays */
+	TSharedPtr<SOverlay> RootOverlay;
+	TSharedPtr<SConstraintCanvas> RootCanvas;
+	TSharedPtr<SOverlay> ModalOverlay;
+	
 	TSharedPtr<class SLeaderboardOverlay> LeaderboardOverlay;
 	TSharedPtr<class SServerMessagesOverlay> ServerMessagesOverlay;
 	TSharedPtr<class SCountdownOverlay> CountdownOverlay;
@@ -30,31 +60,14 @@ private:
 
 	int32 PlayerId;
 
-	UFUNCTION()
-	void OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard);
-
-	UFUNCTION()
-	void OnRaceMatchStateUpdate(ERaceMatchState NewState);
-
 	void HandleRaceMatchStateWaitingForPlayers();
 	void HandleRaceMatchStateRacing();
 	void HandleRaceMatchStatePodium();
 
-	UFUNCTION()
-	void OnUpdateLapCountdown(int32 Seconds);
-
-	UFUNCTION()
-	void OnUpdateRacePlayerState(ARacePlayerState* RacePlayerState);
-
-	UFUNCTION()
-	void OnPlayerIdSet(int32 InPlayerId);
-
-	UFUNCTION()
-	void OnCurrentLapUpdate(const FRaceLap& CurrentLap);
-
 protected:
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
 

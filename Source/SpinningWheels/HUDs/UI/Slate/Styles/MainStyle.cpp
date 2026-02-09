@@ -159,7 +159,7 @@ void FMainStyle::InitializeFonts()
 void FMainStyle::InitializeBrushes()
 {
 	StyleInstance->Set("Brush.Background.Light",
-	                   new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.AlabasterGrey"), 12.f));
+	                   new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.White.Primary"), 12.f));
 	StyleInstance->Set("Brush.Background.Dark",
 	                   new FSlateRoundedBoxBrush(StyleInstance->GetColor("Color.Background.Dark"), 12.f));
 

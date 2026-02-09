@@ -44,7 +44,7 @@ FLinearColor STimeSlot::GetColor(ESlateTimeColor InColor)
 	{
 	default:
 	case ESlateTimeColor::TC_White:
-		return FMainStyle::Get().GetColor("Color.Primary.Light");
+		return FMainStyle::Get().GetColor("Color.Text.Light.Primary");
 		break;
 
 	case ESlateTimeColor::TC_Purple:

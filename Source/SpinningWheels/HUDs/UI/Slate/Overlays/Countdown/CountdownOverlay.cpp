@@ -8,38 +8,34 @@ void SCountdownOverlay::Construct(const FArguments& InArgs)
 	Font.Size = 80.f;
 
 	ChildSlot[
-		SAssignNew(MainOverlay, SOverlay)
+		SAssignNew(MainBox, SBox)
 		.Visibility(EVisibility::Collapsed)
-
-		+ SOverlay::Slot()
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
 		[
-			SNew(SBox)
-			[
-				SAssignNew(TextBlock, STextBlock)
-				.Text(FText::FromString("0"))
-				.ColorAndOpacity(FMainStyle::Get().GetColor("Color.CharcoalBlue"))
-				.Font(Font)
-				.Justification(ETextJustify::Center)
-			]
+			SAssignNew(TextBlock, STextBlock)
+			.Text(FText::FromString("0"))
+			.ColorAndOpacity(FMainStyle::Get().GetColor("Color.Text.Light.Primary"))
+			.Font(Font)
+			.Justification(ETextJustify::Center)
 		]
 	];
 }
 
 void SCountdownOverlay::Hide()
 {
-	MainOverlay->SetVisibility(EVisibility::Collapsed);
+	if (MainBox.IsValid())
+	{
+		MainBox->SetVisibility(EVisibility::Collapsed);
+	}
 }
 
 void SCountdownOverlay::UpdateCountdown(const int32 Seconds)
 {
-	if (MainOverlay.IsValid() && TextBlock.IsValid())
+	if (MainBox.IsValid() && TextBlock.IsValid())
 	{
 		if (Seconds > 0)
 		{
 			TextBlock->SetText(FText::AsNumber(Seconds));
-			MainOverlay->SetVisibility(EVisibility::Visible);
+			MainBox->SetVisibility(EVisibility::Visible);
 		}
 		else
 		{

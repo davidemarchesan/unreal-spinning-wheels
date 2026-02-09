@@ -6,7 +6,7 @@ void STimeNameSlot::Construct(const FArguments& InArgs)
 {
 	const FText Title = InArgs._Title;
 
-	FSlateFontInfo FontTitles = FMainStyle::Get().GetFontStyle("Font.Lato.Regular.p");
+	FSlateFontInfo FontTitles = FMainStyle::Get().GetFontStyle("Font.Funnel.Regular.p");
 	FSlateFontInfo FontTimes = FMainStyle::Get().GetFontStyle("Font.JetBrains.Regular.p");
 	FSlateFontInfo FontTimesCompare = FMainStyle::Get().GetFontStyle("Font.JetBrains.Regular.help");
 
@@ -15,7 +15,7 @@ void STimeNameSlot::Construct(const FArguments& InArgs)
 		.AutoWrapText(true)
 		.Text(Title)
 		.Font(FontTitles)
-		.ColorAndOpacity(FMainStyle::Get().GetColor("Color.Primary.Light"))
+		.ColorAndOpacity(FMainStyle::Get().GetColor("Color.Text.Light.Primary"))
 
 	];
 }

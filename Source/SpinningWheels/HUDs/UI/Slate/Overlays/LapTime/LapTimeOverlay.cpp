@@ -7,54 +7,46 @@
 void SLapTimeOverlay::Construct(const FArguments& InArgs)
 {
 	PlayerId = InArgs._PlayerId;
-
-	const FSlateBrush* Background = FMainStyle::Get().GetBrush("Brush.Background.Black");
-
+	
 	ChildSlot[
-		SNew(SOverlay)
-
-		+ SOverlay::Slot()
-		.VAlign(VAlign_Top)
-		.HAlign(HAlign_Center)
-		.Padding(10.f)
+		
+		SNew(SBorder)
+		.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Dark"))
+		.Padding(FMainStyle::Get().GetMargin("Padding.Box"))
 		[
 
-			SNew(SBorder)
-			.BorderImage(Background)
+			SNew(SBox)
+			.Padding(10.f, 6.f)
 			[
 
-				SNew(SBox)
-				.Padding(10.f, 6.f)
+				SNew(SVerticalBox)
+
+				// Current Match Record
+				+ SVerticalBox::Slot()
+				.AutoHeight()
 				[
+					SAssignNew(RecordLapTimeRow, SLapTimeRow)
+				]
 
-					SNew(SVerticalBox)
+				// Personal Best
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				[
+					SAssignNew(PersonalBestLapTimeRow, SLapTimeRow)
+				]
 
-					// Current Match Record
-					+ SVerticalBox::Slot()
-					.AutoHeight()
-					[
-						SAssignNew(RecordLapTimeRow, SLapTimeRow)
-					]
-
-					// Personal Best
-					+ SVerticalBox::Slot()
-					.AutoHeight()
-					[
-						SAssignNew(PersonalBestLapTimeRow, SLapTimeRow)
-					]
-
-					// Current
-					+ SVerticalBox::Slot()
-					.AutoHeight()
-					[
-						SAssignNew(CurrentLapTimeRow, SLapTimeRow)
-					]
-
+				// Current
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				[
+					SAssignNew(CurrentLapTimeRow, SLapTimeRow)
 				]
 
 			]
 
 		]
+
+
 	];
 }
 
@@ -197,7 +189,7 @@ void SLapTimeOverlay::OnCurrentLapUpdate(const FRaceLap& CurrentLap)
 			LapDiff < 0 ? ESlateTimeColor::TC_Green : ESlateTimeColor::TC_Red
 		);
 	}
-	
+
 	const TArray<int32> CurrentSectors = Current.GetSectors();
 	const TArray<int32> BestSectors = Leaderboard.GetBestSectors();
 	const TArray<int32> PersBestSectors = LastPersonalBest.GetSectors();
@@ -224,7 +216,7 @@ void SLapTimeOverlay::OnCurrentLapUpdate(const FRaceLap& CurrentLap)
 
 		NewRow.Sectors.Add(SlateTimeSlot);
 	}
-	
+
 
 	CurrentLapTimeRow->SetLapTimeRow(NewRow);
 }

@@ -11,7 +11,6 @@ public:
 
 private:
 
-	TSharedPtr<SOverlay> MainOverlay;
 	TSharedPtr<STextBlock> PlayerIdTextBlock;
 
 public:
