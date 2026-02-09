@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
+#include "SpinningWheels/Core/Track.h"
 #include "RaceGameModeBase.generated.h"
 
-/**
- * 
- */
+class ATrackGrid;
+
+
 UCLASS()
 class SPINNINGWHEELS_API ARaceGameModeBase : public AGameMode
 {
@@ -18,7 +19,13 @@ private:
 
 protected:
 
+	FTrack CurrentTrack;
+
+	TWeakObjectPtr<ATrackGrid> TrackGrid;
 	TWeakObjectPtr<class AStartBlock> StartBlock;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Classes)
+	TSubclassOf<ATrackGrid> DefaultTrackGridClass;
 
 	virtual void PrepareControllerForNewLap(AController* Controller);
 

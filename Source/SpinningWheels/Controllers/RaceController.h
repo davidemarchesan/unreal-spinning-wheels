@@ -116,6 +116,8 @@ protected:
 	virtual void SetupInputComponent() override;
 	//~ End AController Interface
 
+	virtual void SetDefaultInputMode();
+
 	virtual void SetupInputBindings();
 	virtual void SetupDriveInputBindings();
 	virtual void SetupGeneralInputBindings();

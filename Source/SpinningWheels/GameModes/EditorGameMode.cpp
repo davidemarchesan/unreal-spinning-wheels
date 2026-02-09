@@ -62,7 +62,7 @@ void AEditorGameMode::InitializeGrid()
 					FTrackSaveData TrackToLoadSaveData = TrackToLoad.GetValue();
 					CurrentTrack = FTrack(TrackToLoadSaveData.Id, TrackToLoadSaveData.Name);
 
-					TrackGrid->Initialize(GridSize.X, GridSize.Y, TrackToLoad.GetValue());
+					TrackGrid->Initialize(TrackConstants::Size, TrackConstants::Size, TrackToLoad.GetValue());
 					OnTrackGridReady.Broadcast(TrackGrid.Get());
 
 					OnTrackLoaded.Broadcast(CurrentTrack);
@@ -72,7 +72,7 @@ void AEditorGameMode::InitializeGrid()
 			}
 		}
 
-		TrackGrid->Initialize(GridSize.X, GridSize.Y);
+		TrackGrid->Initialize(TrackConstants::Size, TrackConstants::Size);
 		OnTrackGridReady.Broadcast(TrackGrid.Get());
 	}
 }

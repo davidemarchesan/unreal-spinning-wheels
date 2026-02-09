@@ -106,6 +106,8 @@ void ARaceController::BeginPlay()
 	CreateCamera();
 
 	EnableDefaultInputMappingContext();
+
+	SetDefaultInputMode();
 }
 
 void ARaceController::SetPawn(APawn* InPawn)
@@ -132,6 +134,12 @@ void ARaceController::SetupInputComponent()
 	Super::SetupInputComponent();
 
 	SetupInputBindings();
+}
+
+void ARaceController::SetDefaultInputMode()
+{
+	bShowMouseCursor = false;
+	SetInputMode(FInputModeGameOnly());
 }
 
 void ARaceController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -198,8 +206,6 @@ void ARaceController::PrepareForNewLap(float InServerStartTime)
 	{
 		return;
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("PrepareForNewLap"));
 	
 	SetPhase(ERaceControllerPhase::RCP_InStartingProcedure);
 	ServerStartDriveTime = InServerStartTime;
@@ -217,7 +223,6 @@ void ARaceController::SetupDriveInputBindings()
 	{
 		if (DriveInputConfig)
 		{
-
 			EnhancedInput->BindAction(DriveInputConfig->IA_Drive, ETriggerEvent::Started, this,
 			                          &ARaceController::InputStartDrive);
 			EnhancedInput->BindAction(DriveInputConfig->IA_Drive, ETriggerEvent::Completed, this,
@@ -466,7 +471,6 @@ void ARaceController::InputStopTurbo()
 
 void ARaceController::InputCancelLap()
 {
-	UE_LOG(LogTemp, Warning, TEXT("InputCancelLap %d"), Phase);
 	if (Phase != ERaceControllerPhase::RCP_Driving)
 	{
 		return;
@@ -507,7 +511,6 @@ void ARaceController::InputHideLeaderboard()
 
 void ARaceController::InternalCancelLap()
 {
-	UE_LOG(LogTemp, Warning, TEXT("InternalCancelLap"));
 	if (ARaceGameModeBase* GM = GetWorld()->GetAuthGameMode<ARaceGameModeBase>())
 	{
 		GM->CancelLap(this);

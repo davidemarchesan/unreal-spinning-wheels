@@ -26,6 +26,8 @@ public:
 private:
 
 	void InitializeMainHUD();
+
+	TWeakObjectPtr<class AMainController> MainController;
 	
 	// Subsystems
 	TWeakObjectPtr<class UGameInstance> GameInstance;
@@ -58,6 +60,7 @@ private:
 	void OnEditTrack(const FTrackSaveData& Track);
 
 	void OnHost();
+	void OnJoin();
 
 	// History
 	EMenuPage CurrentPage = EMenuPage::MP_None;

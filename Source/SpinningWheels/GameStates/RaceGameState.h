@@ -28,6 +28,7 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_RaceMatchState();
 
+	virtual void HandleRaceMatchStateLoadingGrid();
 	virtual void HandleRaceMatchStateWaitingForPlayers();
 	virtual void HandleRaceMatchStateRacing();
 	virtual void HandleRaceMatchStatePodium();

@@ -4,6 +4,8 @@
 #include "RaceGameState.h"
 
 #include "Net/UnrealNetwork.h"
+#include "SpinningWheels/Controllers/RaceController.h"
+#include "SpinningWheels/PlayerStates/RacePlayerState.h"
 #include "SpinningWheels/GameModes/RaceGameMode.h"
 
 void ARaceGameState::OnRep_RaceMatchState()
@@ -12,6 +14,9 @@ void ARaceGameState::OnRep_RaceMatchState()
 
 	switch (RaceMatchState)
 	{
+	case ERaceMatchState::RMS_LoadingGrid:
+		HandleRaceMatchStateLoadingGrid();
+		break;
 	case ERaceMatchState::RMS_WaitingForPlayers:
 		HandleRaceMatchStateWaitingForPlayers();
 		break;
@@ -24,12 +29,32 @@ void ARaceGameState::OnRep_RaceMatchState()
 	}
 }
 
+void ARaceGameState::HandleRaceMatchStateLoadingGrid()
+{
+}
+
 void ARaceGameState::HandleRaceMatchStateWaitingForPlayers()
 {
 }
 
 void ARaceGameState::HandleRaceMatchStateRacing()
 {
+	if (const ARaceGameMode* GM = Cast<ARaceGameMode>(AuthorityGameMode))
+	{
+		const float ServerStartDriveTime = GetServerWorldTimeSeconds() + GM->TimeStartDriveCountdown;
+		for (TObjectPtr<APlayerState> PS : PlayerArray)
+		{
+			if (PS.Get() == nullptr)
+			{
+				continue;
+			}
+
+			if (ARaceController* RC = Cast<ARaceController>(PS->GetPlayerController()))
+			{
+				RC->PrepareForNewLap(ServerStartDriveTime);
+			}
+		}
+	}
 }
 
 void ARaceGameState::HandleRaceMatchStatePodium()

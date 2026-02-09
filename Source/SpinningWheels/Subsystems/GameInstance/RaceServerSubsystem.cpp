@@ -22,5 +22,11 @@ FTrackSaveData URaceServerSubsystem::GetCurrentTrack()
 int32 URaceServerSubsystem::GoToNextTrack()
 {
 	CurrentTrackIndex++;
+
+	if (CurrentTrackIndex >= Tracks.Num())
+	{
+		CurrentTrackIndex = 0;
+	}
+	
 	return CurrentTrackIndex;
 }

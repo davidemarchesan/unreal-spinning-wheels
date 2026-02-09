@@ -111,6 +111,8 @@ protected:
 	virtual void SetPawn(APawn* InPawn) override;
 	//~ End AController Interface
 
+	virtual void SetDefaultInputMode() override;
+
 	virtual void SetupInputBindings() override;
 	void SetupEditorInputBindings();
 	void SetupBuildInputBindings();

@@ -14,8 +14,19 @@ class SPINNINGWHEELS_API AMainController : public APlayerController
 {
 	GENERATED_BODY()
 
+private:
+
+	TWeakObjectPtr<class UGameInstance> GameInstance;
+	TWeakObjectPtr<class UTracksSubsystem> TracksSubsystem;
+	TWeakObjectPtr<class URaceServerSubsystem> RaceServerSubsystem;
+
 protected:
 
 	virtual void BeginPlay() override;
+
+public:
+
+	void HostSession();
+	void JoinSession();
 	
 };

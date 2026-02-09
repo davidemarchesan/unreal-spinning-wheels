@@ -9,6 +9,7 @@
 #include "RaceGameMode.generated.h"
 
 class ARaceController;
+class ATrackGrid;
 
 UCLASS()
 class SPINNINGWHEELS_API ARaceGameMode : public ARaceGameModeBase
@@ -16,7 +17,6 @@ class SPINNINGWHEELS_API ARaceGameMode : public ARaceGameModeBase
 	GENERATED_BODY()
 
 private:
-
 	void InitializeGrid();
 
 	FTimerHandle WaitingForPlayersTimer;
@@ -24,18 +24,17 @@ private:
 	void StopWaitingForPlayers();
 
 protected:
-
 	void SetRaceMatchState(ERaceMatchState NewState);
 	ERaceMatchState RaceMatchState;
 
 	virtual void OnNewRaceMatchState();
+	virtual void HandleRaceMatchStateLoadingGrid();
 	virtual void HandleRaceMatchStateWaitingForPlayers();
 	virtual void HandleRaceMatchStateRacing();
 	virtual void HandleRaceMatchStatePodium();
 
 	virtual void PrepareControllerForNewLap(AController* Controller) override;
 
-	// todo: array of maps to play on the server
 	FTrack CurrentTrack;
 
 	//~ Begin AGameMode Interface
@@ -44,7 +43,6 @@ protected:
 	//~ End AGameMode Interface
 
 public:
-	
 	ERaceMatchState GetRaceMatchState() const { return RaceMatchState; }
 
 	UPROPERTY(Category=Timers, EditDefaultsOnly)
@@ -59,6 +57,9 @@ public:
 	UPROPERTY(Category=Timers, EditDefaultsOnly)
 	float TimeStartDriveCountdown = 4;
 
-	FTrack GetCurrentTrack() { return CurrentTrack;}
-	
+	FTrack GetCurrentTrack() { return CurrentTrack; }
+
+	virtual void CancelLap(AController* Controller) override;
+
+	void ControllerIsReady(AController* Controller);
 };

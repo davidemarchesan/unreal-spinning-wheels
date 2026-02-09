@@ -23,7 +23,7 @@ private:
 protected:
 
 public:
-
+	
 	void SetTracksPlaylist(const TArray<FTrackSaveData>& InTracks);
 
 	FTrackSaveData GetCurrentTrack();

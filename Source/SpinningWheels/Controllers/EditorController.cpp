@@ -19,9 +19,6 @@ void AEditorController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	bShowMouseCursor = true;
-	SetInputMode(FInputModeGameAndUI());
-
 	EditorGameMode = GetWorld()->GetAuthGameMode<AEditorGameMode>();
 	SetupTrackGrid();
 
@@ -57,6 +54,12 @@ void AEditorController::SetPawn(APawn* InPawn)
 
 		MovePawnAtCenter();
 	}
+}
+
+void AEditorController::SetDefaultInputMode()
+{
+	bShowMouseCursor = true;
+	SetInputMode(FInputModeGameAndUI());
 }
 
 void AEditorController::SetupInputBindings()

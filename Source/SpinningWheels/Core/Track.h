@@ -3,6 +3,11 @@
 
 #include "Track.generated.h"
 
+namespace TrackConstants
+{
+	constexpr int32 Size = 100;
+}
+
 USTRUCT()
 struct FGridCoord
 {

@@ -34,10 +34,6 @@ private:
 
 	void SetEditorMode(EEditorMode NewEditorMode);
 
-	TWeakObjectPtr<ATrackGrid> TrackGrid;
-
-	FTrack CurrentTrack;
-
 	void TriggerRefreshTracks();
 	
 protected:
@@ -49,12 +45,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Classes)
 	TSubclassOf<AEditorPawn> DefaultEditorClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Classes)
-	TSubclassOf<ATrackGrid> DefaultTrackGridClass;
-
-	UPROPERTY(EditDefaultsOnly, Category="Track")
-	FVector2D GridSize = FVector2D(10.f, 10.f);
 
 public:
 

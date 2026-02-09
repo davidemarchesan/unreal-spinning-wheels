@@ -4,6 +4,7 @@
 #include "MainHUD.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "SpinningWheels/Controllers/MainController.h"
 #include "SpinningWheels/Subsystems/GameInstance/LoadingSubsystem.h"
 #include "SpinningWheels/Subsystems/GameInstance/RaceServerSubsystem.h"
 #include "SpinningWheels/Subsystems/GameInstance/TrackEditorSubsystem.h"
@@ -15,6 +16,8 @@
 void AMainHUD::BeginPlay()
 {
 	Super::BeginPlay();
+
+	MainController = Cast<AMainController>( GetOwningPlayerController());
 
 	InitializeMainHUD();
 }
@@ -148,8 +151,12 @@ void AMainHUD::InitializePages()
 		})
 		.OnJoin_Lambda([this]()
 		{
-			UE_LOG(LogTemp, Warning, TEXT("on join"));
-			return FReply::Handled();
+			if (this)
+			{
+				OnJoin();
+				return FReply::Handled();
+			}
+			return FReply::Unhandled();
 		});
 
 	if (MainSwitcher.IsValid())
@@ -229,13 +236,19 @@ void AMainHUD::OnEditTrack(const FTrackSaveData& Track)
 
 void AMainHUD::OnHost()
 {
-	// Load all tracks
-	if (RaceServerSubsystem.IsValid() && TracksSubsystem.IsValid())
+	if (MainController.IsValid())
 	{
-		RaceServerSubsystem->SetTracksPlaylist(TracksSubsystem->GetTracks());
-		
 		GEngine->GameViewport->RemoveAllViewportWidgets();
-		UGameplayStatics::OpenLevel(GetWorld(), "L_Race");
+		MainController->HostSession();
+	}
+}
+
+void AMainHUD::OnJoin()
+{
+	if (MainController.IsValid())
+	{
+		GEngine->GameViewport->RemoveAllViewportWidgets();
+		MainController->JoinSession();
 	}
 }
 

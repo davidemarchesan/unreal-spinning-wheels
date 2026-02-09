@@ -4,6 +4,7 @@ ABlock::ABlock()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
+	bAlwaysRelevant = true;
 
 	if (USceneComponent* SceneComponent = CreateDefaultSubobject<USceneComponent>("Scene"))
 	{
