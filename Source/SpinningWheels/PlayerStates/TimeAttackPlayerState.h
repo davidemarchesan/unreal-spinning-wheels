@@ -15,11 +15,9 @@ class SPINNINGWHEELS_API ATimeAttackPlayerState : public ARacePlayerState
 
 private:
 
-	ATimeAttackGameState* GetTimeAttackGameState();
 
 protected:
 
-	virtual void OnNewBestLap(FRaceLap Lap) override;
 
 public:
 	

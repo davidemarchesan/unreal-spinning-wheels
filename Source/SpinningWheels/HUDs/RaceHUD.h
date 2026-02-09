@@ -71,6 +71,8 @@ protected:
 
 public:
 
+	void ClearViewport();
+
 	void ShowLeaderboard();
 	void HideLeaderboard();
 	

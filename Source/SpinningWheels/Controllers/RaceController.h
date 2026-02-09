@@ -16,6 +16,7 @@ class AMainCamera;
 class ARaceGameMode;
 class ARaceGameState;
 class ARacePlayerState;
+class ARaceHUD;
 
 UENUM()
 enum class ERaceControllerPhase : uint8
@@ -39,6 +40,9 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
+
+	TWeakObjectPtr<ARaceHUD> RaceHUD;
+	
 	// Begin Deterministic physics
 	void SimulatedTick(float DeltaSeconds);
 	float AccSimulationTime = 0.f;

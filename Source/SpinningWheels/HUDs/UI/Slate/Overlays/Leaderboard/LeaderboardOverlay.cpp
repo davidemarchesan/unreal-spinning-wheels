@@ -12,16 +12,32 @@ void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 	ChildSlot[
 		SAssignNew(MainBox, SBox)
 		.Visibility(EVisibility::Collapsed)
-		.WidthOverride(900.f)
-		.HeightOverride(700.f)
+		.MinDesiredWidth(900.f)
+		.MinDesiredHeight(700.f)
 		[
 			SNew(SBorder)
 			.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Dark"))
 			.Padding(FMainStyle::Get().GetMargin("Padding.Box"))
 			[
+				SNew(SVerticalBox)
 
-				SNew(SBox)
-				.Padding(10.f)
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString("Leaderboard"))
+					.TextStyle(&FMainStyle::Get().GetWidgetStyle<FTextBlockStyle>("Text.Box.Title"))
+				]
+
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				[
+					SNew(SSpacer)
+					.Size(FVector2D(1.f, 20.f))
+				]
+				
+				+ SVerticalBox::Slot()
+				.FillHeight(1.f)
 				[
 					SAssignNew(LeaderboardListView, SListView<TSharedPtr<FRaceLap>>)
 					.ListItemsSource(&PlayersBestLap)

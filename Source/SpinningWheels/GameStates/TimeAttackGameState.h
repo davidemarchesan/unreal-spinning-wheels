@@ -9,8 +9,6 @@
 
 class ATimeAttackPlayerState;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLeaderboardUpdateSignature, const FTimeAttackLeaderboard&, Leaderboard);
-
 UCLASS()
 class SPINNINGWHEELS_API ATimeAttackGameState : public ARaceGameState
 {
@@ -18,31 +16,31 @@ class SPINNINGWHEELS_API ATimeAttackGameState : public ARaceGameState
 
 private:
 
-	UPROPERTY(ReplicatedUsing=OnRep_Leaderboard)
-	FTimeAttackLeaderboard Leaderboard;
-
-	UFUNCTION()
-	void OnRep_Leaderboard();
+	// UPROPERTY(ReplicatedUsing=OnRep_Leaderboard)
+	// FTimeAttackLeaderboard Leaderboard;
+	//
+	// UFUNCTION()
+	// void OnRep_Leaderboard();
 
 protected:
 
 	//~ Begin AGameState Interface
-	virtual void HandleMatchIsWaitingToStart() override;
+	// virtual void HandleMatchIsWaitingToStart() override;
 	//~ End AGameState Interface
 
 	//~ Begin ARaceGameState Interface
-	virtual void HandleRaceMatchStateRacing() override;
+	// virtual void HandleRaceMatchStateRacing() override;
 	//~ End ARaceGameState Interface
 	
 public:
 
-	const FTimeAttackLeaderboard& GetLeaderboard() const { return Leaderboard; }
-
-	//~ Begin AGameState Interface
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	//~ End AGameState Interface
-
-	void OnNewBestLap(FRaceLap Lap);
-	
-	FOnLeaderboardUpdateSignature OnLeaderboardUpdate;
+	// const FTimeAttackLeaderboard& GetLeaderboard() const { return Leaderboard; }
+	//
+	// //~ Begin AGameState Interface
+	// virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	// //~ End AGameState Interface
+	//
+	// void OnNewBestLap(FRaceLap Lap);
+	//
+	// FOnLeaderboardUpdateSignature OnLeaderboardUpdate;
 };

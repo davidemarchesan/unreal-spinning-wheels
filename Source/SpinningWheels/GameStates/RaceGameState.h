@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
+#include "SpinningWheels/Core/Leaderboard.h"
 #include "SpinningWheels/Core/Match.h"
 #include "SpinningWheels/Core/Track.h"
 #include "RaceGameState.generated.h"
@@ -12,6 +13,8 @@ class ARacePlayerState;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRaceMatchStateUpdateSignature, ERaceMatchState, NewState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTrackUpdateSignature, const FTrack&, NewTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLeaderboardUpdateSignature, const FTimeAttackLeaderboard&, Leaderboard);
+
 
 UCLASS()
 class SPINNINGWHEELS_API ARaceGameState : public AGameState
@@ -19,6 +22,12 @@ class SPINNINGWHEELS_API ARaceGameState : public AGameState
 	GENERATED_BODY()
 
 private:
+
+	UPROPERTY(ReplicatedUsing=OnRep_Leaderboard)
+	FTimeAttackLeaderboard Leaderboard;
+
+	UFUNCTION()
+	void OnRep_Leaderboard();
 
 protected:
 
@@ -32,6 +41,10 @@ protected:
 	virtual void HandleRaceMatchStateWaitingForPlayers();
 	virtual void HandleRaceMatchStateRacing();
 	virtual void HandleRaceMatchStatePodium();
+
+	//~ Begin AGameState Interface
+	virtual void HandleMatchIsWaitingToStart() override;
+	//~ End AGameState Interface
 
 	UPROPERTY(ReplicatedUsing=OnRep_CurrentTrack)
 	FTrack CurrentTrack;
@@ -50,10 +63,14 @@ public:
 
 	void SetCurrentTrack(const FTrack& NewTrack);
 	FTrack GetCurrentTrack() const { return CurrentTrack; };
+
+	const FTimeAttackLeaderboard& GetLeaderboard() const { return Leaderboard; }
+	void OnNewBestLap(FRaceLap Lap);
 	
 	/** Begin Delegates */
 	FOnRaceMatchStateUpdateSignature OnRaceMatchStateUpdate;
 	FOnTrackUpdateSignature OnTrackUpdate;
+	FOnLeaderboardUpdateSignature OnLeaderboardUpdate;
 	/** End Delegates */
 	
 };

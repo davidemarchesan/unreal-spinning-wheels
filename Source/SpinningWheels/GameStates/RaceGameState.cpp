@@ -8,6 +8,11 @@
 #include "SpinningWheels/PlayerStates/RacePlayerState.h"
 #include "SpinningWheels/GameModes/RaceGameMode.h"
 
+void ARaceGameState::OnRep_Leaderboard()
+{
+	OnLeaderboardUpdate.Broadcast(Leaderboard);
+}
+
 void ARaceGameState::OnRep_RaceMatchState()
 {
 	OnRaceMatchStateUpdate.Broadcast(RaceMatchState);
@@ -63,6 +68,13 @@ void ARaceGameState::HandleRaceMatchStatePodium()
 {
 }
 
+void ARaceGameState::HandleMatchIsWaitingToStart()
+{
+	Super::HandleMatchIsWaitingToStart();
+
+	Leaderboard.Reset();
+}
+
 void ARaceGameState::SetRaceMatchState(ERaceMatchState NewState)
 {
 	if (HasAuthority() == false)
@@ -89,6 +101,12 @@ void ARaceGameState::SetCurrentTrack(const FTrack& NewTrack)
 	OnRep_CurrentTrack();
 }
 
+void ARaceGameState::OnNewBestLap(FRaceLap Lap)
+{
+	Leaderboard.AddPlayerNewBest(Lap);
+	OnLeaderboardUpdate.Broadcast(Leaderboard);
+}
+
 void ARaceGameState::OnRep_CurrentTrack()
 {
 	OnTrackUpdate.Broadcast(CurrentTrack);
@@ -99,4 +117,5 @@ void ARaceGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ARaceGameState, RaceMatchState);
+	DOREPLIFETIME(ARaceGameState, Leaderboard);
 }

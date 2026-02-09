@@ -116,6 +116,7 @@ void ARaceController::BeginPlay()
 	Super::BeginPlay();
 
 	RacePlayerState = GetRacePlayerState();
+	RaceHUD = GetHUD<ARaceHUD>();
 
 	CreateCamera();
 
@@ -195,6 +196,11 @@ void ARaceController::PreClientTravel(const FString& PendingURL, ETravelType Tra
 	BrakeInputValue = 0;
 	TurnInputValue = 0;
 	TurboInputValue = 0;
+
+	if (RaceHUD.IsValid())
+	{
+		RaceHUD->ClearViewport();
+	}
 }
 
 void ARaceController::SetPhase(ERaceControllerPhase NewPhase)
@@ -520,7 +526,7 @@ void ARaceController::InputCancelLap()
 
 void ARaceController::InputShowLeaderboard()
 {
-	if (ARaceHUD* RaceHUD = GetHUD<ARaceHUD>())
+	if (RaceHUD.IsValid())
 	{
 		RaceHUD->ShowLeaderboard();
 	}
@@ -528,7 +534,7 @@ void ARaceController::InputShowLeaderboard()
 
 void ARaceController::InputHideLeaderboard()
 {
-	if (ARaceHUD* RaceHUD = GetHUD<ARaceHUD>())
+	if (RaceHUD.IsValid())
 	{
 		RaceHUD->HideLeaderboard();
 	}

@@ -63,14 +63,15 @@ void ARacePlayerState::ServerOnFinishLap_Implementation()
 
 void ARacePlayerState::OnNewBestLap(FRaceLap Lap)
 {
-	// Child class
+	if (ARaceGameState* GS = GetWorld()->GetGameState<ARaceGameState>())
+	{
+		GS->OnNewBestLap(Lap);
+	}
 }
 
 void ARacePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-
-	UE_LOG(LogTemp, Log, TEXT("ARacePlayerState::BeginPlay() with frames %d"), SimulationFrames.Num())
 }
 
 void ARacePlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -125,7 +126,6 @@ void ARacePlayerState::CarOnCheckpoint(int32 CurrentFrameIndex)
 
 void ARacePlayerState::CarOnFinish(int32 CurrentFrameIndex)
 {
-	// UE_LOG(	LogTemp, Warning, TEXT("role %d, CarOnFinish"), GetLocalRole());
 	CurrentLap.Close(CurrentFrameIndex);
 	bOnALap = false;
 

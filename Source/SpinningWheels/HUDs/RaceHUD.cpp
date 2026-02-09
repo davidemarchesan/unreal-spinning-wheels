@@ -5,7 +5,6 @@
 
 #include "SpinningWheels/Controllers/RaceController.h"
 #include "SpinningWheels/GameStates/RaceGameState.h"
-#include "SpinningWheels/GameStates/TimeAttackGameState.h"
 #include "SpinningWheels/PlayerStates/RacePlayerState.h"
 #include "UI/Slate/Overlays/Countdown/CountdownOverlay.h"
 #include "UI/Slate/Overlays/Info/InfoOverlay.h"
@@ -28,6 +27,14 @@ void ARaceHUD::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	DeinitializeDelegates();
 	Super::EndPlay(EndPlayReason);
+}
+
+void ARaceHUD::ClearViewport()
+{
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->RemoveAllViewportWidgets();
+	}
 }
 
 void ARaceHUD::OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard)
@@ -57,6 +64,9 @@ void ARaceHUD::OnRaceMatchStateUpdate(ERaceMatchState NewState)
 
 	case ERaceMatchState::RMS_Podium:
 		HandleRaceMatchStatePodium();
+		break;
+
+	default:
 		break;
 	}
 }
@@ -94,7 +104,7 @@ void ARaceHUD::OnUpdateRacePlayerState(ARacePlayerState* InRacePlayerState)
 	if (InRacePlayerState)
 	{
 		RacePlayerState = InRacePlayerState;
-		
+
 		// todo: this code repeats on initialize delegates
 		OnPlayerIdSet(RacePlayerState->GetPlayerId());
 		RacePlayerState->OnPlayerIdSet.AddDynamic(this, &ARaceHUD::OnPlayerIdSet);
@@ -169,7 +179,6 @@ void ARaceHUD::InitializeRootOverlay()
 	InitializeOverlayInfo();
 	InitializeOverlayLapTime();
 	InitializeOverlayRacingTime();
-		
 }
 
 void ARaceHUD::InitializeOverlayLeaderboard()
@@ -196,9 +205,9 @@ void ARaceHUD::InitializeOverlayServerMessages()
 	}
 
 	RootCanvas->AddSlot()
-			  .Anchors(FAnchors(0.5f, 0.2f))
-			  .Alignment(FVector2D(0.5f, 0.5f))
-			  .AutoSize(true)
+	          .Anchors(FAnchors(0.5f, 0.2f))
+	          .Alignment(FVector2D(0.5f, 0.5f))
+	          .AutoSize(true)
 	[
 		SAssignNew(ServerMessagesOverlay, SServerMessagesOverlay)
 	];
@@ -212,9 +221,9 @@ void ARaceHUD::InitializeOverlayCountdown()
 	}
 
 	RootCanvas->AddSlot()
-			  .Anchors(FAnchors(0.5f, 0.5f))
-			  .Alignment(FVector2D(0.5f, 0.5f))
-			  .AutoSize(true)
+	          .Anchors(FAnchors(0.5f, 0.5f))
+	          .Alignment(FVector2D(0.5f, 0.5f))
+	          .AutoSize(true)
 	[
 		SAssignNew(CountdownOverlay, SCountdownOverlay)
 	];
@@ -228,9 +237,9 @@ void ARaceHUD::InitializeOverlayInfo()
 	}
 
 	RootCanvas->AddSlot()
-			  .Anchors(FAnchors(0.f, 1.f))
-			  .Alignment(FVector2D(0.f, 1.f))
-			  .AutoSize(true)
+	          .Anchors(FAnchors(0.f, 1.f))
+	          .Alignment(FVector2D(0.f, 1.f))
+	          .AutoSize(true)
 	[
 		SAssignNew(InfoOverlay, SInfoOverlay)
 	];
@@ -244,9 +253,9 @@ void ARaceHUD::InitializeOverlayLapTime()
 	}
 
 	RootCanvas->AddSlot()
-			  .Anchors(FAnchors(0.5f, 0.f))
-			  .Alignment(FVector2D(0.5f, 0.f))
-			  .AutoSize(true)
+	          .Anchors(FAnchors(0.5f, 0.f))
+	          .Alignment(FVector2D(0.5f, 0.f))
+	          .AutoSize(true)
 	[
 		SAssignNew(LapTimeOverlay, SLapTimeOverlay)
 	];
@@ -300,14 +309,11 @@ void ARaceHUD::InitializeDelegates()
 {
 	if (const UWorld* World = GetWorld())
 	{
-		if (ATimeAttackGameState* TAGS = World->GetGameState<ATimeAttackGameState>())
-		{
-			OnLeaderboardUpdate(TAGS->GetLeaderboard());
-			TAGS->OnLeaderboardUpdate.AddDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
-		}
-
 		if (ARaceGameState* RGS = World->GetGameState<ARaceGameState>())
 		{
+			OnLeaderboardUpdate(RGS->GetLeaderboard());
+			RGS->OnLeaderboardUpdate.AddDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
+
 			OnRaceMatchStateUpdate(RGS->GetRaceMatchState());
 			RGS->OnRaceMatchStateUpdate.AddDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
 		}
