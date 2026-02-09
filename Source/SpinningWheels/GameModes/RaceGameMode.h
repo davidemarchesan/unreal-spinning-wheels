@@ -27,6 +27,8 @@ private:
 	void StartRacingTimer();
 	void EndRacingTimer();
 
+	float ServerRacingEndTime = 0.f;
+
 	FTimerHandle PodiumTimerHandle;
 	void StartPodiumTimer();
 	void EndPodiumTimer();

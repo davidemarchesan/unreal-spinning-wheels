@@ -10,6 +10,7 @@
 #include "UI/Slate/Overlays/Info/InfoOverlay.h"
 #include "UI/Slate/Overlays/LapTime/LapTimeOverlay.h"
 #include "UI/Slate/Overlays/Leaderboard/LeaderboardOverlay.h"
+#include "UI/Slate/Overlays/MatchTime/MatchTimeOverlay.h"
 #include "UI/Slate/Overlays/ServerMessages/ServerMessagesOverlay.h"
 #include "UI/Slate/Styles/MainStyle.h"
 
@@ -178,7 +179,7 @@ void ARaceHUD::InitializeRootOverlay()
 	InitializeOverlayCountdown();
 	InitializeOverlayInfo();
 	InitializeOverlayLapTime();
-	InitializeOverlayRacingTime();
+	InitializeOverlayMatchTime();
 }
 
 void ARaceHUD::InitializeOverlayLeaderboard()
@@ -261,8 +262,20 @@ void ARaceHUD::InitializeOverlayLapTime()
 	];
 }
 
-void ARaceHUD::InitializeOverlayRacingTime()
+void ARaceHUD::InitializeOverlayMatchTime()
 {
+	if (RootCanvas.IsValid() == false)
+	{
+		return;
+	}
+
+	RootCanvas->AddSlot()
+			  .Anchors(FAnchors(1.f, 0.5f))
+			  .Alignment(FVector2D(1.f, 0.5f))
+			  .AutoSize(true)
+	[
+		SAssignNew(MatchTimeOverlay, SMatchTimeOverlay)
+	];
 }
 
 void ARaceHUD::ShowModalOverlay(const TSharedPtr<SWidget>& Widget, const bool bFocus)
@@ -353,5 +366,13 @@ void ARaceHUD::HideLeaderboard()
 	if (LeaderboardOverlay.IsValid())
 	{
 		LeaderboardOverlay->Hide();
+	}
+}
+
+void ARaceHUD::SetMatchRemainingTime(const float Seconds)
+{
+	if (MatchTimeOverlay.IsValid())
+	{
+		MatchTimeOverlay->SetMatchRemainingTime(Seconds);
 	}
 }

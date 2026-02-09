@@ -6,6 +6,7 @@ void SCountdownOverlay::Construct(const FArguments& InArgs)
 {
 	FSlateFontInfo Font = FMainStyle::Get().GetFontStyle("Font.JetBrains.Bold.h1");
 	Font.Size = 80.f;
+	Font.OutlineSettings = FFontOutlineSettings(1, FMainStyle::Get().GetColor("Color.Text.Dark.Primary"));
 
 	ChildSlot[
 		SAssignNew(MainBox, SBox)

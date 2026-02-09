@@ -48,6 +48,8 @@ void ARaceGameState::HandleRaceMatchStateRacing()
 {
 	if (const ARaceGameMode* GM = Cast<ARaceGameMode>(AuthorityGameMode))
 	{
+		ServerRacingEndTime = GetServerWorldTimeSeconds() + GM->TimeRacing;
+		
 		const float ServerStartDriveTime = GetServerWorldTimeSeconds() + GM->TimeStartDriveCountdown;
 		for (TObjectPtr<APlayerState> PS : PlayerArray)
 		{
@@ -118,4 +120,5 @@ void ARaceGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 
 	DOREPLIFETIME(ARaceGameState, RaceMatchState);
 	DOREPLIFETIME(ARaceGameState, Leaderboard);
+	DOREPLIFETIME(ARaceGameState, ServerRacingEndTime);
 }

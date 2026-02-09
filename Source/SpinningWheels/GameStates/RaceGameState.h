@@ -29,6 +29,9 @@ private:
 	UFUNCTION()
 	void OnRep_Leaderboard();
 
+	UPROPERTY(Replicated);
+	float ServerRacingEndTime = 0.f;
+
 protected:
 
 	UPROPERTY(ReplicatedUsing=OnRep_RaceMatchState)
@@ -60,6 +63,8 @@ public:
 
 	void SetRaceMatchState(ERaceMatchState NewState);
 	ERaceMatchState GetRaceMatchState() const { return RaceMatchState; }
+
+	float GetServerRacingEndTime() const { return ServerRacingEndTime; }
 
 	void SetCurrentTrack(const FTrack& NewTrack);
 	FTrack GetCurrentTrack() const { return CurrentTrack; };

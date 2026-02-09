@@ -112,6 +112,7 @@ public:
 
 public:
 	FORCEINLINE int32 GetPlayerId() const { return PlayerId; }
+	FORCEINLINE FString GetPlayerName() const { return PlayerName; }
 	FORCEINLINE int32 GetSetTime() const { return LapSetAt; }
 	FORCEINLINE int32 GetLapTime() const { return LapTime; }
 	FORCEINLINE TArray<int32> GetSectors() const { return Sectors; }
@@ -166,23 +167,13 @@ FORCEINLINE FString FRaceLap::FormatTime(int32 Time)
 	const int32 Seconds = FMath::FloorToInt(SecondsMS / 1000.f);
 	const int32 MilliSeconds = SecondsMS - (Seconds * 1000.f);
 
-	// Milliseconds needs always to be 3 decimals
-	FString MilliSecondsStr = FString::FormatAsNumber(MilliSeconds);
-	if (MilliSecondsStr.Len() < 3)
-	{
-		for (int32 i = 0; i < (3 - MilliSecondsStr.Len()); i++)
-		{
-			MilliSecondsStr = "0" + MilliSecondsStr;
-		}
-	}
-
 	if (Minutes > 0)
 	{
-		return FString::Printf(TEXT("%d:%d."), Minutes, Seconds) + MilliSecondsStr;
+		return FString::Printf(TEXT("%02d:%02d.%03d"), Minutes, Seconds, MilliSeconds);
 	}
 	else
 	{
-		return FString::Printf(TEXT("%d."), Seconds) + MilliSecondsStr;
+		return FString::Printf(TEXT("%02d.%03d"), Seconds, MilliSeconds);
 	}
 }
 

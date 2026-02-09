@@ -56,22 +56,21 @@ void ARaceGameMode::StopWaitingForPlayers()
 
 void ARaceGameMode::StartRacingTimer()
 {
-	UE_LOG(LogTemp, Warning, TEXT("RACING TIMER START"));
 	GetWorld()->GetTimerManager().ClearTimer(RacingTimerHandle);
 	GetWorld()->GetTimerManager().SetTimer(RacingTimerHandle, this, &ARaceGameMode::EndRacingTimer,
 	                                       TimeRacing, false);
+
+	ServerRacingEndTime = GetWorld()->GetTimeSeconds() + TimeRacing;
 }
 
 void ARaceGameMode::EndRacingTimer()
 {
-	UE_LOG(LogTemp, Warning, TEXT("RACING IS OVER"));
 	GetWorld()->GetTimerManager().ClearTimer(WaitingForPlayersTimerHandle);
 	SetRaceMatchState(ERaceMatchState::RMS_Podium);
 }
 
 void ARaceGameMode::StartPodiumTimer()
 {
-	UE_LOG(LogTemp, Warning, TEXT("PODIUM TIMER START"));
 	GetWorld()->GetTimerManager().ClearTimer(PodiumTimerHandle);
 	GetWorld()->GetTimerManager().SetTimer(PodiumTimerHandle, this, &ARaceGameMode::EndPodiumTimer,
 	                                       TimePodium, false);
@@ -79,7 +78,6 @@ void ARaceGameMode::StartPodiumTimer()
 
 void ARaceGameMode::EndPodiumTimer()
 {
-	UE_LOG(LogTemp, Warning, TEXT("PODIUM IS OVER"));
 	GetWorld()->GetTimerManager().ClearTimer(PodiumTimerHandle);
 
 	// Prepare the server to go to next track
@@ -90,19 +88,12 @@ void ARaceGameMode::EndPodiumTimer()
 			RaceServerSubsystem->GoToNextTrack(); 
 		}
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("travel to next map, wish me luck"));
-
+	
 	if (UWorld* World = GetWorld())
 	{
 		bUseSeamlessTravel = true;
 		World->ServerTravel("L_Race", true);
 	}
-
-	// Disable players input
-	// Load next map
-	// Server travel
-	
 	
 }
 

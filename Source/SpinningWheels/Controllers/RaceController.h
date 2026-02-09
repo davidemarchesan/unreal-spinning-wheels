@@ -40,8 +40,6 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
-
-	TWeakObjectPtr<ARaceHUD> RaceHUD;
 	
 	// Begin Deterministic physics
 	void SimulatedTick(float DeltaSeconds);
@@ -64,6 +62,12 @@ private:
 
 	UPROPERTY(Replicated)
 	float ServerStartDriveTime = 0.f;
+
+	UPROPERTY(ReplicatedUsing=OnRep_ServerRacingEndTime)
+	float ServerRacingEndTime = 0.f;
+
+	UFUNCTION()
+	void OnRep_ServerRacingEndTime();
 
 	void StartDriveProcedure(float DeltaSeconds);
 	int32 StartDriveSecondsRemaining = 0;
@@ -118,6 +122,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void SetPawn(APawn* InPawn) override;
 	virtual void SetupInputComponent() override;
+	virtual void BeginPlayingState() override;
 	//~ End AController Interface
 
 	virtual void SetDefaultInputMode();
@@ -144,13 +149,18 @@ protected:
 
 	TWeakObjectPtr<ACar> Car;
 	TWeakObjectPtr<AMainCamera> MainCamera;
+
+	TWeakObjectPtr<ARaceGameState> RaceGameState;
 	TWeakObjectPtr<ARacePlayerState> RacePlayerState;
+	TWeakObjectPtr<ARaceHUD> RaceHUD;
 
 	ARaceGameMode* GetRaceGameMode();
 	ARaceGameState* GetRaceGameState();
 	ARacePlayerState* GetRacePlayerState();
 
+	void TryGetRaceGameState();
 	void TryGetRacePlayerState();
+	void TryGetRaceHUD();
 
 	/** Input Actions handler - Drive */
 	virtual void InputOpenMenu();
@@ -172,7 +182,8 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerSetPhase(ERaceControllerPhase NewPhase);
 
-	void PrepareForNewLap(float InServerStartTime);
+	void PrepareForNewLap(const float InServerStartTime);
+	void SetRacingEndTime(const float InServerRacingEndTime);
 
 	FOnUpdateLapCountdownSignature OnUpdateLapCountdown;
 	FOnUpdateRacePlayerStateSignature OnUpdateRacePlayerState;

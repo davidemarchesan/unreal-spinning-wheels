@@ -57,7 +57,7 @@ TSharedRef<ITableRow> SLeaderboardOverlay::GenerateRow(TSharedPtr<FRaceLap> Lap,
 	const int32 Index = PlayersBestLap.IndexOfByKey(Lap);
 
 	FSlateLapTimeRow NewRow;
-	NewRow.Name = FText::FromString(FString::Printf(TEXT("#%d - %d"), Index + 1, Lap->GetPlayerId()));
+	NewRow.Name = FText::FromString(FString::Printf(TEXT("#%d - %d - %s"), Index + 1, Lap->GetPlayerId(), *Lap->GetPlayerName()));
 	NewRow.LapTime = FSlateTime(FText::FromString(Lap->GetLapTimeFormat()));
 
 	const TArray<int32> Sectors = Lap->GetSectors();

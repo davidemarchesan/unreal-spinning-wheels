@@ -29,7 +29,7 @@ private:
 	void InitializeOverlayCountdown();
 	void InitializeOverlayInfo();
 	void InitializeOverlayLapTime();
-	void InitializeOverlayRacingTime();
+	void InitializeOverlayMatchTime();
 
 	void ShowModalOverlay(const TSharedPtr<SWidget>& Widget, const bool bFocus = true);
 	void HideModalOverlay();
@@ -56,6 +56,7 @@ private:
 	TSharedPtr<class SCountdownOverlay> CountdownOverlay;
 	TSharedPtr<class SInfoOverlay> InfoOverlay;
 	TSharedPtr<class SLapTimeOverlay> LapTimeOverlay;
+	TSharedPtr<class SMatchTimeOverlay> MatchTimeOverlay;
 	/** End Pointers to overlays */
 
 	int32 PlayerId;
@@ -75,5 +76,7 @@ public:
 
 	void ShowLeaderboard();
 	void HideLeaderboard();
+
+	void SetMatchRemainingTime(const float Seconds);
 	
 };

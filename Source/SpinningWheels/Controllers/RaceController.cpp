@@ -93,6 +93,11 @@ ARacePlayerState* ARaceController::GetRacePlayerState()
 	return GetPlayerState<ARacePlayerState>();
 }
 
+void ARaceController::TryGetRaceGameState()
+{
+	RaceGameState = GetRaceGameState();
+}
+
 void ARaceController::TryGetRacePlayerState()
 {
 	RacePlayerState = GetRacePlayerState();
@@ -107,6 +112,11 @@ void ARaceController::TryGetRacePlayerState()
 	}
 }
 
+void ARaceController::TryGetRaceHUD()
+{
+	RaceHUD = GetHUD<ARaceHUD>();
+}
+
 void ARaceController::InputOpenMenu()
 {
 }
@@ -116,7 +126,6 @@ void ARaceController::BeginPlay()
 	Super::BeginPlay();
 
 	RacePlayerState = GetRacePlayerState();
-	RaceHUD = GetHUD<ARaceHUD>();
 
 	CreateCamera();
 
@@ -151,6 +160,15 @@ void ARaceController::SetupInputComponent()
 	SetupInputBindings();
 }
 
+void ARaceController::BeginPlayingState()
+{
+	Super::BeginPlayingState();
+
+	TryGetRaceGameState();
+	TryGetRacePlayerState();
+	TryGetRaceHUD();
+}
+
 void ARaceController::SetDefaultInputMode()
 {
 	bShowMouseCursor = false;
@@ -163,6 +181,7 @@ void ARaceController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 
 	DOREPLIFETIME(ARaceController, Phase);
 	DOREPLIFETIME(ARaceController, ServerStartDriveTime);
+	DOREPLIFETIME(ARaceController, ServerRacingEndTime);
 }
 
 void ARaceController::OnRep_PlayerState()
@@ -227,7 +246,7 @@ void ARaceController::ServerSetPhase_Implementation(ERaceControllerPhase NewPhas
 	InternalSetPhase(NewPhase);
 }
 
-void ARaceController::PrepareForNewLap(float InServerStartTime)
+void ARaceController::PrepareForNewLap(const float InServerStartTime)
 {
 	if (HasAuthority() == false)
 	{
@@ -236,6 +255,19 @@ void ARaceController::PrepareForNewLap(float InServerStartTime)
 
 	SetPhase(ERaceControllerPhase::RCP_InStartingProcedure);
 	ServerStartDriveTime = InServerStartTime;
+
+	// Udate match timer
+	if (RaceGameState.IsValid())
+	{
+		SetRacingEndTime(RaceGameState->GetServerRacingEndTime());
+	}
+}
+
+void ARaceController::SetRacingEndTime(const float InServerRacingEndTime)
+{
+	ServerRacingEndTime = InServerRacingEndTime;
+
+	OnRep_ServerRacingEndTime();
 }
 
 void ARaceController::SetupInputBindings()
@@ -362,10 +394,8 @@ void ARaceController::DisableGeneralInputMappingContext()
 
 void ARaceController::CreateCamera()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Creating camera"));
 	if (CanCreateCamera() == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("cannot create a camera"));
 		return;
 	}
 
@@ -376,19 +406,30 @@ void ARaceController::CreateCamera()
 		MainCamera = GetWorld()->SpawnActor<AMainCamera>(CameraClass, FVector::ZeroVector, FRotator::ZeroRotator);
 		if (MainCamera.IsValid())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("camera created successfully"));
 			SetViewTarget(MainCamera.Get());
 			bCameraInitialized = true;
 		}
-		else { UE_LOG(LogTemp, Warning, TEXT("something went wrong while creating camera")); }
 	}
-	else { UE_LOG(LogTemp, Warning, TEXT("no camera class specified")); }
 
 	bCameraInitializing = false;
 }
 
 void ARaceController::OnRep_Phase()
 {
+}
+
+void ARaceController::OnRep_ServerRacingEndTime()
+{
+	if (AGameState* RGS = GetRaceGameState())
+	{
+		const float CurrentServerTime = RGS->GetServerWorldTimeSeconds();
+		const float RemainingTime = ServerRacingEndTime - CurrentServerTime;
+
+		if (RaceHUD.IsValid())
+		{
+			RaceHUD->SetMatchRemainingTime(RemainingTime);
+		}
+	}
 }
 
 void ARaceController::StartDriveProcedure(float DeltaSeconds)
@@ -408,9 +449,9 @@ void ARaceController::StartDriveProcedure(float DeltaSeconds)
 		return;
 	}
 
-	if (ARaceGameState* RGS = GetRaceGameState())
+	if (RaceGameState.IsValid())
 	{
-		float CurrentServerTime = RGS->GetServerWorldTimeSeconds();
+		float CurrentServerTime = RaceGameState->GetServerWorldTimeSeconds();
 
 		if (ServerStartDriveTime <= CurrentServerTime && Phase == ERaceControllerPhase::RCP_InStartingProcedure)
 		{
@@ -555,12 +596,11 @@ void ARaceController::ServerCancelLap_Implementation()
 
 void ARaceController::StartLap()
 {
-
 	if (RacePlayerState.IsValid() == false)
 	{
 		TryGetRacePlayerState();
 	}
-	
+
 	if (IsLocalController())
 	{
 		// Server-player or client-predict
@@ -574,10 +614,8 @@ void ARaceController::LocalStartLap()
 
 	if (RacePlayerState.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Start lap with player state valid"));
 		RacePlayerState->OnStartLap();
 	}
-	else { UE_LOG(LogTemp, Warning, TEXT("Start lap with player state NOT VALID")); }
 
 	StartDriveSecondsRemaining = 0;
 	OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
