@@ -19,15 +19,23 @@ class SPINNINGWHEELS_API ARaceGameMode : public ARaceGameModeBase
 private:
 	void InitializeGrid();
 
-	FTimerHandle WaitingForPlayersTimer;
+	FTimerHandle WaitingForPlayersTimerHandle;
 	void StartWaitingForPlayers();
 	void StopWaitingForPlayers();
 
+	FTimerHandle RacingTimerHandle;
+	void StartRacingTimer();
+	void EndRacingTimer();
+
+	FTimerHandle PodiumTimerHandle;
+	void StartPodiumTimer();
+	void EndPodiumTimer();
+
 protected:
 	void SetRaceMatchState(ERaceMatchState NewState);
-	ERaceMatchState RaceMatchState;
+	ERaceMatchState RaceMatchState = ERaceMatchState::RMS_None;
 
-	virtual void OnNewRaceMatchState();
+	virtual void OnRaceMatchStateSet();
 	virtual void HandleRaceMatchStateLoadingGrid();
 	virtual void HandleRaceMatchStateWaitingForPlayers();
 	virtual void HandleRaceMatchStateRacing();

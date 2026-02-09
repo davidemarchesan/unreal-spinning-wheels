@@ -69,6 +69,8 @@ protected:
 
 	virtual void OnNewBestLap(FRaceLap Lap);
 
+	virtual void BeginPlay() override;
+
 public:
 
 	//~ Begin APlayerState Interface

@@ -11,6 +11,10 @@ void ARacePlayerState::ServerAddSimulationFrames_Implementation(const TArray<FSi
 	SimulationFrames.Append(ClientSimulationFrames);
 
 	// UE_LOG(LogTemp, Warning, TEXT("(pid %d) SERVER - received me %d frames. now ive got %d"), GetPlayerId(), ClientSimulationFrames.Num(), SimulationFrames.Num());
+	// for (int i = 0; i < SimulationFrames.Num(); i++)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("(pid %d) SERVER - received %s"), GetPlayerId(), *SimulationFrames[i].ToString());
+	// }
 }
 
 void ARacePlayerState::ResetSimulationFrames()
@@ -62,6 +66,13 @@ void ARacePlayerState::OnNewBestLap(FRaceLap Lap)
 	// Child class
 }
 
+void ARacePlayerState::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UE_LOG(LogTemp, Log, TEXT("ARacePlayerState::BeginPlay() with frames %d"), SimulationFrames.Num())
+}
+
 void ARacePlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -91,7 +102,7 @@ void ARacePlayerState::OnStartLap()
 
 	bOnALap = true;
 	CurrentLap = FRaceLap();
-	
+
 	if (HasAuthority() == false)
 	{
 		ServerOnStartLap();

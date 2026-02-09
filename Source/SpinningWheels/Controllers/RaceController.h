@@ -146,6 +146,8 @@ protected:
 	ARaceGameState* GetRaceGameState();
 	ARacePlayerState* GetRacePlayerState();
 
+	void TryGetRacePlayerState();
+
 	/** Input Actions handler - Drive */
 	virtual void InputOpenMenu();
 
@@ -156,6 +158,7 @@ public:
 	//~ Begin AController Interface
 	virtual void OnRep_PlayerState() override;
 	virtual void OnPossess(APawn* InPawn) override;
+	virtual void PreClientTravel(const FString& PendingURL, ETravelType TravelType, bool bIsSeamlessTravel) override;
 	//~ End AController Interface
 
 	void SetPhase(ERaceControllerPhase NewPhase);

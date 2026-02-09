@@ -23,9 +23,9 @@ ARaceController::ARaceController()
 void ARaceController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
+
 	SimulatedTick(DeltaSeconds);
-	
+
 	StartDriveProcedure(DeltaSeconds);
 }
 
@@ -35,18 +35,19 @@ void ARaceController::SimulatedTick(float DeltaSeconds)
 	{
 		return;
 	}
-	
+
 	if (Phase != ERaceControllerPhase::RCP_Driving)
 	{
 		return;
 	}
-	
+
 	AccSimulationTime += DeltaSeconds;
 	TotSeconds += DeltaSeconds;
-	
+
 	if (AccSimulationTime >= SimulationConstants::TickFrequency)
 	{
-		int MaxIterations = FMath::Clamp(FMath::FloorToInt(AccSimulationTime / SimulationConstants::TickFrequency), 1, 30.f);
+		int MaxIterations = FMath::Clamp(FMath::FloorToInt(AccSimulationTime / SimulationConstants::TickFrequency), 1,
+		                                 30.f);
 		int Iteration = 0;
 
 		while (Iteration < MaxIterations)
@@ -63,7 +64,6 @@ void ARaceController::SimulatedTick(float DeltaSeconds)
 			{
 				RacePlayerState->AddSimulationFrame(SimulationFrame);
 			}
-			
 		}
 
 		LastSimulationDelta = AccSimulationTime - SimulationConstants::TickFrequency * MaxIterations;
@@ -93,6 +93,20 @@ ARacePlayerState* ARaceController::GetRacePlayerState()
 	return GetPlayerState<ARacePlayerState>();
 }
 
+void ARaceController::TryGetRacePlayerState()
+{
+	RacePlayerState = GetRacePlayerState();
+
+	if (RacePlayerState.IsValid())
+	{
+		OnUpdateRacePlayerState.Broadcast(RacePlayerState.Get());
+		if (Car.IsValid())
+		{
+			Car->SetPlayerState(RacePlayerState.Get());
+		}
+	}
+}
+
 void ARaceController::InputOpenMenu()
 {
 }
@@ -102,7 +116,7 @@ void ARaceController::BeginPlay()
 	Super::BeginPlay();
 
 	RacePlayerState = GetRacePlayerState();
-	
+
 	CreateCamera();
 
 	EnableDefaultInputMappingContext();
@@ -153,17 +167,7 @@ void ARaceController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 void ARaceController::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
-	RacePlayerState = GetRacePlayerState();
-
-	if (RacePlayerState.IsValid())
-	{
-		OnUpdateRacePlayerState.Broadcast(RacePlayerState.Get());
-	}
-
-	if (Car.IsValid())
-	{
-		Car->SetPlayerState(RacePlayerState.Get());
-	}
+	TryGetRacePlayerState();
 }
 
 void ARaceController::OnPossess(APawn* InPawn)
@@ -174,6 +178,23 @@ void ARaceController::OnPossess(APawn* InPawn)
 	{
 		Car->SetPlayerState(RacePlayerState.Get());
 	}
+
+	if (RacePlayerState.IsValid() == false)
+	{
+		TryGetRacePlayerState();
+	}
+}
+
+void ARaceController::PreClientTravel(const FString& PendingURL, ETravelType TravelType, bool bIsSeamlessTravel)
+{
+	Super::PreClientTravel(PendingURL, TravelType, bIsSeamlessTravel);
+
+	bCameraInitialized = false;
+
+	DriveInputValue = 0;
+	BrakeInputValue = 0;
+	TurnInputValue = 0;
+	TurboInputValue = 0;
 }
 
 void ARaceController::SetPhase(ERaceControllerPhase NewPhase)
@@ -206,7 +227,7 @@ void ARaceController::PrepareForNewLap(float InServerStartTime)
 	{
 		return;
 	}
-	
+
 	SetPhase(ERaceControllerPhase::RCP_InStartingProcedure);
 	ServerStartDriveTime = InServerStartTime;
 }
@@ -240,9 +261,9 @@ void ARaceController::SetupDriveInputBindings()
 			                          &ARaceController::InputCancelLap);
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_Leaderboard, ETriggerEvent::Started, this,
-									  &ARaceController::InputShowLeaderboard);
+			                          &ARaceController::InputShowLeaderboard);
 			EnhancedInput->BindAction(DriveInputConfig->IA_Leaderboard, ETriggerEvent::Completed, this,
-									  &ARaceController::InputHideLeaderboard);
+			                          &ARaceController::InputHideLeaderboard);
 
 			EnhancedInput->BindAction(DriveInputConfig->IA_Turbo, ETriggerEvent::Started, this,
 			                          &ARaceController::InputStartTurbo);
@@ -261,9 +282,8 @@ void ARaceController::SetupGeneralInputBindings()
 	{
 		if (GeneralInputConfig)
 		{
-
 			EnhancedInput->BindAction(GeneralInputConfig->IA_OpenMenu, ETriggerEvent::Triggered, this,
-									  &ARaceController::InputOpenMenu);
+			                          &ARaceController::InputOpenMenu);
 		}
 	}
 }
@@ -336,8 +356,10 @@ void ARaceController::DisableGeneralInputMappingContext()
 
 void ARaceController::CreateCamera()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Creating camera"));
 	if (CanCreateCamera() == false)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("cannot create a camera"));
 		return;
 	}
 
@@ -348,10 +370,13 @@ void ARaceController::CreateCamera()
 		MainCamera = GetWorld()->SpawnActor<AMainCamera>(CameraClass, FVector::ZeroVector, FRotator::ZeroRotator);
 		if (MainCamera.IsValid())
 		{
+			UE_LOG(LogTemp, Warning, TEXT("camera created successfully"));
 			SetViewTarget(MainCamera.Get());
 			bCameraInitialized = true;
 		}
+		else { UE_LOG(LogTemp, Warning, TEXT("something went wrong while creating camera")); }
 	}
+	else { UE_LOG(LogTemp, Warning, TEXT("no camera class specified")); }
 
 	bCameraInitializing = false;
 }
@@ -524,6 +549,12 @@ void ARaceController::ServerCancelLap_Implementation()
 
 void ARaceController::StartLap()
 {
+
+	if (RacePlayerState.IsValid() == false)
+	{
+		TryGetRacePlayerState();
+	}
+	
 	if (IsLocalController())
 	{
 		// Server-player or client-predict
@@ -534,11 +565,13 @@ void ARaceController::StartLap()
 void ARaceController::LocalStartLap()
 {
 	SetPhase(ERaceControllerPhase::RCP_Driving);
-	
+
 	if (RacePlayerState.IsValid())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Start lap with player state valid"));
 		RacePlayerState->OnStartLap();
 	}
+	else { UE_LOG(LogTemp, Warning, TEXT("Start lap with player state NOT VALID")); }
 
 	StartDriveSecondsRemaining = 0;
 	OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);

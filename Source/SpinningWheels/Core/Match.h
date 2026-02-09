@@ -5,6 +5,7 @@
 UENUM()
 enum class ERaceMatchState : uint8
 {
+	RMS_None,
 	RMS_LoadingGrid,
 	RMS_WaitingForPlayers,
 	RMS_Racing,

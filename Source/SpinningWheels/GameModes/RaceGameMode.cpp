@@ -3,6 +3,7 @@
 
 #include "RaceGameMode.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "SpinningWheels/Actors/TrackGrid.h"
 #include "SpinningWheels/Controllers/RaceController.h"
 #include "SpinningWheels/GameStates/RaceGameState.h"
@@ -12,48 +13,100 @@
 
 void ARaceGameMode::InitializeGrid()
 {
-
-	SetRaceMatchState(ERaceMatchState::RMS_LoadingGrid);
-	
 	TrackGrid = GetWorld()->SpawnActor<ATrackGrid>(DefaultTrackGridClass, FVector::ZeroVector, FRotator::ZeroRotator);
-	if (const UGameInstance* GameInstance = GetGameInstance())
+	if (TrackGrid.IsValid())
 	{
-		if (URaceServerSubsystem* RaceServerSubsystem = GameInstance->GetSubsystem<URaceServerSubsystem>())
+		if (const UGameInstance* GameInstance = GetGameInstance())
 		{
-			// TEST ONLY
-			if (const UTracksSubsystem* TracksSubsystem = GameInstance->GetSubsystem<UTracksSubsystem>())
+			if (URaceServerSubsystem* RaceServerSubsystem = GameInstance->GetSubsystem<URaceServerSubsystem>())
 			{
-				RaceServerSubsystem->SetTracksPlaylist(TracksSubsystem->GetTracks());
-			}
-			// END TEST ONLY
-			
-			const FTrackSaveData TrackToLoadSaveData = RaceServerSubsystem->GetCurrentTrack();
-			CurrentTrack = FTrack(TrackToLoadSaveData.Id, TrackToLoadSaveData.Name);
+				// TEST ONLY
+				if (RaceServerSubsystem->GetCurrentTrackIndex() == INDEX_NONE)
+				{
+					if (const UTracksSubsystem* TracksSubsystem = GameInstance->GetSubsystem<UTracksSubsystem>())
+					{
+						RaceServerSubsystem->SetTracksPlaylist(TracksSubsystem->GetTracks());
+					}
+				}
+				// END TEST ONLY
 
-			TrackGrid->Initialize(TrackConstants::Size, TrackConstants::Size, TrackToLoadSaveData);
+				const FTrackSaveData TrackToLoadSaveData = RaceServerSubsystem->GetCurrentTrack();
+				CurrentTrack = FTrack(TrackToLoadSaveData.Id, TrackToLoadSaveData.Name);
+
+				TrackGrid->Initialize(TrackConstants::Size, TrackConstants::Size, TrackToLoadSaveData);
+			}
 		}
 	}
 
-	StartWaitingForPlayers();
+	SetRaceMatchState(ERaceMatchState::RMS_WaitingForPlayers);
 }
 
 void ARaceGameMode::StartWaitingForPlayers()
 {
-	SetRaceMatchState(ERaceMatchState::RMS_WaitingForPlayers);
-	
-	GetWorld()->GetTimerManager().ClearTimer(WaitingForPlayersTimer);
-	GetWorld()->GetTimerManager().SetTimer(WaitingForPlayersTimer, this, &ARaceGameMode::StopWaitingForPlayers,
+	GetWorld()->GetTimerManager().ClearTimer(WaitingForPlayersTimerHandle);
+	GetWorld()->GetTimerManager().SetTimer(WaitingForPlayersTimerHandle, this, &ARaceGameMode::StopWaitingForPlayers,
 	                                       TimeWaitingForPlayers, false);
-	
 }
 
 void ARaceGameMode::StopWaitingForPlayers()
 {
+	GetWorld()->GetTimerManager().ClearTimer(WaitingForPlayersTimerHandle);
 	SetRaceMatchState(ERaceMatchState::RMS_Racing);
-	GetWorld()->GetTimerManager().ClearTimer(WaitingForPlayersTimer);
 }
 
-void ARaceGameMode::OnNewRaceMatchState()
+void ARaceGameMode::StartRacingTimer()
+{
+	UE_LOG(LogTemp, Warning, TEXT("RACING TIMER START"));
+	GetWorld()->GetTimerManager().ClearTimer(RacingTimerHandle);
+	GetWorld()->GetTimerManager().SetTimer(RacingTimerHandle, this, &ARaceGameMode::EndRacingTimer,
+	                                       TimeRacing, false);
+}
+
+void ARaceGameMode::EndRacingTimer()
+{
+	UE_LOG(LogTemp, Warning, TEXT("RACING IS OVER"));
+	GetWorld()->GetTimerManager().ClearTimer(WaitingForPlayersTimerHandle);
+	SetRaceMatchState(ERaceMatchState::RMS_Podium);
+}
+
+void ARaceGameMode::StartPodiumTimer()
+{
+	UE_LOG(LogTemp, Warning, TEXT("PODIUM TIMER START"));
+	GetWorld()->GetTimerManager().ClearTimer(PodiumTimerHandle);
+	GetWorld()->GetTimerManager().SetTimer(PodiumTimerHandle, this, &ARaceGameMode::EndPodiumTimer,
+	                                       TimePodium, false);
+}
+
+void ARaceGameMode::EndPodiumTimer()
+{
+	UE_LOG(LogTemp, Warning, TEXT("PODIUM IS OVER"));
+	GetWorld()->GetTimerManager().ClearTimer(PodiumTimerHandle);
+
+	// Prepare the server to go to next track
+	if (const UGameInstance* GameInstance = GetGameInstance())
+	{
+		if (URaceServerSubsystem* RaceServerSubsystem = GameInstance->GetSubsystem<URaceServerSubsystem>())
+		{
+			RaceServerSubsystem->GoToNextTrack(); 
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("travel to next map, wish me luck"));
+
+	if (UWorld* World = GetWorld())
+	{
+		bUseSeamlessTravel = true;
+		World->ServerTravel("L_Race", true);
+	}
+
+	// Disable players input
+	// Load next map
+	// Server travel
+	
+	
+}
+
+void ARaceGameMode::OnRaceMatchStateSet()
 {
 	switch (RaceMatchState)
 	{
@@ -69,23 +122,29 @@ void ARaceGameMode::OnNewRaceMatchState()
 	case ERaceMatchState::RMS_Podium:
 		HandleRaceMatchStatePodium();
 		break;
+	default:
+		break;
 	}
 }
 
 void ARaceGameMode::HandleRaceMatchStateLoadingGrid()
 {
+	InitializeGrid();
 }
 
 void ARaceGameMode::HandleRaceMatchStateWaitingForPlayers()
 {
+	StartWaitingForPlayers();
 }
 
 void ARaceGameMode::HandleRaceMatchStateRacing()
 {
+	StartRacingTimer();
 }
 
 void ARaceGameMode::HandleRaceMatchStatePodium()
 {
+	StartPodiumTimer();
 }
 
 void ARaceGameMode::PrepareControllerForNewLap(AController* Controller)
@@ -102,13 +161,11 @@ void ARaceGameMode::PrepareControllerForNewLap(AController* Controller)
 void ARaceGameMode::OnMatchStateSet()
 {
 	Super::OnMatchStateSet();
-	
 }
 
 void ARaceGameMode::HandleMatchHasStarted()
 {
-	InitializeGrid(); // Initialize grid before spawning players on super
-	
+	SetRaceMatchState(ERaceMatchState::RMS_LoadingGrid); // Initialize grid before spawning players on super
 	Super::HandleMatchHasStarted();
 }
 
@@ -133,8 +190,9 @@ void ARaceGameMode::SetRaceMatchState(ERaceMatchState NewState)
 	{
 		return;
 	}
-	
+
 	RaceMatchState = NewState;
+	OnRaceMatchStateSet();
 
 	if (ARaceGameState* GS = Cast<ARaceGameState>(GetWorld()->GetGameState()))
 	{

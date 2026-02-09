@@ -26,6 +26,8 @@ void ARaceGameState::OnRep_RaceMatchState()
 	case ERaceMatchState::RMS_Podium:
 		HandleRaceMatchStatePodium();
 		break;
+	default:
+		break;
 	}
 }
 
@@ -72,7 +74,7 @@ void ARaceGameState::SetRaceMatchState(ERaceMatchState NewState)
 	{
 		return;
 	}
-	
+
 	RaceMatchState = NewState;
 
 	// Server player only
