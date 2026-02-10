@@ -92,7 +92,7 @@ void ARaceHUD::HandleRaceMatchStatePodium()
 {
 }
 
-void ARaceHUD::OnUpdateLapCountdown(int32 Seconds)
+void ARaceHUD::UpdateLapCountdown(int32 Seconds)
 {
 	if (CountdownOverlay.IsValid())
 	{
@@ -100,16 +100,18 @@ void ARaceHUD::OnUpdateLapCountdown(int32 Seconds)
 	}
 }
 
-void ARaceHUD::OnUpdateRacePlayerState(ARacePlayerState* InRacePlayerState)
+void ARaceHUD::SetPlayerState(ARacePlayerState* InRacePlayerState)
 {
-	if (InRacePlayerState)
+	if (InRacePlayerState != nullptr)
 	{
 		RacePlayerState = InRacePlayerState;
 
-		// todo: this code repeats on initialize delegates
-		OnPlayerIdSet(RacePlayerState->GetPlayerId());
-		RacePlayerState->OnPlayerIdSet.AddDynamic(this, &ARaceHUD::OnPlayerIdSet);
-		RacePlayerState->OnCurrentLapUpdate.AddDynamic(this, &ARaceHUD::OnCurrentLapUpdate);
+		if (RacePlayerState.IsValid())
+		{
+			OnPlayerIdSet(RacePlayerState->GetPlayerId());
+			RacePlayerState->OnPlayerIdSet.AddUniqueDynamic(this, &ARaceHUD::OnPlayerIdSet);
+			RacePlayerState->OnCurrentLapUpdate.AddUniqueDynamic(this, &ARaceHUD::OnCurrentLapUpdate);
+		}
 	}
 }
 
@@ -270,9 +272,9 @@ void ARaceHUD::InitializeOverlayMatchTime()
 	}
 
 	RootCanvas->AddSlot()
-			  .Anchors(FAnchors(1.f, 0.5f))
-			  .Alignment(FVector2D(1.f, 0.5f))
-			  .AutoSize(true)
+	          .Anchors(FAnchors(1.f, 0.5f))
+	          .Alignment(FVector2D(1.f, 0.5f))
+	          .AutoSize(true)
 	[
 		SAssignNew(MatchTimeOverlay, SMatchTimeOverlay)
 	];
@@ -322,28 +324,21 @@ void ARaceHUD::InitializeDelegates()
 {
 	if (const UWorld* World = GetWorld())
 	{
-		if (ARaceGameState* RGS = World->GetGameState<ARaceGameState>())
+		RaceGameState = World->GetGameState<ARaceGameState>();
+		if (RaceGameState.IsValid())
 		{
-			OnLeaderboardUpdate(RGS->GetLeaderboard());
-			RGS->OnLeaderboardUpdate.AddDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
+			OnLeaderboardUpdate(RaceGameState->GetLeaderboard());
+			RaceGameState->OnLeaderboardUpdate.AddDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
 
-			OnRaceMatchStateUpdate(RGS->GetRaceMatchState());
-			RGS->OnRaceMatchStateUpdate.AddDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
+			OnRaceMatchStateUpdate(RaceGameState->GetRaceMatchState());
+			RaceGameState->OnRaceMatchStateUpdate.AddDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
 		}
 
-		if (ARaceController* RC = Cast<ARaceController>(GetOwningPlayerController()))
+		if (RaceController.IsValid())
 		{
-			RC->OnUpdateLapCountdown.AddDynamic(this, &ARaceHUD::OnUpdateLapCountdown);
-
-			if (ARacePlayerState* RPS = RC->GetPlayerState<ARacePlayerState>())
+			if (ARacePlayerState* RPS = RaceController->GetPlayerState<ARacePlayerState>())
 			{
-				OnPlayerIdSet(RPS->GetPlayerId());
-				RPS->OnPlayerIdSet.AddDynamic(this, &ARaceHUD::OnPlayerIdSet);
-				RPS->OnCurrentLapUpdate.AddDynamic(this, &ARaceHUD::OnCurrentLapUpdate);
-			}
-			else
-			{
-				RC->OnUpdateRacePlayerState.AddDynamic(this, &ARaceHUD::OnUpdateRacePlayerState);
+				SetPlayerState(RPS);
 			}
 		}
 	}
@@ -351,6 +346,17 @@ void ARaceHUD::InitializeDelegates()
 
 void ARaceHUD::DeinitializeDelegates()
 {
+	if (RacePlayerState.IsValid())
+	{
+		RacePlayerState->OnPlayerIdSet.RemoveDynamic(this, &ARaceHUD::OnPlayerIdSet);
+		RacePlayerState->OnCurrentLapUpdate.RemoveDynamic(this, &ARaceHUD::OnCurrentLapUpdate);
+	}
+
+	if (RaceGameState.IsValid())
+	{
+		RaceGameState->OnLeaderboardUpdate.RemoveDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
+		RaceGameState->OnRaceMatchStateUpdate.RemoveDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
+	}
 }
 
 void ARaceHUD::ShowLeaderboard()

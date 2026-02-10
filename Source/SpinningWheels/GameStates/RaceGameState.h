@@ -15,7 +15,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRaceMatchStateUpdateSignature, ER
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTrackUpdateSignature, const FTrack&, NewTrack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLeaderboardUpdateSignature, const FTimeAttackLeaderboard&, Leaderboard);
 
-
 UCLASS()
 class SPINNINGWHEELS_API ARaceGameState : public AGameState
 {

@@ -9,7 +9,7 @@
 #include "Widgets/Layout/SConstraintCanvas.h"
 #include "RaceHUD.generated.h"
 
-class ARaceGameMode;
+class ARaceGameState;
 class ARacePlayerState;
 class ARaceController;
 
@@ -20,6 +20,7 @@ class SPINNINGWHEELS_API ARaceHUD : public AHUD
 
 private:
 
+	TWeakObjectPtr<ARaceGameState> RaceGameState;
 	TWeakObjectPtr<ARacePlayerState> RacePlayerState;
 	TWeakObjectPtr<ARaceController> RaceController;
 
@@ -37,9 +38,7 @@ private:
 	/** Begin delegates bindings */
 	void InitializeDelegates();
 	void DeinitializeDelegates();
-
-	UFUNCTION() void OnUpdateLapCountdown(int32 Seconds);
-	UFUNCTION() void OnUpdateRacePlayerState(ARacePlayerState* InRacePlayerState);
+	
 	UFUNCTION() void OnPlayerIdSet(int32 InPlayerId);
 	UFUNCTION() void OnCurrentLapUpdate(const FRaceLap& CurrentLap);
 	UFUNCTION() void OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard);
@@ -76,6 +75,10 @@ public:
 
 	void ShowLeaderboard();
 	void HideLeaderboard();
+
+	void UpdateLapCountdown(int32 Seconds);
+
+	void SetPlayerState(ARacePlayerState* InRacePlayerState);
 
 	void SetMatchRemainingTime(const float Seconds);
 	

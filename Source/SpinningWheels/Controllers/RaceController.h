@@ -26,9 +26,6 @@ enum class ERaceControllerPhase : uint8
 	RCP_Driving,
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateLapCountdownSignature, int32, Seconds);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateRacePlayerStateSignature, ARacePlayerState*, RacePlayerState);
-
 UCLASS()
 class SPINNINGWHEELS_API ARaceController : public APlayerController
 {
@@ -176,7 +173,6 @@ public:
 	//~ End AController Interface
 
 	void SetPhase(ERaceControllerPhase NewPhase);
-
 	void InternalSetPhase(ERaceControllerPhase NewPhase);
 
 	UFUNCTION(Server, Reliable)
@@ -185,6 +181,4 @@ public:
 	void PrepareForNewLap(const float InServerStartTime);
 	void SetRacingEndTime(const float InServerRacingEndTime);
 
-	FOnUpdateLapCountdownSignature OnUpdateLapCountdown;
-	FOnUpdateRacePlayerStateSignature OnUpdateRacePlayerState;
 };

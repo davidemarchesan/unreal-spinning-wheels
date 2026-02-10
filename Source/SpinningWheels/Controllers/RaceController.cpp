@@ -104,7 +104,10 @@ void ARaceController::TryGetRacePlayerState()
 
 	if (RacePlayerState.IsValid())
 	{
-		OnUpdateRacePlayerState.Broadcast(RacePlayerState.Get());
+		if (RaceHUD.IsValid())
+		{
+			RaceHUD->SetPlayerState(RacePlayerState.Get());
+		}
 		if (Car.IsValid())
 		{
 			Car->SetPlayerState(RacePlayerState.Get());
@@ -115,6 +118,10 @@ void ARaceController::TryGetRacePlayerState()
 void ARaceController::TryGetRaceHUD()
 {
 	RaceHUD = GetHUD<ARaceHUD>();
+	if (RaceHUD.IsValid() && RacePlayerState.IsValid())
+	{
+		RaceHUD->SetPlayerState(RacePlayerState.Get());
+	}
 }
 
 void ARaceController::InputOpenMenu()
@@ -220,6 +227,10 @@ void ARaceController::PreClientTravel(const FString& PendingURL, ETravelType Tra
 	{
 		RaceHUD->ClearViewport();
 	}
+
+	RaceHUD.Reset();
+	RacePlayerState.Reset();
+	RaceGameState.Reset();
 }
 
 void ARaceController::SetPhase(ERaceControllerPhase NewPhase)
@@ -465,7 +476,10 @@ void ARaceController::StartDriveProcedure(float DeltaSeconds)
 		if (Diff != StartDriveSecondsRemaining)
 		{
 			StartDriveSecondsRemaining = Diff;
-			OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
+			if (RaceHUD.IsValid())
+			{
+				RaceHUD->UpdateLapCountdown(StartDriveSecondsRemaining);
+			}
 		}
 	}
 }
@@ -618,7 +632,10 @@ void ARaceController::LocalStartLap()
 	}
 
 	StartDriveSecondsRemaining = 0;
-	OnUpdateLapCountdown.Broadcast(StartDriveSecondsRemaining);
+	if (RaceHUD.IsValid())
+	{
+		RaceHUD->UpdateLapCountdown(StartDriveSecondsRemaining);
+	}
 }
 
 void ARaceController::ServerStartLap_Implementation()
