@@ -29,6 +29,60 @@ void ARaceController::Tick(float DeltaSeconds)
 	StartDriveProcedure(DeltaSeconds);
 }
 
+void ARaceController::OnRep_bReady()
+{
+	if (bReady == true)
+	{
+		OnRaceGameStateInit();
+		OnRacePlayerStateInit();
+		OnRaceHUDInit();
+	}
+}
+
+void ARaceController::CheckIfReady()
+{
+	if (bReady == true)
+	{
+		return;
+	}
+	
+	if (IsLocalController() == false)
+	{
+		return;
+	}
+
+	if (RaceGameState.IsValid() && RacePlayerState.IsValid() && RaceHUD.IsValid() && Car.IsValid() && MainCamera.
+		IsValid() && bCameraInitialized == true)
+	{
+
+		if (HasAuthority())
+		{
+			InternalImReady();
+		}
+		else
+		{
+			ServerImReady();
+		}
+	}
+}
+
+void ARaceController::ServerImReady_Implementation()
+{
+	InternalImReady();
+}
+
+void ARaceController::InternalImReady()
+{
+	bReady = true;
+
+	if (ARaceGameMode* RGM = GetRaceGameMode())
+	{
+		RGM->ControllerIsReady(this);
+	}
+
+	OnRep_bReady();
+}
+
 void ARaceController::SimulatedTick(float DeltaSeconds)
 {
 	if (IsLocalController() == false)
@@ -83,32 +137,53 @@ ARaceGameMode* ARaceController::GetRaceGameMode()
 	return GetWorld()->GetAuthGameMode<ARaceGameMode>();
 }
 
-ARaceGameState* ARaceController::GetRaceGameState()
-{
-	return GetWorld()->GetGameState<ARaceGameState>();
-}
-
-ARacePlayerState* ARaceController::GetRacePlayerState()
-{
-	return GetPlayerState<ARacePlayerState>();
-}
-
 void ARaceController::TryGetRaceGameState()
 {
-	RaceGameState = GetRaceGameState();
-
-	UE_LOG(LogTemp, Warning, TEXT("ARaceController::TryGetRaceGameState %d"), RaceGameState.IsValid());
 	if (RaceGameState.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Controller, subscribed to RaceGameState->OnRaceMatchStateUpdate"));
-		RaceGameState->OnRaceMatchStateUpdate.AddDynamic(this, &ARaceController::OnRaceMatchStateUpdate);
+		return;
+	}
+
+	if (const UWorld* World = GetWorld())
+	{
+		RaceGameState = World->GetGameState<ARaceGameState>();
+		if (RaceGameState.IsValid())
+		{
+			CheckIfReady();
+		}
+	}
+}
+
+void ARaceController::OnRaceGameStateInit()
+{
+	if (RaceGameState.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OnRaceGameStateInit"));
+		RaceGameState->OnRaceMatchStateUpdate.AddUniqueDynamic(this, &ARaceController::OnRaceMatchStateUpdate);
+
+		if (IsLocalController())
+		{
+			SyncServerRacingEndTime(true);
+		}
 	}
 }
 
 void ARaceController::TryGetRacePlayerState()
 {
-	RacePlayerState = GetRacePlayerState();
+	if (RacePlayerState.IsValid())
+	{
+		return;
+	}
 
+	RacePlayerState = GetPlayerState<ARacePlayerState>();
+	if (RacePlayerState.IsValid())
+	{
+		CheckIfReady();
+	}
+}
+
+void ARaceController::OnRacePlayerStateInit()
+{
 	if (RacePlayerState.IsValid())
 	{
 		if (RaceHUD.IsValid())
@@ -124,10 +199,28 @@ void ARaceController::TryGetRacePlayerState()
 
 void ARaceController::TryGetRaceHUD()
 {
-	RaceHUD = GetHUD<ARaceHUD>();
-	if (RaceHUD.IsValid() && RacePlayerState.IsValid())
+	if (RaceHUD.IsValid())
 	{
-		RaceHUD->SetPlayerState(RacePlayerState.Get());
+		return;
+	}
+
+	RaceHUD = GetHUD<ARaceHUD>();
+	if (RaceHUD.IsValid())
+	{
+		CheckIfReady();
+	}
+}
+
+void ARaceController::OnRaceHUDInit()
+{
+	if (RaceHUD.IsValid())
+	{
+		if (RacePlayerState.IsValid())
+		{
+			RaceHUD->SetPlayerState(RacePlayerState.Get());
+		}
+		SyncServerRacingEndTime();
+		RaceHUD->InitLeaderboard();
 	}
 }
 
@@ -138,10 +231,6 @@ void ARaceController::InputOpenMenu()
 void ARaceController::BeginPlay()
 {
 	Super::BeginPlay();
-
-	RacePlayerState = GetRacePlayerState();
-
-	CreateCamera();
 
 	EnableDefaultInputMappingContext();
 
@@ -164,6 +253,8 @@ void ARaceController::SetPawn(APawn* InPawn)
 		{
 			MainCamera->SetPawn(Car.Get());
 		}
+
+		CheckIfReady();
 	}
 }
 
@@ -223,7 +314,10 @@ void ARaceController::PreClientTravel(const FString& PendingURL, ETravelType Tra
 {
 	Super::PreClientTravel(PendingURL, TravelType, bIsSeamlessTravel);
 
+	bReady = false;
+
 	bCameraInitialized = false;
+	ServerRacingEndTime = 0.f;
 
 	DriveInputValue = 0;
 	BrakeInputValue = 0;
@@ -276,21 +370,26 @@ void ARaceController::PrepareForNewLap(const float InServerStartTime)
 		return;
 	}
 
+	if (bReady == false)
+	{
+		return;
+	}
+
 	SetPhase(ERaceControllerPhase::RCP_InStartingProcedure);
 	ServerStartDriveTime = InServerStartTime;
 
 	// Udate match timer
-	if (RaceGameState.IsValid())
-	{
-		SetRacingEndTime(RaceGameState->GetServerRacingEndTime());
-	}
+	SyncServerRacingEndTime();
 }
 
 void ARaceController::SetRacingEndTime(const float InServerRacingEndTime)
 {
 	ServerRacingEndTime = InServerRacingEndTime;
 
-	OnRep_ServerRacingEndTime();
+	if (HasAuthority() && IsLocalController())
+	{
+		OnRep_ServerRacingEndTime();
+	}
 }
 
 void ARaceController::SetupInputBindings()
@@ -431,6 +530,8 @@ void ARaceController::CreateCamera()
 		{
 			SetViewTarget(MainCamera.Get());
 			bCameraInitialized = true;
+
+			CheckIfReady();
 		}
 	}
 
@@ -441,18 +542,30 @@ void ARaceController::OnRep_Phase()
 {
 }
 
-void ARaceController::OnRep_ServerRacingEndTime()
+void ARaceController::SyncServerRacingEndTime(const bool bForceRefresh)
 {
-	if (AGameState* RGS = GetRaceGameState())
+	if (RaceGameState.IsValid())
 	{
-		const float CurrentServerTime = RGS->GetServerWorldTimeSeconds();
-		const float RemainingTime = ServerRacingEndTime - CurrentServerTime;
 
+		if (bForceRefresh)
+		{
+			ServerRacingEndTime = RaceGameState->GetServerRacingEndTime();
+		}
+		
+		const float CurrentServerTime = RaceGameState->GetServerWorldTimeSeconds();
+		const float RemainingTime = FMath::Max(0.f, ServerRacingEndTime - CurrentServerTime);
+
+		UE_LOG(LogTemp, Warning, TEXT("%f - %f = %f"), ServerRacingEndTime, CurrentServerTime, RemainingTime);
 		if (RaceHUD.IsValid())
 		{
 			RaceHUD->SetMatchRemainingTime(RemainingTime);
 		}
 	}
+}
+
+void ARaceController::OnRep_ServerRacingEndTime()
+{
+	SyncServerRacingEndTime();
 }
 
 void ARaceController::StartDriveProcedure(float DeltaSeconds)

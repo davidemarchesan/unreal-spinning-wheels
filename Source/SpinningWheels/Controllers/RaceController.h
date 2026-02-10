@@ -38,6 +38,19 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
+
+	UPROPERTY(ReplicatedUsing=OnRep_bReady)
+	bool bReady = false;
+
+	UFUNCTION()
+	void OnRep_bReady();
+	
+	void CheckIfReady();
+
+	UFUNCTION(Server, Reliable)
+	void ServerImReady();
+
+	void InternalImReady();
 	
 	// Begin Deterministic physics
 	void SimulatedTick(float DeltaSeconds);
@@ -63,6 +76,8 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_ServerRacingEndTime)
 	float ServerRacingEndTime = 0.f;
+
+	void SyncServerRacingEndTime(const bool bForceRefresh = false);
 
 	UFUNCTION()
 	void OnRep_ServerRacingEndTime();
@@ -157,12 +172,15 @@ protected:
 	TWeakObjectPtr<ARaceHUD> RaceHUD;
 
 	ARaceGameMode* GetRaceGameMode();
-	ARaceGameState* GetRaceGameState();
-	ARacePlayerState* GetRacePlayerState();
 
 	void TryGetRaceGameState();
+	void OnRaceGameStateInit();
+	
 	void TryGetRacePlayerState();
+	void OnRacePlayerStateInit();
+	
 	void TryGetRaceHUD();
+	void OnRaceHUDInit();
 
 	/** Input Actions handler - Drive */
 	virtual void InputOpenMenu();

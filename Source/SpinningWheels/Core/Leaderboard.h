@@ -109,24 +109,25 @@ FORCEINLINE void FTimeAttackLeaderboard::Reset()
 
 FORCEINLINE void FTimeAttackLeaderboard::AddPlayerNewBest(FRaceLap NewLap)
 {
-	int32 FoundIndex = PlayersBestLap.IndexOfByPredicate([NewLap](const FRaceLap& InLap)
+	TArray<FRaceLap> TempPlayersBestLap = PlayersBestLap;
+	int32 FoundIndex = TempPlayersBestLap.IndexOfByPredicate([NewLap](const FRaceLap& InLap)
 	{
 		return InLap.GetPlayerId() == NewLap.GetPlayerId();
 	});
 
 	if (FoundIndex == INDEX_NONE)
 	{
-		PlayersBestLap.Add(NewLap);
+		TempPlayersBestLap.Add(NewLap);
 	}
 	else
 	{
-		if (PlayersBestLap.IsValidIndex(FoundIndex))
+		if (TempPlayersBestLap.IsValidIndex(FoundIndex))
 		{
-			PlayersBestLap[FoundIndex] = NewLap;
+			TempPlayersBestLap[FoundIndex] = NewLap;
 		}
 	}
 
-	PlayersBestLap.Sort([](const FRaceLap& L1, const FRaceLap& L2)
+	TempPlayersBestLap.Sort([](const FRaceLap& L1, const FRaceLap& L2)
 	{
 		if (L1 == L2)
 		{
@@ -135,6 +136,8 @@ FORCEINLINE void FTimeAttackLeaderboard::AddPlayerNewBest(FRaceLap NewLap)
 
 		return L1 < L2;
 	});
+
+	PlayersBestLap = TempPlayersBestLap;
 
 	if (BestSectors.Num() == 0)
 	{

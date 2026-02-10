@@ -35,7 +35,7 @@ void SLeaderboardOverlay::Construct(const FArguments& InArgs)
 					SNew(SSpacer)
 					.Size(FVector2D(1.f, 20.f))
 				]
-				
+
 				+ SVerticalBox::Slot()
 				.FillHeight(1.f)
 				[
@@ -57,7 +57,8 @@ TSharedRef<ITableRow> SLeaderboardOverlay::GenerateRow(TSharedPtr<FRaceLap> Lap,
 	const int32 Index = PlayersBestLap.IndexOfByKey(Lap);
 
 	FSlateLapTimeRow NewRow;
-	NewRow.Name = FText::FromString(FString::Printf(TEXT("#%d - %d - %s"), Index + 1, Lap->GetPlayerId(), *Lap->GetPlayerName()));
+	NewRow.Name = FText::FromString(
+		FString::Printf(TEXT("#%d - %d - %s"), Index + 1, Lap->GetPlayerId(), *Lap->GetPlayerName()));
 	NewRow.LapTime = FSlateTime(FText::FromString(Lap->GetLapTimeFormat()));
 
 	const TArray<int32> Sectors = Lap->GetSectors();
@@ -89,22 +90,22 @@ void SLeaderboardOverlay::OnLeaderboardUpdate(FTimeAttackLeaderboard InLeaderboa
 		return;
 	}
 
-	Leaderboard = InLeaderboard;
-
 	PlayersBestLap.Empty();
-	const TArray<FRaceLap> Laps = Leaderboard.GetPlayersBestLap();
+	const TArray<FRaceLap> Laps = InLeaderboard.GetPlayersBestLap();
 
 	if (Laps.Num() == 0)
 	{
 		return;
 	}
 
+	Leaderboard = InLeaderboard;
+
 	Record = Laps[0];
 
 	// Creating shared ptrs for list view
 	for (int i = 0; i < Laps.Num(); i++)
 	{
-		PlayersBestLap.Add(MakeShared<FRaceLap>(Leaderboard.GetPlayersBestLap()[i]));
+		PlayersBestLap.Add(MakeShared<FRaceLap>(Laps[i]));
 	}
 
 	LeaderboardListView->RequestListRefresh();

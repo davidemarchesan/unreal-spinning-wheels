@@ -7,45 +7,41 @@
 void SLapTimeOverlay::Construct(const FArguments& InArgs)
 {
 	PlayerId = InArgs._PlayerId;
-	
+
 	ChildSlot[
-		
-		SNew(SBorder)
+
+		SAssignNew(MainBorder, SBorder)
 		.BorderImage(FMainStyle::Get().GetBrush("Brush.Background.Dark"))
 		.Padding(FMainStyle::Get().GetMargin("Padding.Box"))
 		[
 
-			SNew(SBox)
-			.Padding(10.f, 6.f)
+			SNew(SVerticalBox)
+
+			// Current Match Record
+			+ SVerticalBox::Slot()
+			.AutoHeight()
 			[
+				SAssignNew(RecordLapTimeRow, SLapTimeRow)
+				.LapTimeRow(FSlateLapTimeRow(FText::FromString("Record")))
+			]
 
-				SNew(SVerticalBox)
+			// Personal Best
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			[
+				SAssignNew(PersonalBestLapTimeRow, SLapTimeRow)
+				.LapTimeRow(FSlateLapTimeRow(FText::FromString("Pers. Best")))
+			]
 
-				// Current Match Record
-				+ SVerticalBox::Slot()
-				.AutoHeight()
-				[
-					SAssignNew(RecordLapTimeRow, SLapTimeRow)
-				]
-
-				// Personal Best
-				+ SVerticalBox::Slot()
-				.AutoHeight()
-				[
-					SAssignNew(PersonalBestLapTimeRow, SLapTimeRow)
-				]
-
-				// Current
-				+ SVerticalBox::Slot()
-				.AutoHeight()
-				[
-					SAssignNew(CurrentLapTimeRow, SLapTimeRow)
-				]
-
+			// Current
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			[
+				SAssignNew(CurrentLapTimeRow, SLapTimeRow)
+				.LapTimeRow(FSlateLapTimeRow(FText::FromString("Current")))
 			]
 
 		]
-
 
 	];
 }
@@ -140,16 +136,19 @@ void SLapTimeOverlay::OnLeaderboardUpdate(const FTimeAttackLeaderboard& InLeader
 					SectorColor = ESlateTimeColor::TC_Purple;
 				}
 
-				const int32 SectorDiff = PersonalBest.GetSectorDiff(i, RecordSectors[i]);
-				const FString SectorDiffStr = FRaceLap::FormatDiff(SectorDiff);
-				NewRow.Sectors.Add(
-					FSlateTime(
-						FText::FromString(FRaceLap::FormatTime(PersBestSectors[i])),
-						SectorColor,
-						FText::FromString(SectorDiffStr),
-						SectorDiff < 0 ? ESlateTimeColor::TC_Green : ESlateTimeColor::TC_Red
-					)
-				);
+				if (RecordSectors.IsValidIndex(i))
+				{
+					const int32 SectorDiff = PersonalBest.GetSectorDiff(i, RecordSectors[i]);
+					const FString SectorDiffStr = FRaceLap::FormatDiff(SectorDiff);
+					NewRow.Sectors.Add(
+						FSlateTime(
+							FText::FromString(FRaceLap::FormatTime(PersBestSectors[i])),
+							SectorColor,
+							FText::FromString(SectorDiffStr),
+							SectorDiff < 0 ? ESlateTimeColor::TC_Green : ESlateTimeColor::TC_Red
+						)
+					);
+				}
 			}
 
 			PersonalBestLapTimeRow->SetLapTimeRow(NewRow);
@@ -219,4 +218,12 @@ void SLapTimeOverlay::OnCurrentLapUpdate(const FRaceLap& CurrentLap)
 
 
 	CurrentLapTimeRow->SetLapTimeRow(NewRow);
+}
+
+void SLapTimeOverlay::Hide()
+{
+	if (MainBorder.IsValid())
+	{
+		MainBorder->SetVisibility(EVisibility::Collapsed);
+	}
 }

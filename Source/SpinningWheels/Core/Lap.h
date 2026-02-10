@@ -234,4 +234,9 @@ public:
 	FSlateTime LapTime;
 
 public:
+
+	FSlateLapTimeRow() = default;
+
+	FSlateLapTimeRow(const FText& InName)
+		: Name(InName){}
 };

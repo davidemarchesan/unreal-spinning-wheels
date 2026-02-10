@@ -73,6 +73,7 @@ public:
 
 	void ClearViewport();
 
+	void InitLeaderboard();
 	void ShowLeaderboard();
 	void HideLeaderboard();
 

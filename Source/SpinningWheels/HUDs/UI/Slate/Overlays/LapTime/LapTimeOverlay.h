@@ -14,7 +14,7 @@ public:
 
 private:
 
-	TSharedPtr<SOverlay> MainOverlay;
+	TSharedPtr<SBorder> MainBorder;
 	TSharedPtr<SLapTimeRow> RecordLapTimeRow;
 	TSharedPtr<SLapTimeRow> PersonalBestLapTimeRow;
 	TSharedPtr<SLapTimeRow> CurrentLapTimeRow;
@@ -34,6 +34,7 @@ public:
 
 	void OnLeaderboardUpdate(const FTimeAttackLeaderboard& InLeaderboard);
 	void OnCurrentLapUpdate(const FRaceLap& CurrentLap);
-	// void OnCancelLap();
+
+	void Hide();
 	
 };

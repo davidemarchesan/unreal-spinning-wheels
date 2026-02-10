@@ -61,6 +61,7 @@ void ARaceGameState::HandleRaceMatchStateRacing()
 			if (ARaceController* RC = Cast<ARaceController>(PS->GetPlayerController()))
 			{
 				RC->PrepareForNewLap(ServerStartDriveTime);
+				RC->SetRacingEndTime(ServerRacingEndTime);
 			}
 		}
 	}
@@ -68,10 +69,6 @@ void ARaceGameState::HandleRaceMatchStateRacing()
 
 void ARaceGameState::HandleRaceMatchStatePodium()
 {
-	// Disable all inputs?
-	// we should not accept more laps
-	// playerstate should not accept laps
-	// controller should not accept inputs
 }
 
 void ARaceGameState::HandleMatchIsWaitingToStart()

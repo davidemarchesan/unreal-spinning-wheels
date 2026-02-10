@@ -38,6 +38,22 @@ void ARaceHUD::ClearViewport()
 	}
 }
 
+void ARaceHUD::InitLeaderboard()
+{
+	if (const UWorld* World = GetWorld())
+	{
+		RaceGameState = World->GetGameState<ARaceGameState>();
+		if (RaceGameState.IsValid())
+		{
+			OnLeaderboardUpdate(RaceGameState->GetLeaderboard());
+			RaceGameState->OnLeaderboardUpdate.AddUniqueDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
+
+			OnRaceMatchStateUpdate(RaceGameState->GetRaceMatchState());
+			RaceGameState->OnRaceMatchStateUpdate.AddUniqueDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
+		}
+	}
+}
+
 void ARaceHUD::OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard)
 {
 	if (LeaderboardOverlay.IsValid())
@@ -91,6 +107,10 @@ void ARaceHUD::HandleRaceMatchStateRacing()
 void ARaceHUD::HandleRaceMatchStatePodium()
 {
 	ShowLeaderboard();
+	if (LapTimeOverlay.IsValid())
+	{
+		LapTimeOverlay->Hide();
+	}
 }
 
 void ARaceHUD::UpdateLapCountdown(int32 Seconds)
@@ -196,6 +216,7 @@ void ARaceHUD::InitializeOverlayLeaderboard()
 	          .Anchors(FAnchors(0.5f, 0.5f))
 	          .Alignment(FVector2D(0.5f, 0.5f))
 	          .AutoSize(true)
+	          .ZOrder(10.f)
 	[
 		SAssignNew(LeaderboardOverlay, SLeaderboardOverlay)
 	];
@@ -325,15 +346,16 @@ void ARaceHUD::InitializeDelegates()
 {
 	if (const UWorld* World = GetWorld())
 	{
-		RaceGameState = World->GetGameState<ARaceGameState>();
-		if (RaceGameState.IsValid())
-		{
-			OnLeaderboardUpdate(RaceGameState->GetLeaderboard());
-			RaceGameState->OnLeaderboardUpdate.AddDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
-
-			OnRaceMatchStateUpdate(RaceGameState->GetRaceMatchState());
-			RaceGameState->OnRaceMatchStateUpdate.AddDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
-		}
+		// RaceGameState = World->GetGameState<ARaceGameState>();
+		// if (RaceGameState.IsValid())
+		// {
+		// 	OnLeaderboardUpdate(RaceGameState->GetLeaderboard());
+		// 	UE_LOG(LogTemp, Warning, TEXT("HUD: getting leaderboard"));
+		// 	RaceGameState->OnLeaderboardUpdate.AddUniqueDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
+		//
+		// 	OnRaceMatchStateUpdate(RaceGameState->GetRaceMatchState());
+		// 	RaceGameState->OnRaceMatchStateUpdate.AddUniqueDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
+		// } else { UE_LOG(LogTemp, Warning, TEXT("RACE GAME STATE IS NOT VALID, CANT LOAD LEADERBOARD")); }
 
 		if (RaceController.IsValid())
 		{
