@@ -130,8 +130,11 @@ void ARaceGameState::OnNewBestLap(FRaceLap Lap)
 		return;
 	}
 
-	Leaderboard.bInitialized = true;
-	Leaderboard.AddPlayerNewBest(Lap); // OnRep
+	FTimeAttackLeaderboard TempLeaderboard = Leaderboard;
+	TempLeaderboard.bInitialized = true;
+	TempLeaderboard.AddPlayerNewBest(Lap); // OnRep
+
+	Leaderboard = TempLeaderboard;
 	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::OnNewBestLap should fire onrep"));
 	
 	OnRep_Leaderboard(); // Listen-server

@@ -3,7 +3,7 @@
 #include "SpinningWheels/Core/Simulation.h"
 #include "Lap.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FRaceLap
 {
 	GENERATED_BODY()
@@ -19,13 +19,39 @@ public:
 	float LapSetAt;
 
 	UPROPERTY()
-	int32 LapTime = 0.f;
+	int32 LapTime = 0;
+
+	UPROPERTY()
+	bool bClosed = false;
 
 	UPROPERTY()
 	TArray<int32> Sectors;
 
-	UPROPERTY()
-	bool bClosed = false;
+	bool NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
+	{
+
+		Ar << PlayerId;
+		Ar << PlayerName;
+		Ar << LapSetAt;
+		Ar << LapTime;
+		Ar << bClosed;
+
+		int32 NumSectors = Sectors.Num();
+		Ar << NumSectors; // Length
+
+		if (Ar.IsLoading())
+		{
+			Sectors.SetNum(NumSectors);
+		}
+
+		for (int32& Sector : Sectors)
+		{
+			Ar << Sector;
+		}
+		
+		bOutSuccess = true;
+		return true;
+	}
 
 public:
 	/**
@@ -154,6 +180,12 @@ public:
 	
 
 	FString ToString() const;
+};
+
+template<>
+struct TStructOpsTypeTraits<FRaceLap> : public TStructOpsTypeTraitsBase2<FRaceLap>
+{
+	enum { WithNetSerializer = true };
 };
 
 FORCEINLINE FString FRaceLap::FormatTime(int32 Time)
