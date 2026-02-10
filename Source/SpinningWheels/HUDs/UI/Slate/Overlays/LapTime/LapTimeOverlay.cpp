@@ -46,18 +46,17 @@ void SLapTimeOverlay::Construct(const FArguments& InArgs)
 	];
 }
 
-void SLapTimeOverlay::OnLeaderboardUpdate(const FTimeAttackLeaderboard& InLeaderboard)
+void SLapTimeOverlay::OnLeaderboardUpdate(TArray<FRaceLap> InLeaderboard, TArray<int32> InBestSectors)
 {
 	Leaderboard = InLeaderboard;
+	BestSectors = InBestSectors;
 
-	const TArray<FRaceLap> Laps = Leaderboard.GetPlayersBestLap();
-
-	if (Laps.Num() == 0)
+	if (InLeaderboard.Num() == 0)
 	{
 		return;
 	}
 
-	Record = Laps[0];
+	Record = InLeaderboard[0];
 
 	// Record
 	if (RecordLapTimeRow.IsValid())
@@ -69,12 +68,11 @@ void SLapTimeOverlay::OnLeaderboardUpdate(const FTimeAttackLeaderboard& InLeader
 			ESlateTimeColor::TC_Purple
 		);
 
-		const TArray<int32> BestSectors = Leaderboard.GetBestSectors();
 		const TArray<int32> RecordSectors = Record.GetSectors();
 		for (int32 i = 0; i < RecordSectors.Num(); i++)
 		{
 			ESlateTimeColor Color = ESlateTimeColor::TC_White;
-			if (BestSectors.IsValidIndex(i) && RecordSectors[i] == BestSectors[i])
+			if (InBestSectors.IsValidIndex(i) && RecordSectors[i] == InBestSectors[i])
 			{
 				Color = ESlateTimeColor::TC_Purple;
 			}
@@ -92,7 +90,7 @@ void SLapTimeOverlay::OnLeaderboardUpdate(const FTimeAttackLeaderboard& InLeader
 	// Personal best
 	if (PersonalBestLapTimeRow.IsValid() && PlayerId != 0)
 	{
-		const FRaceLap* PersonalBestPtr = Laps.FindByPredicate([this](const FRaceLap& InLap)
+		const FRaceLap* PersonalBestPtr = InLeaderboard.FindByPredicate([this](const FRaceLap& InLap)
 		{
 			return InLap.GetPlayerId() == PlayerId;
 		});
@@ -125,13 +123,12 @@ void SLapTimeOverlay::OnLeaderboardUpdate(const FTimeAttackLeaderboard& InLeader
 				LapDiff < 0 ? ESlateTimeColor::TC_Green : ESlateTimeColor::TC_Red
 			);
 
-			const TArray<int32> BestSectors = Leaderboard.GetBestSectors();
 			const TArray<int32> RecordSectors = Record.GetSectors();
 			const TArray<int32> PersBestSectors = PersonalBest.GetSectors();
 			for (int32 i = 0; i < PersBestSectors.Num(); i++)
 			{
 				ESlateTimeColor SectorColor = ESlateTimeColor::TC_White;
-				if (PersBestSectors[i] == BestSectors[i])
+				if (PersBestSectors[i] == InBestSectors[i])
 				{
 					SectorColor = ESlateTimeColor::TC_Purple;
 				}
@@ -190,7 +187,6 @@ void SLapTimeOverlay::OnCurrentLapUpdate(const FRaceLap& CurrentLap)
 	}
 
 	const TArray<int32> CurrentSectors = Current.GetSectors();
-	const TArray<int32> BestSectors = Leaderboard.GetBestSectors();
 	const TArray<int32> PersBestSectors = LastPersonalBest.GetSectors();
 	for (int32 i = 0; i < CurrentSectors.Num(); i++)
 	{

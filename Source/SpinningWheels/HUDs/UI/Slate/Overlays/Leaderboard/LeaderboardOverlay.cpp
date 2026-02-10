@@ -65,7 +65,7 @@ TSharedRef<ITableRow> SLeaderboardOverlay::GenerateRow(TSharedPtr<FRaceLap> Lap,
 	for (int32 i = 0; i < Sectors.Num(); i++)
 	{
 		ESlateTimeColor Color = ESlateTimeColor::TC_White;
-		if (Leaderboard.BestSectors.IsValidIndex(i) && Sectors[i] == Leaderboard.BestSectors[i])
+		if (BestSectors.IsValidIndex(i) && Sectors[i] == BestSectors[i])
 		{
 			Color = ESlateTimeColor::TC_Purple;
 		}
@@ -83,7 +83,7 @@ TSharedRef<ITableRow> SLeaderboardOverlay::GenerateRow(TSharedPtr<FRaceLap> Lap,
 		];
 }
 
-void SLeaderboardOverlay::OnLeaderboardUpdate(FTimeAttackLeaderboard InLeaderboard)
+void SLeaderboardOverlay::OnLeaderboardUpdate(TArray<FRaceLap> InLeaderboard, TArray<int32> InBestSectors)
 {
 	if (LeaderboardListView.IsValid() == false)
 	{
@@ -92,23 +92,23 @@ void SLeaderboardOverlay::OnLeaderboardUpdate(FTimeAttackLeaderboard InLeaderboa
 	}
 
 	PlayersBestLap.Empty();
-	const TArray<FRaceLap> Laps = InLeaderboard.GetPlayersBestLap();
 
-	UE_LOG(LogTemp, Warning, TEXT("SLeaderboardOverlay::OnLeaderboardUpdate laps %d and best lap time %d"), Laps.Num(), InLeaderboard.BestLapTime);
+	UE_LOG(LogTemp, Warning, TEXT("SLeaderboardOverlay::OnLeaderboardUpdate laps %d %d"), InLeaderboard.Num(), InBestSectors.Num());
 
-	if (Laps.Num() == 0)
+	if (InLeaderboard.Num() == 0)
 	{
 		return;
 	}
 
 	Leaderboard = InLeaderboard;
+	BestSectors = InBestSectors;
 
-	Record = Laps[0];
+	Record = InLeaderboard[0];
 
 	// Creating shared ptrs for list view
-	for (int i = 0; i < Laps.Num(); i++)
+	for (int i = 0; i < InLeaderboard.Num(); i++)
 	{
-		PlayersBestLap.Add(MakeShared<FRaceLap>(Laps[i]));
+		PlayersBestLap.Add(MakeShared<FRaceLap>(InLeaderboard[i]));
 	}
 
 	LeaderboardListView->RequestListRefresh();

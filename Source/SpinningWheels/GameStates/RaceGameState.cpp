@@ -8,10 +8,98 @@
 #include "SpinningWheels/PlayerStates/RacePlayerState.h"
 #include "SpinningWheels/GameModes/RaceGameMode.h"
 
-void ARaceGameState::OnRep_Leaderboard()
+// void ARaceGameState::OnRep_Leaderboard()
+// {
+// 	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::OnRep_Leaderboard init %d laps %d"), Leaderboard.bInitialized, Leaderboard.PlayersBestLap.Num());
+// 	OnLeaderboardUpdate.Broadcast(Leaderboard);
+// }
+
+void ARaceGameState::AddPlayerNewBest(FRaceLap NewLap)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::OnRep_Leaderboard init %d laps %d"), Leaderboard.bInitialized, Leaderboard.PlayersBestLap.Num());
-	OnLeaderboardUpdate.Broadcast(Leaderboard);
+	TempLeaderboard = Leaderboard;
+	const int32 FoundIndex = TempLeaderboard.IndexOfByPredicate([NewLap](const FRaceLap& InLap)
+	{
+		return InLap.GetPlayerId() == NewLap.GetPlayerId();
+	});
+
+	if (FoundIndex == INDEX_NONE)
+	{
+		TempLeaderboard.Add(NewLap);
+	}
+	else
+	{
+		if (TempLeaderboard.IsValidIndex(FoundIndex))
+		{
+			TempLeaderboard[FoundIndex] = NewLap;
+		}
+	}
+
+	TempLeaderboard.Sort([](const FRaceLap& L1, const FRaceLap& L2)
+	{
+		if (L1 == L2)
+		{
+			 return L1.GetSetTime() < L2.GetSetTime();
+		}
+
+		return L1 < L2;
+	});
+
+	Leaderboard = TempLeaderboard;
+	TempLeaderboard.Reset();
+	
+	if (BestSectors.Num() == 0)
+	{
+		BestSectors = NewLap.GetSectors();
+	}
+
+	CalcBestSectors();
+}
+
+void ARaceGameState::CalcBestSectors()
+{
+	if (BestSectors.Num() <= 1)
+	{
+		return;
+	}
+
+	TArray<int32> TempBestSectors;
+	
+	for (int32 i = 0; i < BestSectors.Num(); i++)
+	{
+
+		int32 Best = 0;
+
+		for (int32 j = 0; j < Leaderboard.Num(); j++)
+		{
+			const TArray<int32> PlayerSectors = Leaderboard[j].GetSectors();
+			if (PlayerSectors.IsValidIndex(i))
+			{
+				if (Best == 0)
+				{
+					Best = PlayerSectors[i];
+				}
+				else
+				{
+					Best = FMath::Min(Best, PlayerSectors[i]);
+				}
+			}
+		}
+
+		TempBestSectors.Add(Best);
+	}
+
+	BestSectors = TempBestSectors;
+}
+
+void ARaceGameState::ClientUpdateLeaderboard_Implementation(const TArray<FRaceLap>& InLeaderboard, const TArray<int32>& InBestSectors)
+{
+	
+	Leaderboard = InLeaderboard;
+	BestSectors = InBestSectors;
+	
+	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::ClientUpdateLeaderboard_Implementation %d %d"), Leaderboard.Num(), BestSectors.Num());
+
+	OnLeaderboardUpdate.Broadcast(Leaderboard, BestSectors);
 }
 
 void ARaceGameState::OnRep_RaceMatchState()
@@ -117,10 +205,16 @@ void ARaceGameState::SetCurrentTrack(const FTrack& NewTrack)
 	OnRep_CurrentTrack();
 }
 
-const FTimeAttackLeaderboard& ARaceGameState::GetLeaderboard()
+// const FTimeAttackLeaderboard& ARaceGameState::GetLeaderboard()
+// {
+// 	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::GetLeaderboard with laps %d"), Leaderboard.PlayersBestLap.Num());
+// 	return Leaderboard;
+// }
+
+void ARaceGameState::GetLeaderboard(TArray<FRaceLap>& OutLeaderboard, TArray<int32>& OutBestSectors)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::GetLeaderboard with laps %d"), Leaderboard.PlayersBestLap.Num());
-	return Leaderboard;
+	OutLeaderboard = Leaderboard;
+	OutBestSectors = BestSectors;
 }
 
 void ARaceGameState::OnNewBestLap(FRaceLap Lap)
@@ -130,11 +224,19 @@ void ARaceGameState::OnNewBestLap(FRaceLap Lap)
 		return;
 	}
 
-	Leaderboard.bInitialized = true;
-	Leaderboard.AddPlayerNewBest(Lap); // OnRep
-	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::OnNewBestLap should fire onrep"));
+	// Leaderboard.bInitialized = true;
+	// Leaderboard.AddPlayerNewBest(Lap); // OnRep
+
+	AddPlayerNewBest(Lap);
+	CalcBestSectors();
 	
-	OnRep_Leaderboard(); // Listen-server
+	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::OnNewBestLap should broadcast and update client %d %d"), Leaderboard.Num(), BestSectors.Num());
+
+	ClientUpdateLeaderboard(Leaderboard, BestSectors);
+
+	OnLeaderboardUpdate.Broadcast(Leaderboard, BestSectors);
+	
+	// OnRep_Leaderboard(); // Listen-server
 }
 
 void ARaceGameState::OnRep_CurrentTrack()
@@ -148,5 +250,6 @@ void ARaceGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 
 	DOREPLIFETIME(ARaceGameState, RaceMatchState);
 	DOREPLIFETIME(ARaceGameState, Leaderboard);
+	DOREPLIFETIME(ARaceGameState, BestSectors);
 	DOREPLIFETIME(ARaceGameState, ServerRacingEndTime);
 }

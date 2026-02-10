@@ -21,7 +21,8 @@ private:
 	TArray<TSharedPtr<FRaceLap>> PlayersBestLap;
 	TSharedRef<ITableRow> GenerateRow(TSharedPtr<FRaceLap> Lap, const TSharedRef< class STableViewBase >& OwningWidget);
 
-	FTimeAttackLeaderboard Leaderboard;
+	TArray<FRaceLap> Leaderboard;
+	TArray<int32> BestSectors;
 
 	FRaceLap Record = FRaceLap();
 
@@ -31,7 +32,7 @@ public:
 
 	void SetPlayerId(int32 InPlayerId) { PlayerId = InPlayerId; };
 
-	void OnLeaderboardUpdate(FTimeAttackLeaderboard InLeaderboard);
+	void OnLeaderboardUpdate(TArray<FRaceLap> InLeaderboard, TArray<int32> InBestSectors);
 	void Show();
 	void Hide();
 	

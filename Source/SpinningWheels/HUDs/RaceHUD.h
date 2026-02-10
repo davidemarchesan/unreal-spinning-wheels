@@ -41,7 +41,7 @@ private:
 	
 	UFUNCTION() void OnPlayerIdSet(int32 InPlayerId);
 	UFUNCTION() void OnCurrentLapUpdate(const FRaceLap& CurrentLap);
-	UFUNCTION() void OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard);
+	UFUNCTION() void OnLeaderboardUpdate(TArray<FRaceLap> InLeaderboard, TArray<int32> InBestSectors);
 	UFUNCTION() void OnRaceMatchStateUpdate(ERaceMatchState NewState);
 	/** End delegates bindings */
 

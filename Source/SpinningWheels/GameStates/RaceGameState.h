@@ -13,7 +13,7 @@ class ARacePlayerState;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRaceMatchStateUpdateSignature, ERaceMatchState, NewState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTrackUpdateSignature, const FTrack&, NewTrack);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLeaderboardUpdateSignature, const FTimeAttackLeaderboard&, Leaderboard);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLeaderboardUpdateSignature, TArray<FRaceLap>, Leaderboard, TArray<int32>, BestSectors);
 
 UCLASS()
 class SPINNINGWHEELS_API ARaceGameState : public AGameState
@@ -22,14 +22,29 @@ class SPINNINGWHEELS_API ARaceGameState : public AGameState
 
 private:
 
-	UPROPERTY(ReplicatedUsing=OnRep_Leaderboard)
-	FTimeAttackLeaderboard Leaderboard;
+	// UPROPERTY(ReplicatedUsing=OnRep_Leaderboard)
+	// FTimeAttackLeaderboard Leaderboard;
+	
+	// UPROPERTY(ReplicatedUsing=OnRep_Leaderboard)
+	UPROPERTY(Replicated)
+	TArray<FRaceLap> Leaderboard;
 
-	UFUNCTION()
-	void OnRep_Leaderboard();
+	// UFUNCTION()
+	// void OnRep_Leaderboard();
+
+	TArray<FRaceLap> TempLeaderboard;
+
+	UPROPERTY(Replicated)
+	TArray<int32> BestSectors;
+
+	void AddPlayerNewBest(FRaceLap NewLap);
+	void CalcBestSectors();
 
 	UPROPERTY(Replicated);
 	float ServerRacingEndTime = 0.f;
+
+	UFUNCTION(Client, Reliable)
+	void ClientUpdateLeaderboard(const TArray<FRaceLap>& InLeaderboard, const TArray<int32>& InBestSectors);
 
 protected:
 
@@ -70,7 +85,8 @@ public:
 
 	bool AcceptsNewLaps() const { return RaceMatchState == ERaceMatchState::RMS_Racing; }
 	
-	const FTimeAttackLeaderboard& GetLeaderboard();
+	// const FTimeAttackLeaderboard& GetLeaderboard();
+	void GetLeaderboard(TArray<FRaceLap>& OutLeaderboard, TArray<int32>& OutBestSectors);
 	void OnNewBestLap(FRaceLap Lap);
 	
 	/** Begin Delegates */

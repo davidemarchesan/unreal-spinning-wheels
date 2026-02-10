@@ -46,7 +46,11 @@ void ARaceHUD::InitLeaderboard()
 		if (RaceGameState.IsValid())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("ARaceHUD::InitLeaderboard"));
-			OnLeaderboardUpdate(RaceGameState->GetLeaderboard());
+			TArray<FRaceLap> OutLeaderboard;
+			TArray<int32> OutBestSectors;
+			RaceGameState->GetLeaderboard(OutLeaderboard, OutBestSectors);
+			
+			OnLeaderboardUpdate(OutLeaderboard, OutBestSectors);
 			OnRaceMatchStateUpdate(RaceGameState->GetRaceMatchState());
 
 			RaceGameState->OnLeaderboardUpdate.AddUniqueDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
@@ -55,17 +59,17 @@ void ARaceHUD::InitLeaderboard()
 	}
 }
 
-void ARaceHUD::OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard)
+void ARaceHUD::OnLeaderboardUpdate(TArray<FRaceLap> InLeaderboard, TArray<int32> InBestSectors)
 {
 	if (LeaderboardOverlay.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ARaceHUD::OnLeaderboardUpdate init %d laps %d"), Leaderboard.bInitialized, Leaderboard.PlayersBestLap.Num());
-		LeaderboardOverlay->OnLeaderboardUpdate(Leaderboard);
+		UE_LOG(LogTemp, Warning, TEXT("ARaceHUD::OnLeaderboardUpdate laps %d %d"), InLeaderboard.Num(), InBestSectors.Num());
+		LeaderboardOverlay->OnLeaderboardUpdate(InLeaderboard, InBestSectors);
 	}
 
 	if (LapTimeOverlay.IsValid())
 	{
-		LapTimeOverlay->OnLeaderboardUpdate(Leaderboard);
+		LapTimeOverlay->OnLeaderboardUpdate(InLeaderboard, InBestSectors);
 	}
 }
 

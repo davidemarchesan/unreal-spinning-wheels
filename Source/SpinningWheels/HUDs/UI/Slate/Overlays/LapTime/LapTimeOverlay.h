@@ -24,7 +24,8 @@ private:
 	FRaceLap LastPersonalBest = FRaceLap();
 	FRaceLap Current = FRaceLap();
 
-	FTimeAttackLeaderboard Leaderboard;
+	TArray<FRaceLap> Leaderboard;
+	TArray<int32> BestSectors;
 	
 	int32 PlayerId = 0;
 
@@ -32,7 +33,7 @@ public:
 
 	void SetPlayerId(int32 InPlayerId) { PlayerId = InPlayerId; };
 
-	void OnLeaderboardUpdate(const FTimeAttackLeaderboard& InLeaderboard);
+	void OnLeaderboardUpdate(TArray<FRaceLap> InLeaderboard, TArray<int32> InBestSectors);
 	void OnCurrentLapUpdate(const FRaceLap& CurrentLap);
 
 	void Hide();
