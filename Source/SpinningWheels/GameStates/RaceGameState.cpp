@@ -10,7 +10,6 @@
 
 void ARaceGameState::OnRep_Leaderboard()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::OnRep_Leaderboard init %d laps %d"), Leaderboard.bInitialized, Leaderboard.PlayersBestLap.Num());
 	OnLeaderboardUpdate.Broadcast(Leaderboard);
 }
 
@@ -119,7 +118,6 @@ void ARaceGameState::SetCurrentTrack(const FTrack& NewTrack)
 
 const FTimeAttackLeaderboard& ARaceGameState::GetLeaderboard()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::GetLeaderboard with laps %d"), Leaderboard.PlayersBestLap.Num());
 	return Leaderboard;
 }
 
@@ -130,9 +128,7 @@ void ARaceGameState::OnNewBestLap(FRaceLap Lap)
 		return;
 	}
 
-	Leaderboard.bInitialized = true;
 	Leaderboard.AddPlayerNewBest(Lap); // OnRep
-	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::OnNewBestLap should fire onrep"));
 	
 	OnRep_Leaderboard(); // Listen-server
 }
@@ -149,4 +145,9 @@ void ARaceGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ARaceGameState, RaceMatchState);
 	DOREPLIFETIME(ARaceGameState, Leaderboard);
 	DOREPLIFETIME(ARaceGameState, ServerRacingEndTime);
+}
+
+void ARaceGameState::HandleBeginPlay()
+{
+	Super::HandleBeginPlay();
 }

@@ -58,6 +58,7 @@ public:
 
 	//~ Begin AGameState Interface
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void HandleBeginPlay() override;
 	//~ End AGameState Interface
 
 	void SetRaceMatchState(ERaceMatchState NewState);

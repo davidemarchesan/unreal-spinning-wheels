@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
+#include "SpinningWheels/Core/Leaderboard.h"
 #include "SpinningWheels/Core/Match.h"
 #include "RaceController.generated.h"
 
@@ -39,8 +40,11 @@ public:
 
 private:
 
+	// Begin Ready status check
 	UPROPERTY(ReplicatedUsing=OnRep_bReady)
 	bool bReady = false;
+
+	bool bLocalReady = false;
 
 	UFUNCTION()
 	void OnRep_bReady();
@@ -51,6 +55,17 @@ private:
 	void ServerImReady();
 
 	void InternalImReady();
+	// End Ready status check
+
+	// Begin Sync leaderboard on-late join
+	void SyncLeaderboard();
+	
+	UFUNCTION(Server, Reliable)
+	void ServerSyncLeaderboard();
+
+	UFUNCTION(Client, Reliable)
+	void ClientSyncLeaderboard(const FTimeAttackLeaderboard& Leaderboard);
+	// End Sync leaderboard on-late joi
 	
 	// Begin Deterministic physics
 	void SimulatedTick(float DeltaSeconds);

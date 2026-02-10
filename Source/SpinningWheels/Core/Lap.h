@@ -3,7 +3,7 @@
 #include "SpinningWheels/Core/Simulation.h"
 #include "Lap.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FRaceLap
 {
 	GENERATED_BODY()
@@ -22,10 +22,36 @@ public:
 	int32 LapTime = 0.f;
 
 	UPROPERTY()
-	TArray<int32> Sectors;
+	bool bClosed = false;
 
 	UPROPERTY()
-	bool bClosed = false;
+	TArray<int32> Sectors;
+
+	bool NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
+	{
+
+		Ar << PlayerId;
+		Ar << PlayerName;
+		Ar << LapSetAt;
+		Ar << LapTime;
+		Ar << bClosed;
+
+		int32 NumSectors = Sectors.Num();
+		Ar << NumSectors; // Length
+
+		if (Ar.IsLoading())
+		{
+			Sectors.SetNum(NumSectors);
+		}
+
+		for (int32& Sector : Sectors)
+		{
+			Ar << Sector;
+		}
+		
+		bOutSuccess = true;
+		return true;
+	}
 
 public:
 	/**
@@ -189,6 +215,12 @@ FORCEINLINE FString FRaceLap::ToString() const
 
 	return Str;
 }
+
+template<>
+struct TStructOpsTypeTraits<FRaceLap> : public TStructOpsTypeTraitsBase2<FRaceLap>
+{
+	enum { WithNetSerializer = true };
+};
 
 enum class ESlateTimeColor : int {
 	TC_White,

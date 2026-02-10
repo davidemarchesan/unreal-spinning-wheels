@@ -45,12 +45,10 @@ void ARaceHUD::InitLeaderboard()
 		RaceGameState = World->GetGameState<ARaceGameState>();
 		if (RaceGameState.IsValid())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ARaceHUD::InitLeaderboard"));
-			OnLeaderboardUpdate(RaceGameState->GetLeaderboard());
-			OnRaceMatchStateUpdate(RaceGameState->GetRaceMatchState());
-
 			RaceGameState->OnLeaderboardUpdate.AddUniqueDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
 			RaceGameState->OnRaceMatchStateUpdate.AddUniqueDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
+			
+			OnRaceMatchStateUpdate(RaceGameState->GetRaceMatchState());
 		}
 	}
 }
@@ -59,7 +57,6 @@ void ARaceHUD::OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard)
 {
 	if (LeaderboardOverlay.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ARaceHUD::OnLeaderboardUpdate init %d laps %d"), Leaderboard.bInitialized, Leaderboard.PlayersBestLap.Num());
 		LeaderboardOverlay->OnLeaderboardUpdate(Leaderboard);
 	}
 
@@ -348,17 +345,6 @@ void ARaceHUD::InitializeDelegates()
 {
 	if (const UWorld* World = GetWorld())
 	{
-		// RaceGameState = World->GetGameState<ARaceGameState>();
-		// if (RaceGameState.IsValid())
-		// {
-		// 	OnLeaderboardUpdate(RaceGameState->GetLeaderboard());
-		// 	UE_LOG(LogTemp, Warning, TEXT("HUD: getting leaderboard"));
-		// 	RaceGameState->OnLeaderboardUpdate.AddUniqueDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
-		//
-		// 	OnRaceMatchStateUpdate(RaceGameState->GetRaceMatchState());
-		// 	RaceGameState->OnRaceMatchStateUpdate.AddUniqueDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
-		// } else { UE_LOG(LogTemp, Warning, TEXT("RACE GAME STATE IS NOT VALID, CANT LOAD LEADERBOARD")); }
-
 		if (RaceController.IsValid())
 		{
 			if (ARacePlayerState* RPS = RaceController->GetPlayerState<ARacePlayerState>())
@@ -398,6 +384,11 @@ void ARaceHUD::HideLeaderboard()
 	{
 		LeaderboardOverlay->Hide();
 	}
+}
+
+void ARaceHUD::UpdateLeaderboard(const FTimeAttackLeaderboard& Leaderboard)
+{
+	OnLeaderboardUpdate(Leaderboard);
 }
 
 void ARaceHUD::SetMatchRemainingTime(const float Seconds)

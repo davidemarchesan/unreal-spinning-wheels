@@ -7,62 +7,94 @@ USTRUCT()
 struct FTimeAttackLeaderboardRow
 {
 	GENERATED_BODY()
-	
+
 public:
-	
-	UPROPERTY() int8 Position = 0;
-	UPROPERTY() int32 PlayerId;
-	UPROPERTY() FString PlayerName;
-	UPROPERTY() FRaceLap BestLap;
+	UPROPERTY()
+	int8 Position = 0;
+	UPROPERTY()
+	int32 PlayerId;
+	UPROPERTY()
+	FString PlayerName;
+	UPROPERTY()
+	FRaceLap BestLap;
 
 	FORCEINLINE void Update(int8 NewPosition, FRaceLap NewBestLap)
 	{
 		Position = NewPosition;
 		BestLap = NewBestLap;
 	}
-	
-public:
 
+public:
 	FTimeAttackLeaderboardRow() = default;
-	
+
 	FTimeAttackLeaderboardRow(const int32 InPlayerId, const FString InPlayerName, FRaceLap InBestLap)
 		: PlayerId(InPlayerId), PlayerName(InPlayerName), BestLap(InBestLap)
-	{}
-	
+	{
+	}
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FTimeAttackLeaderboard
 {
 	GENERATED_BODY()
 
 public:
+	
+	UPROPERTY()
+	TArray<int32> BestSectors;
+	
+	UPROPERTY()
+	TArray<FRaceLap> PlayersBestLap;
+	
+	bool NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
+	{
 
-	UPROPERTY() bool bInitialized = false;
-	UPROPERTY() int32 BestLapTime = 0;
-	UPROPERTY() TArray<int32> BestSectors;
-	UPROPERTY() TArray<FRaceLap> PlayersBestLap;
+		int32 NumSectors = BestSectors.Num();
+		Ar << NumSectors; // Length
 
+		if (Ar.IsLoading())
+		{
+			BestSectors.SetNum(NumSectors);
+		}
+
+		for (int32& Sector : BestSectors)
+		{
+			Ar << Sector;
+		}
+
+		int32 NumLaps = PlayersBestLap.Num();
+		Ar << NumLaps; // Length
+
+		if (Ar.IsLoading())
+		{
+			PlayersBestLap.SetNum(NumLaps);
+		}
+
+		for (FRaceLap& Lap : PlayersBestLap)
+		{
+			Lap.NetSerialize(Ar, Map, bOutSuccess);
+		}
+		
+		bOutSuccess = true;
+		return true;
+	}
+	
 private:
-
 	void CalcBestSectors();
 
 public:
-
 	void Reset();
 
 	void AddPlayerNewBest(FRaceLap NewLap);
-	
+
 	const TArray<int32>& GetBestSectors() const { return BestSectors; }
 	const TArray<FRaceLap>& GetPlayersBestLap() const { return PlayersBestLap; }
 
 	FString ToString() const;
-	
 };
 
 FORCEINLINE void FTimeAttackLeaderboard::CalcBestSectors()
 {
-
 	if (BestSectors.Num() <= 1)
 	{
 		return;
@@ -70,10 +102,9 @@ FORCEINLINE void FTimeAttackLeaderboard::CalcBestSectors()
 
 	TArray<int32> TempBestSectors;
 	// TempBestSectors.SetNum(BestSectors.Num());
-	
+
 	for (int32 i = 0; i < BestSectors.Num(); i++)
 	{
-
 		int32 Best = 0;
 
 		for (int32 j = 0; j < PlayersBestLap.Num(); j++)
@@ -96,13 +127,11 @@ FORCEINLINE void FTimeAttackLeaderboard::CalcBestSectors()
 	}
 
 	BestSectors = TempBestSectors;
-	
 }
 
 
 FORCEINLINE void FTimeAttackLeaderboard::Reset()
 {
-	BestLapTime = 0;
 	BestSectors.Reset();
 	PlayersBestLap.Reset();
 }
@@ -132,7 +161,7 @@ FORCEINLINE void FTimeAttackLeaderboard::AddPlayerNewBest(FRaceLap NewLap)
 	{
 		if (L1 == L2)
 		{
-			 return L1.GetSetTime() < L2.GetSetTime();
+			return L1.GetSetTime() < L2.GetSetTime();
 		}
 
 		return L1 < L2;
@@ -146,17 +175,30 @@ FORCEINLINE void FTimeAttackLeaderboard::AddPlayerNewBest(FRaceLap NewLap)
 	}
 
 	CalcBestSectors();
-
 }
 
 FORCEINLINE FString FTimeAttackLeaderboard::ToString() const
 {
 	FString Str;
 
+	Str += "BestLaps: ";
 	for (int i = 0; i < PlayersBestLap.Num(); i++)
 	{
-		Str += FString::Printf(TEXT("\nP%d PID%d T%d"), i + 1, PlayersBestLap[i].GetPlayerId(), PlayersBestLap[i].GetLapTime());	
+		Str += FString::Printf(TEXT("\nP%d PID%d T%d"), i + 1, PlayersBestLap[i].GetPlayerId(),
+		                       PlayersBestLap[i].GetLapTime());
 	}
-	
+
+	Str += "\nBestSectors: ";
+	for (int i = 0; i < BestSectors.Num(); i++)
+	{
+		Str += FString::Printf(TEXT("\nBestSector[%d] %d"), i + 1, BestSectors[i]);
+	}
+
 	return Str;
 }
+
+template<>
+struct TStructOpsTypeTraits<FTimeAttackLeaderboard> : public TStructOpsTypeTraitsBase2<FTimeAttackLeaderboard>
+{
+	enum { WithNetSerializer = true };
+};

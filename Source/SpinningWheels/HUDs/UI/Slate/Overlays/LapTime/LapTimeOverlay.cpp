@@ -131,7 +131,7 @@ void SLapTimeOverlay::OnLeaderboardUpdate(const FTimeAttackLeaderboard& InLeader
 			for (int32 i = 0; i < PersBestSectors.Num(); i++)
 			{
 				ESlateTimeColor SectorColor = ESlateTimeColor::TC_White;
-				if (PersBestSectors[i] == BestSectors[i])
+				if (BestSectors.IsValidIndex(i) && PersBestSectors[i] == BestSectors[i])
 				{
 					SectorColor = ESlateTimeColor::TC_Purple;
 				}

@@ -42,11 +42,11 @@ void ARaceController::OnRep_bReady()
 
 void ARaceController::CheckIfReady()
 {
-	if (bReady == true)
+	if (bReady == true || bLocalReady == true)
 	{
 		return;
 	}
-	
+
 	if (IsLocalController() == false)
 	{
 		return;
@@ -55,8 +55,7 @@ void ARaceController::CheckIfReady()
 	if (RaceGameState.IsValid() && RacePlayerState.IsValid() && RaceHUD.IsValid() && Car.IsValid() && MainCamera.
 		IsValid() && bCameraInitialized == true)
 	{
-
-		UE_LOG(LogTemp, Warning, TEXT("(role %d) this controller is ready %d"), GetLocalRole(), bReady);
+		bLocalReady = true; // Dont wait the server replication bReady (do not make bReady replicated?)
 
 		if (HasAuthority())
 		{
@@ -65,6 +64,7 @@ void ARaceController::CheckIfReady()
 		else
 		{
 			ServerImReady();
+			SyncLeaderboard();
 		}
 	}
 }
@@ -84,6 +84,41 @@ void ARaceController::InternalImReady()
 	}
 
 	OnRep_bReady();
+}
+
+void ARaceController::SyncLeaderboard()
+{
+	if (IsLocalController() == false || HasAuthority() == true)
+	{
+		return;
+	}
+
+
+	if (RaceGameState.IsValid()) // Should always be valid if called inside CheckIfReady()
+	{
+		if (RaceGameState->GetRaceMatchState() == ERaceMatchState::RMS_Racing)
+		{
+			// Meaning we late-joined
+			ServerSyncLeaderboard();
+		}
+	}
+}
+
+void ARaceController::ServerSyncLeaderboard_Implementation()
+{
+	if (RaceGameState.IsValid())
+	{
+		const FTimeAttackLeaderboard Leaderboard = RaceGameState->GetLeaderboard();
+		ClientSyncLeaderboard(Leaderboard);
+	}
+}
+
+void ARaceController::ClientSyncLeaderboard_Implementation(const FTimeAttackLeaderboard& Leaderboard)
+{
+	if (RaceHUD.IsValid())
+	{
+		RaceHUD->UpdateLeaderboard(Leaderboard);
+	}
 }
 
 void ARaceController::SimulatedTick(float DeltaSeconds)
@@ -225,7 +260,7 @@ void ARaceController::OnRaceHUDInit()
 			RaceHUD->SetPlayerState(RacePlayerState.Get());
 		}
 		SyncServerRacingEndTime();
-		
+
 		RaceHUD->InitLeaderboard();
 	}
 }
@@ -321,7 +356,9 @@ void ARaceController::PreClientTravel(const FString& PendingURL, ETravelType Tra
 	Super::PreClientTravel(PendingURL, TravelType, bIsSeamlessTravel);
 
 	bReady = false;
-	UE_LOG(LogTemp, Warning, TEXT("(role %d) ARaceController::PreClientTravel bready should be false => %d"), GetLocalRole(), bReady);
+	bLocalReady = false;
+	UE_LOG(LogTemp, Warning, TEXT("(role %d) ARaceController::PreClientTravel bready should be false => %d"),
+	       GetLocalRole(), bReady);
 
 	bCameraInitialized = false;
 	ServerRacingEndTime = 0.f;
@@ -553,12 +590,11 @@ void ARaceController::SyncServerRacingEndTime(const bool bForceRefresh)
 {
 	if (RaceGameState.IsValid())
 	{
-
 		if (bForceRefresh)
 		{
 			ServerRacingEndTime = RaceGameState->GetServerRacingEndTime();
 		}
-		
+
 		const float CurrentServerTime = RaceGameState->GetServerWorldTimeSeconds();
 		const float RemainingTime = FMath::Max(0.f, ServerRacingEndTime - CurrentServerTime);
 

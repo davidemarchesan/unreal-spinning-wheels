@@ -93,9 +93,7 @@ void SLeaderboardOverlay::OnLeaderboardUpdate(FTimeAttackLeaderboard InLeaderboa
 
 	PlayersBestLap.Empty();
 	const TArray<FRaceLap> Laps = InLeaderboard.GetPlayersBestLap();
-
-	UE_LOG(LogTemp, Warning, TEXT("SLeaderboardOverlay::OnLeaderboardUpdate laps %d and best lap time %d"), Laps.Num(), InLeaderboard.BestLapTime);
-
+	
 	if (Laps.Num() == 0)
 	{
 		return;

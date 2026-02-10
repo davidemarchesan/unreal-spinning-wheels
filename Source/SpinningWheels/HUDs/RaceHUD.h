@@ -77,6 +77,8 @@ public:
 	void ShowLeaderboard();
 	void HideLeaderboard();
 
+	void UpdateLeaderboard(const FTimeAttackLeaderboard& Leaderboard);
+
 	void UpdateLapCountdown(int32 Seconds);
 
 	void SetPlayerState(ARacePlayerState* InRacePlayerState);
