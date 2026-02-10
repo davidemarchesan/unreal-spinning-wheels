@@ -153,13 +153,11 @@ bool ATrackGrid::Remove(FVector WorldLocation)
 
 	if (AreValidCoordinates(Coordinates) == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("grid remove: coord are not valid"));
 		return false;
 	}
 
 	if (Grid[Coordinates.X][Coordinates.Y] == ETileStatus::TS_Free)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("grid remove: coord are already free"));
 		return false;
 	}
 
@@ -170,7 +168,6 @@ bool ATrackGrid::Remove(FVector WorldLocation)
 
 	if (Index == INDEX_NONE || Blocks.IsValidIndex(Index) == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("grid remove: invalid index %d"), Index);
 		return false;
 	}
 

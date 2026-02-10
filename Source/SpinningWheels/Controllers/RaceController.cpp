@@ -31,7 +31,6 @@ void ARaceController::Tick(float DeltaSeconds)
 
 void ARaceController::OnRep_bReady()
 {
-	UE_LOG(LogTemp, Warning, TEXT("(role %d) ARaceController::OnRep_bReady %d"), GetLocalRole(), bReady);
 	if (bReady == true)
 	{
 		OnRaceGameStateInit();
@@ -196,7 +195,6 @@ void ARaceController::OnRaceGameStateInit()
 {
 	if (RaceGameState.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("(role %d) OnRaceGameStateInit %d"), GetLocalRole(), bReady);
 		RaceGameState->OnRaceMatchStateUpdate.AddUniqueDynamic(this, &ARaceController::OnRaceMatchStateUpdate);
 
 		if (IsLocalController())
@@ -224,7 +222,6 @@ void ARaceController::OnRacePlayerStateInit()
 {
 	if (RacePlayerState.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("(role %d) OnRacePlayerStateInit %d"), GetLocalRole(), bReady);
 		if (RaceHUD.IsValid())
 		{
 			RaceHUD->SetPlayerState(RacePlayerState.Get());
@@ -254,7 +251,6 @@ void ARaceController::OnRaceHUDInit()
 {
 	if (RaceHUD.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("(role %d) OnRaceHUDInit %d"), GetLocalRole(), bReady);
 		if (RacePlayerState.IsValid())
 		{
 			RaceHUD->SetPlayerState(RacePlayerState.Get());
@@ -357,8 +353,6 @@ void ARaceController::PreClientTravel(const FString& PendingURL, ETravelType Tra
 
 	bReady = false;
 	bLocalReady = false;
-	UE_LOG(LogTemp, Warning, TEXT("(role %d) ARaceController::PreClientTravel bready should be false => %d"),
-	       GetLocalRole(), bReady);
 
 	bCameraInitialized = false;
 	ServerRacingEndTime = 0.f;
@@ -598,7 +592,6 @@ void ARaceController::SyncServerRacingEndTime(const bool bForceRefresh)
 		const float CurrentServerTime = RaceGameState->GetServerWorldTimeSeconds();
 		const float RemainingTime = FMath::Max(0.f, ServerRacingEndTime - CurrentServerTime);
 
-		UE_LOG(LogTemp, Warning, TEXT("%f - %f = %f"), ServerRacingEndTime, CurrentServerTime, RemainingTime);
 		if (RaceHUD.IsValid())
 		{
 			RaceHUD->SetMatchRemainingTime(RemainingTime);

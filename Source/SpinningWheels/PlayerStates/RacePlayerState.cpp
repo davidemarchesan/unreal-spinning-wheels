@@ -9,12 +9,6 @@
 void ARacePlayerState::ServerAddSimulationFrames_Implementation(const TArray<FSimulationFrame>& ClientSimulationFrames)
 {
 	SimulationFrames.Append(ClientSimulationFrames);
-
-	// UE_LOG(LogTemp, Warning, TEXT("(pid %d) SERVER - received me %d frames. now ive got %d"), GetPlayerId(), ClientSimulationFrames.Num(), SimulationFrames.Num());
-	// for (int i = 0; i < SimulationFrames.Num(); i++)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("(pid %d) SERVER - received %s"), GetPlayerId(), *SimulationFrames[i].ToString());
-	// }
 }
 
 void ARacePlayerState::ResetSimulationFrames()

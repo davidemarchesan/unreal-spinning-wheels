@@ -289,7 +289,7 @@ void UCarMovementComponent::SimulateMovement(FSimulationFrame SimulationFrame)
 
 		if (Hit.bStartPenetrating)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Hit StartPenetrating"));
+			// UE_LOG(LogTemp, Warning, TEXT("Hit StartPenetrating"));
 		}
 
 		if (Hit.bBlockingHit)

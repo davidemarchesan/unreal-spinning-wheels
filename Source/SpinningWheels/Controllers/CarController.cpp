@@ -100,7 +100,6 @@ void ACarController::StopTurbo()
 
 void ACarController::SwitchToEditor()
 {
-	UE_LOG(LogTemp, Warning, TEXT("switch to editor"));
 
 	if (Editor.IsValid() == false)
 	{
@@ -165,17 +164,14 @@ void ACarController::RotateCamera(const FInputActionValue& Value)
 
 void ACarController::SwitchToDrive()
 {
-	UE_LOG(LogTemp, Warning, TEXT("switch to drive"));
 
 	if (Car.IsValid() == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("car is not valid: spawn a new one"));
 		Car = GetWorld()->SpawnActor<ACar>(CarClass, FVector(-3210.f,-690.f,160.f), FRotator::ZeroRotator);
 	}
 
 	if (Car.IsValid() && MainCamera.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("car is valid: set camera"));
 		Possess(Car.Get());
 		MainCamera->SetPawn(Car.Get());
 		SetViewTarget(MainCamera.Get());
