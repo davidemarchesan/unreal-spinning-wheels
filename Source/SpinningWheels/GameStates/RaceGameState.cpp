@@ -14,6 +14,11 @@
 // 	OnLeaderboardUpdate.Broadcast(Leaderboard);
 // }
 
+void ARaceGameState::OnRep_Leaderboard()
+{
+	UE_LOG(LogTemp, Warning, TEXT("(role %d) ARaceGameState::OnRep_Leaderboard laps %d"), GetLocalRole(), Leaderboard.Num());
+}
+
 void ARaceGameState::AddPlayerNewBest(FRaceLap NewLap)
 {
 	TempLeaderboard = Leaderboard;
@@ -172,6 +177,24 @@ void ARaceGameState::HandleRaceMatchStatePodium()
 	}
 }
 
+void ARaceGameState::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (HasAuthority())
+	{
+		FFastRaceLap& Lap = FastLeaderboard.Items.AddDefaulted_GetRef();
+
+		Lap.PlayerId = 1;
+		Lap.PlayerName = "Test";
+		Lap.LapSetAt = 123242;
+		Lap.LapTime = 10000;
+		Lap.bClosed = true;
+
+		FastLeaderboard.MarkItemDirty(Lap);
+	}
+}
+
 void ARaceGameState::HandleMatchIsWaitingToStart()
 {
 	Super::HandleMatchIsWaitingToStart();
@@ -226,7 +249,7 @@ void ARaceGameState::OnNewBestLap(FRaceLap Lap)
 
 	// Leaderboard.bInitialized = true;
 	// Leaderboard.AddPlayerNewBest(Lap); // OnRep
-
+	
 	AddPlayerNewBest(Lap);
 	CalcBestSectors();
 	
@@ -249,6 +272,7 @@ void ARaceGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ARaceGameState, RaceMatchState);
+	DOREPLIFETIME(ARaceGameState, FastLeaderboard);
 	DOREPLIFETIME(ARaceGameState, Leaderboard);
 	DOREPLIFETIME(ARaceGameState, BestSectors);
 	DOREPLIFETIME(ARaceGameState, ServerRacingEndTime);

@@ -1,9 +1,58 @@
 #pragma once
 
+#include "Net/Serialization/FastArraySerializer.h"
 #include "SpinningWheels/Core/Simulation.h"
 #include "Lap.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
+struct FFastRaceLap : public FFastArraySerializerItem
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	int32 PlayerId;
+
+	UPROPERTY()
+	FString PlayerName;
+
+	UPROPERTY()
+	float LapSetAt;
+
+	UPROPERTY()
+	int32 LapTime = 0;
+
+	UPROPERTY()
+	bool bClosed = false;
+
+	UPROPERTY()
+	TArray<int32> Sectors;
+	
+};
+
+USTRUCT(BlueprintType)
+struct FFastLeaderboard : public FFastArraySerializer
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY()
+	TArray<FFastRaceLap> Items;
+
+	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParams)
+	{
+		return FFastArraySerializer::FastArrayDeltaSerialize<FFastRaceLap, FFastLeaderboard>(Items, DeltaParams, *this);
+	}
+};
+
+template<>
+struct TStructOpsTypeTraits<FFastLeaderboard> : public TStructOpsTypeTraitsBase2<FFastLeaderboard>
+{
+	enum { WithNetDeltaSerializer = true, };
+};
+
+USTRUCT(BlueprintType)
 struct FRaceLap
 {
 	GENERATED_BODY()
@@ -19,13 +68,39 @@ public:
 	float LapSetAt;
 
 	UPROPERTY()
-	int32 LapTime = 0.f;
+	int32 LapTime = 0;
+
+	UPROPERTY()
+	bool bClosed = false;
 
 	UPROPERTY()
 	TArray<int32> Sectors;
 
-	UPROPERTY()
-	bool bClosed = false;
+	bool NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
+	{
+
+		Ar << PlayerId;
+		Ar << PlayerName;
+		Ar << LapSetAt;
+		Ar << LapTime;
+		Ar << bClosed;
+
+		int32 NumSectors = Sectors.Num();
+		Ar << NumSectors; // Length
+
+		if (Ar.IsLoading())
+		{
+			Sectors.SetNum(NumSectors);
+		}
+
+		for (int32& Sector : Sectors)
+		{
+			Ar << Sector;
+		}
+		
+		bOutSuccess = true;
+		return true;
+	}
 
 public:
 	/**
@@ -154,6 +229,12 @@ public:
 	
 
 	FString ToString() const;
+};
+
+template<>
+struct TStructOpsTypeTraits<FRaceLap> : public TStructOpsTypeTraitsBase2<FRaceLap>
+{
+	enum { WithNetSerializer = true };
 };
 
 FORCEINLINE FString FRaceLap::FormatTime(int32 Time)

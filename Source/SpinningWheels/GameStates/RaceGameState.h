@@ -22,12 +22,18 @@ class SPINNINGWHEELS_API ARaceGameState : public AGameState
 
 private:
 
+	UPROPERTY(Replicated)
+	FFastLeaderboard FastLeaderboard;
+
 	// UPROPERTY(ReplicatedUsing=OnRep_Leaderboard)
 	// FTimeAttackLeaderboard Leaderboard;
 	
 	// UPROPERTY(ReplicatedUsing=OnRep_Leaderboard)
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_Leaderboard)
 	TArray<FRaceLap> Leaderboard;
+
+	UFUNCTION()
+	void OnRep_Leaderboard();
 
 	// UFUNCTION()
 	// void OnRep_Leaderboard();
@@ -59,6 +65,8 @@ protected:
 	virtual void HandleRaceMatchStateRacing();
 	virtual void HandleRaceMatchStatePodium();
 
+	virtual void BeginPlay() override;
+	
 	//~ Begin AGameState Interface
 	virtual void HandleMatchIsWaitingToStart() override;
 	//~ End AGameState Interface
