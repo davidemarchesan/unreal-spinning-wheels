@@ -90,6 +90,7 @@ void ARaceHUD::HandleRaceMatchStateRacing()
 
 void ARaceHUD::HandleRaceMatchStatePodium()
 {
+	ShowLeaderboard();
 }
 
 void ARaceHUD::UpdateLapCountdown(int32 Seconds)

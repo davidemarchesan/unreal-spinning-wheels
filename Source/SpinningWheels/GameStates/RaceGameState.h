@@ -68,6 +68,8 @@ public:
 	void SetCurrentTrack(const FTrack& NewTrack);
 	FTrack GetCurrentTrack() const { return CurrentTrack; };
 
+	bool AcceptsNewLaps() const { return RaceMatchState == ERaceMatchState::RMS_Racing; }
+	
 	const FTimeAttackLeaderboard& GetLeaderboard() const { return Leaderboard; }
 	void OnNewBestLap(FRaceLap Lap);
 	

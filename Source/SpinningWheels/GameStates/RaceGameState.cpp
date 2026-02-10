@@ -68,7 +68,10 @@ void ARaceGameState::HandleRaceMatchStateRacing()
 
 void ARaceGameState::HandleRaceMatchStatePodium()
 {
-	
+	// Disable all inputs?
+	// we should not accept more laps
+	// playerstate should not accept laps
+	// controller should not accept inputs
 }
 
 void ARaceGameState::HandleMatchIsWaitingToStart()
@@ -106,6 +109,11 @@ void ARaceGameState::SetCurrentTrack(const FTrack& NewTrack)
 
 void ARaceGameState::OnNewBestLap(FRaceLap Lap)
 {
+	if (AcceptsNewLaps() == false)
+	{
+		return;
+	}
+	
 	Leaderboard.AddPlayerNewBest(Lap);
 	OnLeaderboardUpdate.Broadcast(Leaderboard);
 }

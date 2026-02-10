@@ -96,6 +96,13 @@ ARacePlayerState* ARaceController::GetRacePlayerState()
 void ARaceController::TryGetRaceGameState()
 {
 	RaceGameState = GetRaceGameState();
+
+	UE_LOG(LogTemp, Warning, TEXT("ARaceController::TryGetRaceGameState %d"), RaceGameState.IsValid());
+	if (RaceGameState.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Controller, subscribed to RaceGameState->OnRaceMatchStateUpdate"));
+		RaceGameState->OnRaceMatchStateUpdate.AddDynamic(this, &ARaceController::OnRaceMatchStateUpdate);
+	}
 }
 
 void ARaceController::TryGetRacePlayerState()
@@ -226,6 +233,11 @@ void ARaceController::PreClientTravel(const FString& PendingURL, ETravelType Tra
 	if (RaceHUD.IsValid())
 	{
 		RaceHUD->ClearViewport();
+	}
+
+	if (RaceGameState.IsValid())
+	{
+		RaceGameState->OnRaceMatchStateUpdate.RemoveDynamic(this, &ARaceController::OnRaceMatchStateUpdate);
 	}
 
 	RaceHUD.Reset();
@@ -642,6 +654,23 @@ void ARaceController::ServerStartLap_Implementation()
 {
 	SetPhase(ERaceControllerPhase::RCP_Driving);
 	StartDriveSecondsRemaining = 0;
+}
+
+void ARaceController::OnRaceMatchStateUpdate(ERaceMatchState NewState)
+{
+	switch (NewState)
+	{
+	case ERaceMatchState::RMS_Podium:
+		SetPhase(ERaceControllerPhase::RCP_Respawning);
+		if (RacePlayerState.IsValid())
+		{
+			RacePlayerState->Stop();
+		}
+		break;
+
+	default:
+		break;
+	}
 }
 
 void ARaceController::Debug()

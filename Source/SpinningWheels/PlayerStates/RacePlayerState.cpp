@@ -120,12 +120,22 @@ void ARacePlayerState::CancelLap()
 
 void ARacePlayerState::CarOnCheckpoint(int32 CurrentFrameIndex)
 {
+	if (bOnALap == false)
+	{
+		return;
+	}
+	
 	CurrentLap.AddSector(CurrentFrameIndex);
 	OnCurrentLapUpdate.Broadcast(CurrentLap);
 }
 
 void ARacePlayerState::CarOnFinish(int32 CurrentFrameIndex)
 {
+	if (bOnALap == false)
+	{
+		return;
+	}
+	
 	CurrentLap.Close(CurrentFrameIndex);
 	bOnALap = false;
 
@@ -153,6 +163,12 @@ void ARacePlayerState::InternalAddLap(FRaceLap NewLap)
 	{
 		if (ARaceGameState* RGS = World->GetGameState<ARaceGameState>())
 		{
+
+			if (RGS->AcceptsNewLaps() == false)
+			{
+				return;
+			}
+			
 			NewLap.SetAt(RGS->GetServerWorldTimeSeconds());
 			NewLap.SetPlayer(GetPlayerId(), GetPlayerName());
 
@@ -195,4 +211,9 @@ TOptional<FSimulationFrame> ARacePlayerState::GetSimulationFrame(uint32 Index)
 	{
 		return TOptional<FSimulationFrame>();
 	}
+}
+
+void ARacePlayerState::Stop()
+{
+	bOnALap = false;
 }

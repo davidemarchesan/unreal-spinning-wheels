@@ -94,4 +94,7 @@ public:
 	
 	bool IsOnALap() const { return bOnALap; }
 	bool HasSimulationFrames() const { return SimulationFrames.Num() > 0; }
+
+	void Stop();
+	
 };

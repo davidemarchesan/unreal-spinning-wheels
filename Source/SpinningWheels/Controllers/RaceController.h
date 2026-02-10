@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
+#include "SpinningWheels/Core/Match.h"
 #include "RaceController.generated.h"
 
 class UInputMappingContext;
@@ -97,6 +98,10 @@ private:
 	
 	UFUNCTION(Server, Reliable)
 	void ServerCancelLap();
+
+	/** Begin delegates bindings */
+	UFUNCTION() void OnRaceMatchStateUpdate(ERaceMatchState NewState);
+	/** End delegates bindings */
 
 	/** Debug */
 	void Debug(); // todo: remove
