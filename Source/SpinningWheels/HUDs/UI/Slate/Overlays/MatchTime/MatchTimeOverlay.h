@@ -15,7 +15,7 @@ private:
 
 	TSharedPtr<STextBlock> TextBlock;
 
-	int32 RemainingSecondsFloor = 0;
+	int32 RemainingSecondsCeil = 0;
 	float RemainingSeconds = 0.f;
 
 	void UpdateVisuals();

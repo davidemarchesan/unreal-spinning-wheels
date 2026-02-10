@@ -38,6 +38,7 @@ struct FTimeAttackLeaderboard
 
 public:
 
+	UPROPERTY() bool bInitialized = false;
 	UPROPERTY() int32 BestLapTime = 0;
 	UPROPERTY() TArray<int32> BestSectors;
 	UPROPERTY() TArray<FRaceLap> PlayersBestLap;

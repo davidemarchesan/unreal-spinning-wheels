@@ -10,6 +10,7 @@
 
 void ARaceGameState::OnRep_Leaderboard()
 {
+	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::OnRep_Leaderboard init %d laps %d"), Leaderboard.bInitialized, Leaderboard.PlayersBestLap.Num());
 	OnLeaderboardUpdate.Broadcast(Leaderboard);
 }
 
@@ -69,6 +70,18 @@ void ARaceGameState::HandleRaceMatchStateRacing()
 
 void ARaceGameState::HandleRaceMatchStatePodium()
 {
+	for (TObjectPtr<APlayerState> PS : PlayerArray)
+	{
+		if (PS.Get() == nullptr)
+		{
+			continue;
+		}
+
+		if (ARaceController* RC = Cast<ARaceController>(PS->GetPlayerController()))
+		{
+			RC->SetReady(false);
+		}
+	}
 }
 
 void ARaceGameState::HandleMatchIsWaitingToStart()
@@ -104,15 +117,24 @@ void ARaceGameState::SetCurrentTrack(const FTrack& NewTrack)
 	OnRep_CurrentTrack();
 }
 
+const FTimeAttackLeaderboard& ARaceGameState::GetLeaderboard()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::GetLeaderboard with laps %d"), Leaderboard.PlayersBestLap.Num());
+	return Leaderboard;
+}
+
 void ARaceGameState::OnNewBestLap(FRaceLap Lap)
 {
 	if (AcceptsNewLaps() == false)
 	{
 		return;
 	}
+
+	Leaderboard.bInitialized = true;
+	Leaderboard.AddPlayerNewBest(Lap); // OnRep
+	UE_LOG(LogTemp, Warning, TEXT("ARaceGameState::OnNewBestLap should fire onrep"));
 	
-	Leaderboard.AddPlayerNewBest(Lap);
-	OnLeaderboardUpdate.Broadcast(Leaderboard);
+	OnRep_Leaderboard(); // Listen-server
 }
 
 void ARaceGameState::OnRep_CurrentTrack()

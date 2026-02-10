@@ -20,14 +20,14 @@ void SMatchTimeOverlay::Tick(const FGeometry& AllottedGeometry, const double InC
 {
 	SCompoundWidget::Tick(AllottedGeometry, InCurrentTime, InDeltaTime);
 
-	if (RemainingSecondsFloor > 0.f)
+	if (RemainingSecondsCeil > 0.f)
 	{
 		RemainingSeconds -= InDeltaTime;
 
 		const int32 TempRemainingSecondsFloor = FMath::FloorToInt32(RemainingSeconds);
-		if (TempRemainingSecondsFloor != RemainingSecondsFloor)
+		if (TempRemainingSecondsFloor != RemainingSecondsCeil)
 		{
-			RemainingSecondsFloor = TempRemainingSecondsFloor;
+			RemainingSecondsCeil = TempRemainingSecondsFloor;
 			UpdateVisuals();
 		}
 	}
@@ -37,7 +37,7 @@ void SMatchTimeOverlay::UpdateVisuals()
 {
 
 	const int Minutes = FMath::FloorToInt(RemainingSeconds / 60.f);
-	const int Seconds = FMath::FloorToInt(RemainingSeconds - (60.f * Minutes));
+	const int Seconds = FMath::CeilToInt(RemainingSeconds - (60.f * Minutes));
 
 	FString Str = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
 
@@ -51,6 +51,6 @@ void SMatchTimeOverlay::UpdateVisuals()
 void SMatchTimeOverlay::SetMatchRemainingTime(const float Seconds)
 {
 	RemainingSeconds = Seconds;
-	RemainingSecondsFloor = FMath::FloorToInt32(RemainingSeconds);
+	RemainingSecondsCeil = FMath::CeilToInt(RemainingSeconds);
 	UpdateVisuals();
 }

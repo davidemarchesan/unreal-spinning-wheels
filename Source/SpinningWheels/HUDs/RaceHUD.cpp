@@ -45,10 +45,11 @@ void ARaceHUD::InitLeaderboard()
 		RaceGameState = World->GetGameState<ARaceGameState>();
 		if (RaceGameState.IsValid())
 		{
+			UE_LOG(LogTemp, Warning, TEXT("ARaceHUD::InitLeaderboard"));
 			OnLeaderboardUpdate(RaceGameState->GetLeaderboard());
-			RaceGameState->OnLeaderboardUpdate.AddUniqueDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
-
 			OnRaceMatchStateUpdate(RaceGameState->GetRaceMatchState());
+
+			RaceGameState->OnLeaderboardUpdate.AddUniqueDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
 			RaceGameState->OnRaceMatchStateUpdate.AddUniqueDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
 		}
 	}
@@ -58,6 +59,7 @@ void ARaceHUD::OnLeaderboardUpdate(const FTimeAttackLeaderboard& Leaderboard)
 {
 	if (LeaderboardOverlay.IsValid())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("ARaceHUD::OnLeaderboardUpdate init %d laps %d"), Leaderboard.bInitialized, Leaderboard.PlayersBestLap.Num());
 		LeaderboardOverlay->OnLeaderboardUpdate(Leaderboard);
 	}
 

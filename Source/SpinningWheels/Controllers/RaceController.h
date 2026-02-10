@@ -195,6 +195,8 @@ public:
 	virtual void PreClientTravel(const FString& PendingURL, ETravelType TravelType, bool bIsSeamlessTravel) override;
 	//~ End AController Interface
 
+	void SetReady(bool bInReady) { bReady = bInReady; }
+
 	void SetPhase(ERaceControllerPhase NewPhase);
 	void InternalSetPhase(ERaceControllerPhase NewPhase);
 

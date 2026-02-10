@@ -31,6 +31,7 @@ void ARaceController::Tick(float DeltaSeconds)
 
 void ARaceController::OnRep_bReady()
 {
+	UE_LOG(LogTemp, Warning, TEXT("(role %d) ARaceController::OnRep_bReady %d"), GetLocalRole(), bReady);
 	if (bReady == true)
 	{
 		OnRaceGameStateInit();
@@ -54,6 +55,8 @@ void ARaceController::CheckIfReady()
 	if (RaceGameState.IsValid() && RacePlayerState.IsValid() && RaceHUD.IsValid() && Car.IsValid() && MainCamera.
 		IsValid() && bCameraInitialized == true)
 	{
+
+		UE_LOG(LogTemp, Warning, TEXT("(role %d) this controller is ready %d"), GetLocalRole(), bReady);
 
 		if (HasAuthority())
 		{
@@ -158,7 +161,7 @@ void ARaceController::OnRaceGameStateInit()
 {
 	if (RaceGameState.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OnRaceGameStateInit"));
+		UE_LOG(LogTemp, Warning, TEXT("(role %d) OnRaceGameStateInit %d"), GetLocalRole(), bReady);
 		RaceGameState->OnRaceMatchStateUpdate.AddUniqueDynamic(this, &ARaceController::OnRaceMatchStateUpdate);
 
 		if (IsLocalController())
@@ -186,6 +189,7 @@ void ARaceController::OnRacePlayerStateInit()
 {
 	if (RacePlayerState.IsValid())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("(role %d) OnRacePlayerStateInit %d"), GetLocalRole(), bReady);
 		if (RaceHUD.IsValid())
 		{
 			RaceHUD->SetPlayerState(RacePlayerState.Get());
@@ -215,11 +219,13 @@ void ARaceController::OnRaceHUDInit()
 {
 	if (RaceHUD.IsValid())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("(role %d) OnRaceHUDInit %d"), GetLocalRole(), bReady);
 		if (RacePlayerState.IsValid())
 		{
 			RaceHUD->SetPlayerState(RacePlayerState.Get());
 		}
 		SyncServerRacingEndTime();
+		
 		RaceHUD->InitLeaderboard();
 	}
 }
@@ -315,6 +321,7 @@ void ARaceController::PreClientTravel(const FString& PendingURL, ETravelType Tra
 	Super::PreClientTravel(PendingURL, TravelType, bIsSeamlessTravel);
 
 	bReady = false;
+	UE_LOG(LogTemp, Warning, TEXT("(role %d) ARaceController::PreClientTravel bready should be false => %d"), GetLocalRole(), bReady);
 
 	bCameraInitialized = false;
 	ServerRacingEndTime = 0.f;

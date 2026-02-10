@@ -70,7 +70,7 @@ public:
 
 	bool AcceptsNewLaps() const { return RaceMatchState == ERaceMatchState::RMS_Racing; }
 	
-	const FTimeAttackLeaderboard& GetLeaderboard() const { return Leaderboard; }
+	const FTimeAttackLeaderboard& GetLeaderboard();
 	void OnNewBestLap(FRaceLap Lap);
 	
 	/** Begin Delegates */

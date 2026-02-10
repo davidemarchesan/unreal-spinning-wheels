@@ -87,11 +87,14 @@ void SLeaderboardOverlay::OnLeaderboardUpdate(FTimeAttackLeaderboard InLeaderboa
 {
 	if (LeaderboardListView.IsValid() == false)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("SLeaderboardOverlay::OnLeaderboardUpdate LeaderboardListView not valid"));
 		return;
 	}
 
 	PlayersBestLap.Empty();
 	const TArray<FRaceLap> Laps = InLeaderboard.GetPlayersBestLap();
+
+	UE_LOG(LogTemp, Warning, TEXT("SLeaderboardOverlay::OnLeaderboardUpdate laps %d and best lap time %d"), Laps.Num(), InLeaderboard.BestLapTime);
 
 	if (Laps.Num() == 0)
 	{
