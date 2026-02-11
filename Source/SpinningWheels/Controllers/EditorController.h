@@ -129,8 +129,8 @@ protected:
 
 public:
 
-	void BlockCursor();
-	void UnlockCursor();
+	virtual void BlockCursor() override;
+	virtual void UnlockCursor() override;
 
 	FOnMenuSlotSelectedSignature OnMenuSlotSelected;
 	FOnExitBuildModeSignature OnExitBuildMode;

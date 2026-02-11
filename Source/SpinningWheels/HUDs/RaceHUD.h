@@ -31,6 +31,7 @@ private:
 	void InitializeOverlayInfo();
 	void InitializeOverlayLapTime();
 	void InitializeOverlayMatchTime();
+	void InitializeOverlayRaceMenu();
 
 	void ShowModalOverlay(const TSharedPtr<SWidget>& Widget, const bool bFocus = true);
 	void HideModalOverlay();
@@ -56,6 +57,7 @@ private:
 	TSharedPtr<class SInfoOverlay> InfoOverlay;
 	TSharedPtr<class SLapTimeOverlay> LapTimeOverlay;
 	TSharedPtr<class SMatchTimeOverlay> MatchTimeOverlay;
+	TSharedPtr<class SRaceMenuPopup> RaceMenuPopup;
 	/** End Pointers to overlays */
 
 	int32 PlayerId;
@@ -63,6 +65,8 @@ private:
 	void HandleRaceMatchStateWaitingForPlayers();
 	void HandleRaceMatchStateRacing();
 	void HandleRaceMatchStatePodium();
+
+	FReply OnGoToMainMenu();
 
 protected:
 
@@ -84,5 +88,7 @@ public:
 	void SetPlayerState(ARacePlayerState* InRacePlayerState);
 
 	void SetMatchRemainingTime(const float Seconds);
+
+	void InputOpenMenu();
 	
 };

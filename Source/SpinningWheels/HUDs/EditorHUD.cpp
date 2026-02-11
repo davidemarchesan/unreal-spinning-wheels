@@ -33,7 +33,7 @@ void AEditorHUD::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AEditorHUD::InputOpenMenu()
 {
-	if (EditorMenuPopup)
+	if (EditorMenuPopup.IsValid())
 	{
 		ShowModalOverlay(EditorMenuPopup);
 	}

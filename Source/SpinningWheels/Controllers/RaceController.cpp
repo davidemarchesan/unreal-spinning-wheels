@@ -263,6 +263,20 @@ void ARaceController::OnRaceHUDInit()
 
 void ARaceController::InputOpenMenu()
 {
+	if (RaceHUD.IsValid())
+	{
+		RaceHUD->InputOpenMenu();
+	}
+}
+
+void ARaceController::BlockCursor()
+{
+	SetInputMode(FInputModeUIOnly());
+}
+
+void ARaceController::UnlockCursor()
+{
+	SetInputMode(FInputModeGameOnly());
 }
 
 void ARaceController::BeginPlay()

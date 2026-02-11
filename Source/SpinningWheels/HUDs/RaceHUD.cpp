@@ -12,7 +12,9 @@
 #include "UI/Slate/Overlays/Leaderboard/LeaderboardOverlay.h"
 #include "UI/Slate/Overlays/MatchTime/MatchTimeOverlay.h"
 #include "UI/Slate/Overlays/ServerMessages/ServerMessagesOverlay.h"
+#include "UI/Slate/Overlays/RaceMenu/RaceMenuPopup.h"
 #include "UI/Slate/Styles/MainStyle.h"
+#include "Kismet/GameplayStatics.h"
 
 void ARaceHUD::BeginPlay()
 {
@@ -47,7 +49,7 @@ void ARaceHUD::InitLeaderboard()
 		{
 			RaceGameState->OnLeaderboardUpdate.AddUniqueDynamic(this, &ARaceHUD::OnLeaderboardUpdate);
 			RaceGameState->OnRaceMatchStateUpdate.AddUniqueDynamic(this, &ARaceHUD::OnRaceMatchStateUpdate);
-			
+
 			OnRaceMatchStateUpdate(RaceGameState->GetRaceMatchState());
 		}
 	}
@@ -110,6 +112,13 @@ void ARaceHUD::HandleRaceMatchStatePodium()
 	{
 		LapTimeOverlay->Hide();
 	}
+}
+
+FReply ARaceHUD::OnGoToMainMenu()
+{
+	GEngine->GameViewport->RemoveAllViewportWidgets();
+	UGameplayStatics::OpenLevel(GetWorld(), "L_Main");
+	return FReply::Handled();
 }
 
 void ARaceHUD::UpdateLapCountdown(int32 Seconds)
@@ -202,6 +211,7 @@ void ARaceHUD::InitializeRootOverlay()
 	InitializeOverlayInfo();
 	InitializeOverlayLapTime();
 	InitializeOverlayMatchTime();
+	InitializeOverlayRaceMenu();
 }
 
 void ARaceHUD::InitializeOverlayLeaderboard()
@@ -301,6 +311,32 @@ void ARaceHUD::InitializeOverlayMatchTime()
 	];
 }
 
+void ARaceHUD::InitializeOverlayRaceMenu()
+{
+	if (RootCanvas.IsValid() == false)
+	{
+		return;
+	}
+
+	RaceMenuPopup = SNew(SRaceMenuPopup)
+		.OnBack_Lambda([this]()
+		{
+			if (this)
+			{
+				HideModalOverlay();
+			}
+			return FReply::Handled();
+		})
+		.OnGoToMainMenu_Lambda([this]()
+		{
+			if (this)
+			{
+				return OnGoToMainMenu();
+			}
+			return FReply::Unhandled();
+		});
+}
+
 void ARaceHUD::ShowModalOverlay(const TSharedPtr<SWidget>& Widget, const bool bFocus)
 {
 	if (ModalOverlay.IsValid() && Widget.IsValid())
@@ -315,7 +351,7 @@ void ARaceHUD::ShowModalOverlay(const TSharedPtr<SWidget>& Widget, const bool bF
 
 		if (RaceController.IsValid())
 		{
-			// RaceController->BlockCursor();
+			RaceController->BlockCursor();
 		}
 
 		ModalOverlay->SetVisibility(EVisibility::Visible);
@@ -336,7 +372,7 @@ void ARaceHUD::HideModalOverlay()
 
 		if (RaceController.IsValid())
 		{
-			// RaceController->UnlockCursor();
+			RaceController->UnlockCursor();
 		}
 	}
 }
@@ -396,5 +432,13 @@ void ARaceHUD::SetMatchRemainingTime(const float Seconds)
 	if (MatchTimeOverlay.IsValid())
 	{
 		MatchTimeOverlay->SetMatchRemainingTime(Seconds);
+	}
+}
+
+void ARaceHUD::InputOpenMenu()
+{
+	if (RaceMenuPopup.IsValid())
+	{
+		ShowModalOverlay(RaceMenuPopup);
 	}
 }

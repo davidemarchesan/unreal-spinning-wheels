@@ -201,6 +201,9 @@ protected:
 	virtual void InputOpenMenu();
 
 public:
+
+	virtual void BlockCursor();
+	virtual void UnlockCursor();
 	
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
