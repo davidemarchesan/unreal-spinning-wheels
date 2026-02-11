@@ -26,7 +26,8 @@ protected:
 
 public:
 
-	void HostSession();
-	void JoinSession();
+	void StartLANSession();
+	void JoinLANSession();
+	void StartSteamSession();
 	
 };

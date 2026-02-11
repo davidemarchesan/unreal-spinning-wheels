@@ -14,6 +14,7 @@
 #include "SpinningWheels/Input/Configs/GeneralInputConfig.h"
 #include "SpinningWheels/Pawns/Car.h"
 #include "SpinningWheels/PlayerStates/RacePlayerState.h"
+#include "SpinningWheels/Subsystems/GameInstance/RaceSessionSubsystem.h"
 
 ARaceController::ARaceController()
 {
@@ -441,6 +442,17 @@ void ARaceController::SetRacingEndTime(const float InServerRacingEndTime)
 	if (HasAuthority() && IsLocalController())
 	{
 		OnRep_ServerRacingEndTime();
+	}
+}
+
+void ARaceController::LeaveSession()
+{
+	if (const UGameInstance* GameInstance = GetGameInstance())
+	{
+		if (URaceSessionSubsystem* RaceSessionSubsystem = GameInstance->GetSubsystem<URaceSessionSubsystem>())
+		{
+			RaceSessionSubsystem->LeaveSession();
+		}
 	}
 }
 

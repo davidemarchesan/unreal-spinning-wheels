@@ -224,4 +224,6 @@ public:
 	void PrepareForNewLap(const float InServerStartTime);
 	void SetRacingEndTime(const float InServerRacingEndTime);
 
+	void LeaveSession();
+
 };

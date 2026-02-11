@@ -6,6 +6,9 @@
 
 void SPlayPage::Construct(const FArguments& InArgs)
 {
+
+	OnPageBack = InArgs._OnPageBack;
+	
 	ChildSlot[
 		SNew(SPageBase)
 		.BodySlot()
@@ -22,16 +25,22 @@ void SPlayPage::Construct(const FArguments& InArgs)
 				+ SWrapBox::Slot()
 				[
 					SNew(SCard)
-					.Text(FText::FromString("Host / Solo"))
-					.OnClicked(InArgs._OnHost)
-
+					.Text(FText::FromString("Solo / Host LAN"))
+					.OnClicked(InArgs._OnStartLANSession)
 				]
 
 				+ SWrapBox::Slot()
 				[
 					SNew(SCard)
-					.Text(FText::FromString("Join"))
-					.OnClicked(InArgs._OnJoin)
+					.Text(FText::FromString("Join LAN"))
+					.OnClicked(InArgs._OnJoinLANSession)
+				]
+
+				+ SWrapBox::Slot()
+				[
+					SNew(SCard)
+					.Text(FText::FromString("Steam Host"))
+					.OnClicked(InArgs._OnStartSteamSession)
 				]
 			]
 		]

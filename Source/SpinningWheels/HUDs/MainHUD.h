@@ -59,8 +59,9 @@ private:
 	void OnCreateTrack();
 	void OnEditTrack(const FTrackSaveData& Track);
 
-	void OnHost();
-	void OnJoin();
+	void OnStartLANSession();
+	void OnJoinLANSession();
+	void OnStartSteamSession();
 
 	// History
 	EMenuPage CurrentPage = EMenuPage::MP_None;

@@ -11,13 +11,14 @@
 #include "SpinningWheels/Subsystems/GameInstance/TracksSubsystem.h"
 #include "UI/Slate/Pages/MainMenu/MainMenuPage.h"
 #include "UI/Slate/Pages/Tracks/TracksPage.h"
+#include "Widgets/Layout/SConstraintCanvas.h"
 #include "Widgets/Layout/SWidgetSwitcher.h"
 
 void AMainHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
-	MainController = Cast<AMainController>( GetOwningPlayerController());
+	MainController = Cast<AMainController>(GetOwningPlayerController());
 
 	InitializeMainHUD();
 }
@@ -91,6 +92,23 @@ bool AMainHUD::InitializeRootOverlay()
 
 	GEngine->GameViewport->AddViewportWidgetContent(MainSwitcher.ToSharedRef());
 
+
+	// Version overlay
+	TSharedPtr<SConstraintCanvas> SimpleVersionCanvas = SNew(SConstraintCanvas);
+	SimpleVersionCanvas->AddSlot()
+	                   .Anchors(FAnchors(0.f, 1.f))
+	                   .Alignment(FVector2D(0.f, 1.f))
+	                   .AutoSize(true)
+	[
+		SNew(SBox)
+		.Padding(5.f)
+		[
+			SNew(STextBlock)
+			.Text(FText::FromString("v1.1"))
+		]
+	];
+	GEngine->GameViewport->AddViewportWidgetContent(SimpleVersionCanvas.ToSharedRef(), 100);
+
 	return true;
 }
 
@@ -140,20 +158,38 @@ void AMainHUD::InitializePages()
 	}
 
 	PlayPage = SNew(SPlayPage)
-		.OnHost_Lambda([this]()
+		.OnStartLANSession_Lambda([this]()
 		{
 			if (this)
 			{
-				OnHost();
+				OnStartLANSession();
 				return FReply::Handled();
 			}
 			return FReply::Unhandled();
 		})
-		.OnJoin_Lambda([this]()
+		.OnJoinLANSession_Lambda([this]()
 		{
 			if (this)
 			{
-				OnJoin();
+				OnJoinLANSession();
+				return FReply::Handled();
+			}
+			return FReply::Unhandled();
+		})
+		.OnStartSteamSession_Lambda([this]()
+		{
+			if (this)
+			{
+				OnStartSteamSession();
+				return FReply::Handled();
+			}
+			return FReply::Unhandled();
+		})
+		.OnPageBack_Lambda([this]()
+		{
+			if (this)
+			{
+				HandleBack();
 				return FReply::Handled();
 			}
 			return FReply::Unhandled();
@@ -179,15 +215,13 @@ void AMainHUD::GoTo(const EMenuPage Page)
 	{
 	case EMenuPage::MP_Play:
 		MainSwitcher->SetActiveWidget(PlayPage.ToSharedRef());
+		FSlateApplication::Get().SetKeyboardFocus(PlayPage);
 		break;
 
 	case EMenuPage::MP_Tracks:
 		{
 			MainSwitcher->SetActiveWidget(TracksPage.ToSharedRef());
-			// if (TracksPage->GetFocusWidget().IsValid())
-			// {
-			// 	FSlateApplication::Get().SetKeyboardFocus(TracksPage->GetFocusWidget());
-			// }
+			FSlateApplication::Get().SetKeyboardFocus(TracksPage);
 		}
 		break;
 
@@ -234,21 +268,27 @@ void AMainHUD::OnEditTrack(const FTrackSaveData& Track)
 	}
 }
 
-void AMainHUD::OnHost()
+void AMainHUD::OnStartLANSession()
 {
 	if (MainController.IsValid())
 	{
-		GEngine->GameViewport->RemoveAllViewportWidgets();
-		MainController->HostSession();
+		MainController->StartLANSession();
 	}
 }
 
-void AMainHUD::OnJoin()
+void AMainHUD::OnJoinLANSession()
 {
 	if (MainController.IsValid())
 	{
-		GEngine->GameViewport->RemoveAllViewportWidgets();
-		MainController->JoinSession();
+		MainController->JoinLANSession();
+	}
+}
+
+void AMainHUD::OnStartSteamSession()
+{
+	if (MainController.IsValid())
+	{
+		MainController->StartSteamSession();
 	}
 }
 

@@ -116,8 +116,10 @@ void ARaceHUD::HandleRaceMatchStatePodium()
 
 FReply ARaceHUD::OnGoToMainMenu()
 {
-	GEngine->GameViewport->RemoveAllViewportWidgets();
-	UGameplayStatics::OpenLevel(GetWorld(), "L_Main");
+	if (RaceController.IsValid())
+	{
+		RaceController->LeaveSession();
+	}
 	return FReply::Handled();
 }
 
