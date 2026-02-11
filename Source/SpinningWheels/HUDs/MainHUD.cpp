@@ -104,7 +104,7 @@ bool AMainHUD::InitializeRootOverlay()
 		.Padding(5.f)
 		[
 			SNew(STextBlock)
-			.Text(FText::FromString("v1.1"))
+			.Text(FText::FromString("v1.3"))
 		]
 	];
 	GEngine->GameViewport->AddViewportWidgetContent(SimpleVersionCanvas.ToSharedRef(), 100);
@@ -253,7 +253,7 @@ void AMainHUD::OnCreateTrack()
 		TrackEditorSubsystem->Clear();
 
 		GEngine->GameViewport->RemoveAllViewportWidgets();
-		UGameplayStatics::OpenLevel(GetWorld(), "L_Editor");
+		UGameplayStatics::OpenLevel(GetWorld(), "/Game/Levels/L_Editor");
 	}
 }
 
@@ -264,7 +264,7 @@ void AMainHUD::OnEditTrack(const FTrackSaveData& Track)
 		TrackEditorSubsystem->SetNextTrackToLoad(Track);
 
 		GEngine->GameViewport->RemoveAllViewportWidgets();
-		UGameplayStatics::OpenLevel(GetWorld(), "L_Editor");
+		UGameplayStatics::OpenLevel(GetWorld(), "/Game/Levels/L_Editor");
 	}
 }
 

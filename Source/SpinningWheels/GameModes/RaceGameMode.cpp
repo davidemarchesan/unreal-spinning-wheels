@@ -92,7 +92,7 @@ void ARaceGameMode::EndPodiumTimer()
 	if (UWorld* World = GetWorld())
 	{
 		bUseSeamlessTravel = true;
-		World->ServerTravel("L_Race", true);
+		World->ServerTravel("/Game/Levels/L_Race", true);
 	}
 	
 }

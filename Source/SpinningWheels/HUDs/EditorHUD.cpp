@@ -444,6 +444,6 @@ FReply AEditorHUD::OnReturnToEditor()
 FReply AEditorHUD::OnGoToMainMenu()
 {
 	GEngine->GameViewport->RemoveAllViewportWidgets();
-	UGameplayStatics::OpenLevel(GetWorld(), "L_Main");
+	UGameplayStatics::OpenLevel(GetWorld(), "/Game/Levels/L_Main");
 	return FReply::Handled();
 }

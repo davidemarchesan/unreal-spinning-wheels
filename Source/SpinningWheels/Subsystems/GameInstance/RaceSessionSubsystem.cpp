@@ -47,7 +47,7 @@ void URaceSessionSubsystem::Deinitialize()
 
 void URaceSessionSubsystem::GoToMainMenu()
 {
-	UGameplayStatics::OpenLevel(GetWorld(), "L_MainMenu");
+	UGameplayStatics::OpenLevel(GetWorld(), "/Game/Levels/L_Main");
 }
 
 void URaceSessionSubsystem::ClearViewport()
@@ -85,7 +85,7 @@ void URaceSessionSubsystem::OnCreateSessionComplete(FName SessionName, bool bWas
 		bSession = true;
 
 		ClearViewport();
-		UGameplayStatics::OpenLevel(GetWorld(), "L_Race?listen");
+		UGameplayStatics::OpenLevel(GetWorld(), "/Game/Levels/L_Race?listen");
 		UE_LOG(LogTemp, Warning, TEXT("Session has been created"));
 	}
 	else
@@ -173,7 +173,7 @@ void URaceSessionSubsystem::OnJoinSessionComplete(FName SessionName, EOnJoinSess
 void URaceSessionSubsystem::StartLANSession()
 {
 	ClearViewport();
-	UGameplayStatics::OpenLevel(GetWorld(), "L_Race?listen");
+	UGameplayStatics::OpenLevel(GetWorld(), "/Game/Levels/L_Race?listen");
 }
 
 void URaceSessionSubsystem::StartSteamSession()
