@@ -142,9 +142,8 @@ void UCarMovementComponent::CalcRotation(float DeltaTime)
 		break;
 
 	case ECarMode::CARMODE_Crash:
-		float N = FMath::Lerp(AngularVelocity.Yaw, 0.f, 0.8f * DeltaTime);
-		AngularVelocity.Yaw = N;
-		// todo: retake control of the car?
+		const float NewAngVel = FMath::Lerp(AngularVelocity.Yaw, 0.f, 0.8f * DeltaTime);
+		AngularVelocity.Yaw = NewAngVel;
 		break;
 	}
 }
@@ -286,6 +285,15 @@ void UCarMovementComponent::SimulateMovement(FSimulationFrame SimulationFrame)
 			true,
 			&Hit
 		);
+
+		if (CarMode == ECarMode::CARMODE_Crash)
+		{
+			if (FMath::IsNearlyZero(AngularVelocity.Yaw, 85.f))
+			{
+				// Retake control of the car
+				SetMode(ECarMode::CARMODE_Slide);
+			}
+		}
 
 		if (Hit.bStartPenetrating)
 		{
