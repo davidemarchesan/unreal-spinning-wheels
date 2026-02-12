@@ -12,6 +12,7 @@
 class ARaceGameState;
 class ARacePlayerState;
 class ARaceController;
+class ACar;
 
 UCLASS()
 class SPINNINGWHEELS_API ARaceHUD : public AHUD
@@ -19,6 +20,10 @@ class SPINNINGWHEELS_API ARaceHUD : public AHUD
 	GENERATED_BODY()
 
 private:
+
+	void ImReady();
+	bool bReady = false;
+
 
 	TWeakObjectPtr<ARaceGameState> RaceGameState;
 	TWeakObjectPtr<ARacePlayerState> RacePlayerState;
@@ -32,6 +37,7 @@ private:
 	void InitializeOverlayLapTime();
 	void InitializeOverlayMatchTime();
 	void InitializeOverlayRaceMenu();
+	void InitializeOverlayCarStatus();
 
 	void ShowModalOverlay(const TSharedPtr<SWidget>& Widget, const bool bFocus = true);
 	void HideModalOverlay();
@@ -58,6 +64,7 @@ private:
 	TSharedPtr<class SLapTimeOverlay> LapTimeOverlay;
 	TSharedPtr<class SMatchTimeOverlay> MatchTimeOverlay;
 	TSharedPtr<class SRaceMenuPopup> RaceMenuPopup;
+	TSharedPtr<class SCarStatusOverlay> CarStatusOverlay;
 	/** End Pointers to overlays */
 
 	int32 PlayerId;
@@ -77,6 +84,8 @@ public:
 
 	void ClearViewport();
 
+	bool IsReady() const { return bReady; }
+
 	void InitLeaderboard();
 	void ShowLeaderboard();
 	void HideLeaderboard();
@@ -85,6 +94,7 @@ public:
 
 	void UpdateLapCountdown(int32 Seconds);
 
+	void SetCar(const TWeakObjectPtr<ACar> InCar);
 	void SetPlayerState(ARacePlayerState* InRacePlayerState);
 
 	void SetMatchRemainingTime(const float Seconds);

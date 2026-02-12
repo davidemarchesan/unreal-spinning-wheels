@@ -52,7 +52,7 @@ void ARaceController::CheckIfReady()
 		return;
 	}
 
-	if (RaceGameState.IsValid() && RacePlayerState.IsValid() && RaceHUD.IsValid() && Car.IsValid() && MainCamera.
+	if (RaceGameState.IsValid() && RacePlayerState.IsValid() && RaceHUD.IsValid() && RaceHUD->IsReady() && Car.IsValid() && MainCamera.
 		IsValid() && bCameraInitialized == true)
 	{
 		bLocalReady = true; // Dont wait the server replication bReady (do not make bReady replicated?)
@@ -252,6 +252,11 @@ void ARaceController::OnRaceHUDInit()
 {
 	if (RaceHUD.IsValid())
 	{
+		if (Car.IsValid())
+		{
+			RaceHUD->SetCar(Car);
+		}
+		
 		if (RacePlayerState.IsValid())
 		{
 			RaceHUD->SetPlayerState(RacePlayerState.Get());
@@ -276,6 +281,15 @@ void ARaceController::InputOpenMenu()
 	{
 		RaceHUD->InputOpenMenu();
 	}
+}
+
+void ARaceController::HUDIsReady()
+{
+	if (RaceHUD.IsValid() == false)
+	{
+		TryGetRaceHUD();
+	}
+	CheckIfReady();
 }
 
 void ARaceController::BlockCursor()

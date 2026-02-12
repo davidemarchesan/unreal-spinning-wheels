@@ -14,7 +14,7 @@
 #include "UI/Slate/Overlays/ServerMessages/ServerMessagesOverlay.h"
 #include "UI/Slate/Overlays/RaceMenu/RaceMenuPopup.h"
 #include "UI/Slate/Styles/MainStyle.h"
-#include "Kismet/GameplayStatics.h"
+#include "UI/Slate/Overlays/CarStatus/CarStatusOverlay.h"
 
 void ARaceHUD::BeginPlay()
 {
@@ -24,6 +24,8 @@ void ARaceHUD::BeginPlay()
 
 	InitializeRootOverlay();
 	InitializeDelegates();
+
+	ImReady();
 }
 
 void ARaceHUD::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -131,6 +133,15 @@ void ARaceHUD::UpdateLapCountdown(int32 Seconds)
 	}
 }
 
+void ARaceHUD::SetCar(const TWeakObjectPtr<ACar> InCar)
+{
+	
+	if (CarStatusOverlay.IsValid())
+	{
+		CarStatusOverlay->SetCar(InCar);
+	}
+}
+
 void ARaceHUD::SetPlayerState(ARacePlayerState* InRacePlayerState)
 {
 	if (InRacePlayerState != nullptr)
@@ -174,6 +185,15 @@ void ARaceHUD::OnCurrentLapUpdate(const FRaceLap& CurrentLap)
 	}
 }
 
+void ARaceHUD::ImReady()
+{
+	bReady = true;
+	if (RaceController.IsValid())
+	{
+		RaceController->HUDIsReady();
+	}
+}
+
 void ARaceHUD::InitializeRootOverlay()
 {
 	if (GEngine == nullptr)
@@ -214,6 +234,7 @@ void ARaceHUD::InitializeRootOverlay()
 	InitializeOverlayLapTime();
 	InitializeOverlayMatchTime();
 	InitializeOverlayRaceMenu();
+	InitializeOverlayCarStatus();
 }
 
 void ARaceHUD::InitializeOverlayLeaderboard()
@@ -337,6 +358,22 @@ void ARaceHUD::InitializeOverlayRaceMenu()
 			}
 			return FReply::Unhandled();
 		});
+}
+
+void ARaceHUD::InitializeOverlayCarStatus()
+{
+	if (RootCanvas.IsValid() == false)
+	{
+		return;
+	}
+
+	RootCanvas->AddSlot()
+			  .Anchors(FAnchors(0.5f, 0.95f))
+			  .Alignment(FVector2D(0.5f, 0.5f))
+			  .AutoSize(true)
+	[
+		SAssignNew(CarStatusOverlay, SCarStatusOverlay)
+	];
 }
 
 void ARaceHUD::ShowModalOverlay(const TSharedPtr<SWidget>& Widget, const bool bFocus)

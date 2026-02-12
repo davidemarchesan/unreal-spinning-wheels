@@ -139,7 +139,6 @@ void ACar::SimulatedTick(float DeltaTime)
 				CarMovementComponent->SimulateMovement(CurrentSimulationFrame);
 				CurrentFrameIndex++;
 			}
-			
 		}
 
 		LastSimulationDelta = AccSimulationTime - SimulationConstants::TickFrequency * MaxIterations;
@@ -207,11 +206,13 @@ void ACar::OnRep_TurboUpdate()
 
 void ACar::ConsumeTurbo(float DeltaTime)
 {
-	if (CurrentSimulationFrame.TurboInputValue == 1)
+	if (CurrentSimulationFrame.TurboInputValue == 1 && TurboCurrentBattery > 0.f)
 	{
-		TurboCurrentBattery = FMath::Clamp(TurboCurrentBattery - (TurboConsumption * DeltaTime), 0.f, TurboMaxBattery);
+		TurboCurrentBattery = FMath::Clamp(TurboCurrentBattery - (TurboConsumption * DeltaTime), 0.f,
+		                                   TurboMaxBattery);
 		if (TurboCurrentBattery <= 0.f)
 		{
+			StopLights();
 		}
 	}
 }
@@ -238,12 +239,11 @@ void ACar::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
                                    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
                                    const FHitResult& SweepResult)
 {
-
 	if (IsLocallyControlled() == false)
 	{
 		return;
 	}
-	
+
 	if (ARacePlayerState* RPS = GetPlayerState<ARacePlayerState>())
 	{
 		if (OtherActor->IsA(ACheckpointBlock::StaticClass()))
@@ -269,5 +269,8 @@ void ACar::LocalBrakeLights()
 
 void ACar::LocalTurboLights()
 {
-	UpdateLightsBehavior(1.0f, LightsColorOnTurbo, LightsFlashingOnTurbo);
+	if (TurboCurrentBattery > 0.f)
+	{
+		UpdateLightsBehavior(1.0f, LightsColorOnTurbo, LightsFlashingOnTurbo);
+	}
 }

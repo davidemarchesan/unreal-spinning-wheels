@@ -204,6 +204,7 @@ protected:
 
 public:
 
+	void HUDIsReady();
 	virtual void BlockCursor();
 	virtual void UnlockCursor();
 	
