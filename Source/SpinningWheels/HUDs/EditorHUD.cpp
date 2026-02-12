@@ -413,6 +413,10 @@ void AEditorHUD::OnEditorModeChanged(const EEditorMode EditorMode)
 		{
 			EditorBuildMenuOverlay->SetVisibility(EVisibility::Collapsed);
 		}
+		if (CountdownOverlay.IsValid())
+		{
+			CountdownOverlay->SetVisibility(EVisibility::Visible);
+		}
 	}
 	else
 	{
@@ -423,6 +427,10 @@ void AEditorHUD::OnEditorModeChanged(const EEditorMode EditorMode)
 		if (EditorBuildMenuOverlay.IsValid())
 		{
 			EditorBuildMenuOverlay->SetVisibility(EVisibility::Visible);
+		}
+		if (CountdownOverlay.IsValid())
+		{
+			CountdownOverlay->SetVisibility(EVisibility::Collapsed);
 		}
 	}
 }
