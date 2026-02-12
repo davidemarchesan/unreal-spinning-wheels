@@ -13,7 +13,7 @@ enum ECarMode : int
 	CARMODE_Slide,
 	CARMODE_Reverse,
 	CARMODE_Crash,
-	CARMODE_Fly,
+	CARMODE_Fly
 };
 
 
@@ -47,6 +47,8 @@ private:
 	const float Gravity = 9.8f;
 	bool bGrounded = false;
 
+	bool bSurfaceSliding = false;
+
 	void CalcVelocity(float DeltaTime);
 	void CalcAcceleration(float DeltaTime);
 	void CalcBrakeDeceleration(float DeltaTime);
@@ -62,6 +64,7 @@ private:
 	bool IsUsingTurbo();
 
 	bool IsGrounded() const { return bGrounded; }
+	bool IsSurfaceSliding() const { return bSurfaceSliding; }
 
 	void HandleCrash(float DeltaTime, FHitResult& Hit);
 
@@ -112,6 +115,18 @@ public:
 	
 	UPROPERTY(Category=Forces, EditAnywhere, BlueprintReadOnly)
 	float GroundFriction;
+
+	UPROPERTY(Category=Forces, EditAnywhere, BlueprintReadOnly)
+	float MaxSurfaceSlideAngle;
+
+	UPROPERTY(Category=Forces, EditAnywhere, BlueprintReadOnly)
+	float WallsSlideFriction;
+
+	UPROPERTY(Category=Forces, EditAnywhere, BlueprintReadOnly)
+	float WallsSlideRotationInterpSpeed;
+
+	UPROPERTY(Category=Forces, EditAnywhere, BlueprintReadOnly)
+	float MinSpeedToBounce;
 
 	UPROPERTY(Category=Forces, EditAnywhere, BlueprintReadOnly)
 	float WallsBounceForce;

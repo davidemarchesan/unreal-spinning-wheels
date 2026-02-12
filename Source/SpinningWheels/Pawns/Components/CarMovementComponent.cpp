@@ -30,8 +30,8 @@ void UCarMovementComponent::StartSlidePhysics()
 
 void UCarMovementComponent::CalcVelocity(float DeltaTime)
 {
-	float VelocitySpeed = Velocity.Length() + (Acceleration * DeltaTime) - (BrakeDeceleration * DeltaTime) - (
-		GroundFriction * DeltaTime);
+	float VelocitySpeed = Velocity.Length() + (Acceleration * SimulationConstants::TickFrequency) - (BrakeDeceleration * SimulationConstants::TickFrequency) - (
+		GroundFriction * SimulationConstants::TickFrequency);
 	VelocitySpeed = FMath::Clamp(VelocitySpeed, 0.f, MaxSpeed);
 
 	switch (CarMode)
@@ -39,7 +39,29 @@ void UCarMovementComponent::CalcVelocity(float DeltaTime)
 	default:
 	case ECarMode::CARMODE_Drive:
 		{
-			Velocity = UpdatedComponent->GetComponentRotation().Vector().GetSafeNormal() * VelocitySpeed;
+			if (IsSurfaceSliding())
+			{
+				const FVector RotationDir = UpdatedComponent->GetComponentRotation().Vector().GetSafeNormal();
+				const FVector SlidingDir = Velocity.GetSafeNormal();
+
+				const float Diff = 1.f - (RotationDir | SlidingDir);
+				if (FMath::IsNearlyZero(Diff, 0.0001f))
+				{
+					bSurfaceSliding = false;
+				}
+				else
+				{
+					VelocitySpeed -= (WallsSlideFriction * SimulationConstants::TickFrequency);
+					VelocitySpeed = FMath::Max(VelocitySpeed, 0.f);
+					Velocity = Velocity.GetSafeNormal() * VelocitySpeed;
+				}
+			}
+
+
+			if (bSurfaceSliding == false)
+			{
+				Velocity = UpdatedComponent->GetComponentRotation().Vector().GetSafeNormal() * VelocitySpeed;
+			}
 			break;
 		}
 
@@ -47,11 +69,11 @@ void UCarMovementComponent::CalcVelocity(float DeltaTime)
 		{
 			FVector TargetDirection = UpdatedComponent->GetComponentRotation().Vector().GetSafeNormal();
 			FVector CurrentDirection = Velocity.GetSafeNormal();
-			const float Alpha = SlideLerpSpeed * DeltaTime;
+			const float Alpha = SlideLerpSpeed * SimulationConstants::TickFrequency;
 
 			FVector NewDirection = FMath::Lerp(CurrentDirection, TargetDirection, Alpha);
 
-			VelocitySpeed -= (GroundFriction * SlideGroundFrictionMultiplier * DeltaTime);
+			VelocitySpeed -= (GroundFriction * SlideGroundFrictionMultiplier * SimulationConstants::TickFrequency);
 
 			Velocity = NewDirection * VelocitySpeed;
 			break;
@@ -59,7 +81,7 @@ void UCarMovementComponent::CalcVelocity(float DeltaTime)
 
 	case ECarMode::CARMODE_Crash:
 		{
-			VelocitySpeed = Velocity.Length() - (GroundFriction * DeltaTime);
+			VelocitySpeed = Velocity.Length() - (GroundFriction * SimulationConstants::TickFrequency);
 			Velocity = Velocity.GetSafeNormal() * VelocitySpeed;
 			break;
 		}
@@ -108,7 +130,7 @@ void UCarMovementComponent::CalcBrakeDeceleration(float DeltaTime)
 
 	if (CurrentSimulationFrame.BrakeInputValue > 0.f)
 	{
-		BrakeHoldTime += DeltaTime;
+		BrakeHoldTime += SimulationConstants::TickFrequency;
 		const float Alpha = BrakeHoldTime >= MaxBrakeHoldTime ? 1.f : BrakeHoldTime / MaxBrakeHoldTime;
 		const float CurveMultiplier = BrakeDecelerationCurve->GetFloatValue(Alpha);
 
@@ -142,7 +164,7 @@ void UCarMovementComponent::CalcRotation(float DeltaTime)
 		break;
 
 	case ECarMode::CARMODE_Crash:
-		const float NewAngVel = FMath::Lerp(AngularVelocity.Yaw, 0.f, 0.8f * DeltaTime);
+		const float NewAngVel = FMath::Lerp(AngularVelocity.Yaw, 0.f, 0.8f * SimulationConstants::TickFrequency);
 		AngularVelocity.Yaw = NewAngVel;
 		break;
 	}
@@ -157,7 +179,9 @@ void UCarMovementComponent::CalcRotationDrive()
 		CurveMultiplier = AngularSpeedCurve->GetFloatValue(Alpha);
 	}
 
-	AngularVelocity = FRotator(0.f, CurrentSimulationFrame.TurnInputValue * AngularSpeedMultiplier * CurveMultiplier, 0.f);
+	AngularVelocity = FRotator(
+		0.f, CurrentSimulationFrame.TurnInputValue * AngularSpeedMultiplier * CurveMultiplier,
+		0.f);
 }
 
 void UCarMovementComponent::CalcRotationSlide()
@@ -170,7 +194,8 @@ void UCarMovementComponent::CalcRotationSlide()
 	}
 
 	AngularVelocity = FRotator(
-		0.f, CurrentSimulationFrame.TurnInputValue * AngularSpeedMultiplier * SlideAngularSpeedMultiplier * CurveMultiplier, 0.f);
+		0.f, CurrentSimulationFrame.TurnInputValue * AngularSpeedMultiplier * SlideAngularSpeedMultiplier *
+		CurveMultiplier, 0.f);
 }
 
 bool UCarMovementComponent::IsSpeedZero()
@@ -202,59 +227,83 @@ void UCarMovementComponent::HandleCrash(float DeltaTime, FHitResult& Hit)
 {
 	// Angle between normal and velocity
 	// Dont need it but leave it here
-	// const FVector VelocityNormalized = Velocity.GetSafeNormal();
-	//
-	// const float Dot = FVector::DotProduct(Hit.ImpactNormal, -VelocityNormalized);
-	// const float ImpactAngle = FMath::RadiansToDegrees(FMath::Acos(Dot));
-	// UE_LOG(LogTemp, Warning, TEXT("Dot %f | Angle: %f"), Dot, ImpactAngle);
-	//
-	// const float MinSpeedToCrash = 800.f;
-	// const float MaxSlideAngle = 15.f;
-	//
-	// const float Diff = 90.f - ImpactAngle;
-	// END Angle between normal and velocity
-
 	const FVector VelocityNormalized = Velocity.GetSafeNormal();
-	FVector BounceVector = VelocityNormalized - 2.f * FVector::DotProduct(
-			VelocityNormalized, Hit.ImpactNormal) * Hit.
-		ImpactNormal;
 
-	Velocity = BounceVector * Velocity.Length() * WallsBounceForce;
-	// UE_LOG(LogTemp, Warning, TEXT("Velocity after bounce %s"), *Velocity.ToString());
+	const float Dot = FVector::DotProduct(Hit.ImpactNormal, -VelocityNormalized);
+	const float ImpactAngle = FMath::RadiansToDegrees(FMath::Acos(Dot));
 
-	// Rotation impulse
-	// Detect side of the impact
-	FVector ImpactVector = Hit.ImpactPoint - GetActorLocation();
-	ImpactVector.Normalize();
+	const float AngleDiff = 90.f - ImpactAngle;
+	// UE_LOG(LogTemp, Warning, TEXT("Speed: %f | Dot: %f | Angle: %f | Diff: %f"), Velocity.Length(), Dot, ImpactAngle,
+	//        Diff);
 
-	// We use Dot product to detect where the impact has been relative to car center (Front or Behind? Left or Right?)
-	const float ForwardVectorDot = FVector::DotProduct(ImpactVector, GetForwardVector());
-	const float RightVectorDot = FVector::DotProduct(ImpactVector, GetOwner()->GetActorRightVector());
-
-	// Initiate spin; +1 = Clockwise
-	if (RightVectorDot > 0.f)
+	if (IsSurfaceSliding() || AngleDiff <= MaxSurfaceSlideAngle || Velocity.Length() <= MinSpeedToBounce)
 	{
-		// Right
-		AngularVelocity = FRotator(0.f, 1.f * Velocity.Length() * CrashSpinMultiplier, 0.f);
+		bSurfaceSliding = true;
+
+		// Slide along surface
+		FVector SlideVector = VelocityNormalized - FVector::DotProduct(
+				VelocityNormalized, Hit.ImpactNormal) * Hit.
+			ImpactNormal;
+
+		Velocity = SlideVector * Velocity.Length() * WallsBounceForce;
+		Velocity += Hit.ImpactNormal * 0.1f; // Just get a little be safe will ya?
+
+		const FRotator TargetRotation = SlideVector.Rotation();
+		const FRotator Rotation = FMath::RInterpTo(UpdatedComponent->GetComponentRotation(), TargetRotation,
+		                                           SimulationConstants::TickFrequency, WallsSlideRotationInterpSpeed);
+
+		SafeMoveUpdatedComponent(
+			Velocity * SimulationConstants::TickFrequency,
+			Rotation,
+			true,
+			Hit
+		);
+
+		SetMode(ECarMode::CARMODE_Drive);
 	}
 	else
 	{
-		// Left
-		AngularVelocity = FRotator(0.f, -1.f * Velocity.Length() * CrashSpinMultiplier, 0.f);
+		// Bounce back
+		FVector BounceVector = VelocityNormalized - 2.f * FVector::DotProduct(
+				VelocityNormalized, Hit.ImpactNormal) * Hit.
+			ImpactNormal;
+
+		Velocity = BounceVector * Velocity.Length() * WallsBounceForce;
+
+		// Rotation impulse
+		// Detect side of the impact
+		FVector ImpactVector = Hit.ImpactPoint - GetActorLocation();
+		ImpactVector.Normalize();
+
+		// We use Dot product to detect where the impact has been relative to car center (Front or Behind? Left or Right?)
+		const float ForwardVectorDot = FVector::DotProduct(ImpactVector, GetForwardVector());
+		const float RightVectorDot = FVector::DotProduct(ImpactVector, GetOwner()->GetActorRightVector());
+
+		// Initiate spin; +1 = Clockwise
+		if (RightVectorDot > 0.f)
+		{
+			// Right
+			AngularVelocity = FRotator(0.f, 1.f * Velocity.Length() * CrashSpinMultiplier, 0.f);
+		}
+		else
+		{
+			// Left
+			AngularVelocity = FRotator(0.f, -1.f * Velocity.Length() * CrashSpinMultiplier, 0.f);
+		}
+
+		SetMode(ECarMode::CARMODE_Crash);
 	}
 
-	// UE_LOG(LogTemp, Warning, TEXT("Angular Velocity after bounce %s"), *AngularVelocity.ToString());
-
-	SetMode(ECarMode::CARMODE_Crash);
+	// END Angle between normal and velocity
 }
 
 void UCarMovementComponent::SimulateMovement(FSimulationFrame SimulationFrame)
 {
 	CurrentSimulationFrame = SimulationFrame;
-	
+
 	if (CarMode == CARMODE_Drive)
 	{
-		if (IsTurning() && IsBraking())
+		if (IsTurning() && IsBraking() && IsSurfaceSliding() == false)
 		{
 			SetMode(ECarMode::CARMODE_Slide);
 		}
@@ -265,6 +314,12 @@ void UCarMovementComponent::SimulateMovement(FSimulationFrame SimulationFrame)
 			GetSafeNormal();
 
 		if (IsBraking() == false && Difference.IsNearlyZero(0.1f))
+		{
+			SetMode(ECarMode::CARMODE_Drive);
+		}
+
+		// It's basically idle but somehow in slide (may comes from crash)
+		if (FMath::IsNearlyZero(Velocity.Length(), 0.4f) && IsAccelerating() == false)
 		{
 			SetMode(ECarMode::CARMODE_Drive);
 		}
@@ -279,12 +334,32 @@ void UCarMovementComponent::SimulateMovement(FSimulationFrame SimulationFrame)
 		CalcVelocity(SimulationConstants::TickFrequency);
 
 		FHitResult Hit;
-		UpdatedComponent->MoveComponent(
-			Velocity * SimulationConstants::TickFrequency,
-			UpdatedComponent->GetComponentRotation() + (AngularVelocity * SimulationConstants::TickFrequency),
-			true,
-			&Hit
-		);
+		if (IsSurfaceSliding())
+		{
+
+			// Slide along surface
+			// and rotate along surface
+			const FRotator TargetRotation = Velocity.GetSafeNormal().Rotation();
+			const FRotator Rotation = FMath::RInterpTo(UpdatedComponent->GetComponentRotation(), TargetRotation,
+												   SimulationConstants::TickFrequency, WallsSlideRotationInterpSpeed);
+			
+			UpdatedComponent->MoveComponent(
+				Velocity * SimulationConstants::TickFrequency,
+				Rotation,
+				true,
+				&Hit
+			);
+			
+		}
+		else
+		{
+			UpdatedComponent->MoveComponent(
+				Velocity * SimulationConstants::TickFrequency,
+				UpdatedComponent->GetComponentRotation() + (AngularVelocity * SimulationConstants::TickFrequency),
+				true,
+				&Hit
+			);
+		}
 
 		if (CarMode == ECarMode::CARMODE_Crash)
 		{
@@ -294,12 +369,7 @@ void UCarMovementComponent::SimulateMovement(FSimulationFrame SimulationFrame)
 				SetMode(ECarMode::CARMODE_Slide);
 			}
 		}
-
-		if (Hit.bStartPenetrating)
-		{
-			// UE_LOG(LogTemp, Warning, TEXT("Hit StartPenetrating"));
-		}
-
+		
 		if (Hit.bBlockingHit)
 		{
 			// todo: refactor ground when we do ramps, jump, and flying
@@ -317,5 +387,4 @@ void UCarMovementComponent::SimulateMovement(FSimulationFrame SimulationFrame)
 			}
 		}
 	}
-
 }
