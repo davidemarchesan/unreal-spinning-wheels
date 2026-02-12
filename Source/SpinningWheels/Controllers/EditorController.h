@@ -19,9 +19,6 @@ class AEditorHUD;
 class ATrackGrid;
 class ABlock;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMenuSlotSelectedSignature, int8, Slot);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExitBuildModeSignature);
-
 UCLASS()
 class SPINNINGWHEELS_API AEditorController : public ARaceController
 {
@@ -133,9 +130,6 @@ public:
 
 	virtual void BlockCursor() override;
 	virtual void UnlockCursor() override;
-
-	FOnMenuSlotSelectedSignature OnMenuSlotSelected;
-	FOnExitBuildModeSignature OnExitBuildMode;
 
 	FEditorBuildMenu GetCurrentActiveMenu() const { return CurrentActiveMenu; };
 

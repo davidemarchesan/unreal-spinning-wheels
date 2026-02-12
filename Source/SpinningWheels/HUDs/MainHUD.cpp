@@ -5,6 +5,7 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "SpinningWheels/Controllers/MainController.h"
+#include "SpinningWheels/Core/GameConstants.h"
 #include "SpinningWheels/Subsystems/GameInstance/LoadingSubsystem.h"
 #include "SpinningWheels/Subsystems/GameInstance/RaceServerSubsystem.h"
 #include "SpinningWheels/Subsystems/GameInstance/TrackEditorSubsystem.h"
@@ -104,7 +105,7 @@ bool AMainHUD::InitializeRootOverlay()
 		.Padding(5.f)
 		[
 			SNew(STextBlock)
-			.Text(FText::FromString("v1.3"))
+			.Text(FText::FromString(GameConstants::Version))
 		]
 	];
 	GEngine->GameViewport->AddViewportWidgetContent(SimpleVersionCanvas.ToSharedRef(), 100);

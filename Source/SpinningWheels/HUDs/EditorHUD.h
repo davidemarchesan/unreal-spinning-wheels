@@ -37,9 +37,6 @@ private:
 	/** Begin delegates bindings */
 	void InitializeDelegates();
 	void DeinitializeDelegates();
-	
-	UFUNCTION() void OnMenuSlotSelected(int8 Slot);
-	UFUNCTION() void OnExitBuildMode();
 
 	UFUNCTION() void OnTrackLoaded(const FTrack& CurrentTrack);
 	UFUNCTION() void OnTrackSaved(const FTrack& CurrentTrack, const bool bSuccess);
@@ -76,6 +73,11 @@ protected:
 
 public:
 
+	void InitializeEditorBuildMenu();
+
+	void InputMenuSlotSelected(const int8 Slot);
+	void InputExitBuildMode();
+	
 	void InputOpenMenu();
 
 	void UpdateLapCountdown(int32 Seconds);

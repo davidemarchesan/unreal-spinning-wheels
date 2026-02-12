@@ -32,6 +32,27 @@ void AEditorHUD::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
+void AEditorHUD::InitializeEditorBuildMenu()
+{
+	InitializeOverlayEditorBuildMenu();
+}
+
+void AEditorHUD::InputMenuSlotSelected(const int8 Slot)
+{
+	if (EditorBuildMenuOverlay.IsValid())
+	{
+		EditorBuildMenuOverlay->OnMenuSlotSelected(Slot);
+	}
+}
+
+void AEditorHUD::InputExitBuildMode()
+{
+	if (EditorBuildMenuOverlay.IsValid())
+	{
+		EditorBuildMenuOverlay->OnExitBuildMode();
+	}
+}
+
 void AEditorHUD::InputOpenMenu()
 {
 	if (EditorMenuPopup.IsValid())
@@ -126,13 +147,23 @@ void AEditorHUD::InitializeOverlayEditorActions()
 
 void AEditorHUD::InitializeOverlayEditorBuildMenu()
 {
+	if (EditorBuildMenuOverlay.IsValid())
+	{
+		// Already initialized
+		return;
+	}
+	
 	if (RootCanvas.IsValid() == false || EditorController.IsValid() == false)
 	{
 		return;
 	}
 
 	const FEditorBuildMenu CurrentActiveMenu = EditorController->GetCurrentActiveMenu();
-
+	if (CurrentActiveMenu.Items.Num() == 0)
+	{
+		return;
+	}
+	
 	EditorBuildMenuOverlay = SNew(SEditorBuildMenuOverlay)
 		.Menu(CurrentActiveMenu)
 		.OnMenuSelected_Lambda([this](UEditorBuildMenuDataAsset* Menu)
@@ -166,10 +197,6 @@ void AEditorHUD::InitializeOverlayEditorBuildMenu()
 		];
 	}
 
-	EditorController->OnMenuSlotSelected.AddDynamic(this, &AEditorHUD::OnMenuSlotSelected);
-	// todo: transform to public method, avoid using delegate
-	EditorController->OnExitBuildMode.AddDynamic(this, &AEditorHUD::OnExitBuildMode);
-	// todo: transform to public method, avoid using delegate
 }
 
 void AEditorHUD::InitializeOverlayEditorTrackData()
@@ -343,22 +370,6 @@ void AEditorHUD::HideModalOverlay()
 		{
 			EditorController->UnlockCursor();
 		}
-	}
-}
-
-void AEditorHUD::OnMenuSlotSelected(int8 Slot)
-{
-	if (EditorBuildMenuOverlay.IsValid())
-	{
-		EditorBuildMenuOverlay->OnMenuSlotSelected(Slot);
-	}
-}
-
-void AEditorHUD::OnExitBuildMode()
-{
-	if (EditorBuildMenuOverlay.IsValid())
-	{
-		EditorBuildMenuOverlay->OnExitBuildMode();
 	}
 }
 

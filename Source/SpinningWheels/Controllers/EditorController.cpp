@@ -512,6 +512,11 @@ void AEditorController::SetupBuildMenu()
 	if (EditorBuildMenuData)
 	{
 		CurrentActiveMenu = FEditorBuildMenu(EditorBuildMenuData);
+
+		if (EditorHUD.IsValid())
+		{
+			EditorHUD->InitializeEditorBuildMenu();
+		}
 	}
 }
 
@@ -523,7 +528,10 @@ void AEditorController::InputSlot(int8 Slot)
 		if (CurrentActiveMenu.Items.IsValidIndex(Index))
 		{
 			const FEditorBuildMenuItem& Item = CurrentActiveMenu.Items[Index];
-			OnMenuSlotSelected.Broadcast(Slot);
+			if (EditorHUD.IsValid())
+			{
+				EditorHUD->InputMenuSlotSelected(Slot);
+			}
 
 			if (Item.Submenu)
 			{
@@ -662,5 +670,8 @@ void AEditorController::ExitBuildMode()
 
 	CurrentActiveMenu = FEditorBuildMenu(EditorBuildMenuData);
 
-	OnExitBuildMode.Broadcast();
+	if (EditorHUD.IsValid())
+	{
+		EditorHUD->InputExitBuildMode();
+	}
 }
