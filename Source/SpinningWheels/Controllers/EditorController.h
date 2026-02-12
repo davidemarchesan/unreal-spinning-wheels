@@ -77,6 +77,8 @@ private:
 	UFUNCTION() void OnEditorModeChanged(const EEditorMode NewEditorMode);
 
 	void MovePawnAtCenter();
+
+	virtual void UpdateLapCountdown(int32 Seconds) override;
 	
 protected:
 

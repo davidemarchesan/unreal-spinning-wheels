@@ -499,6 +499,14 @@ void AEditorController::MovePawnAtCenter()
 	EditorPawn->SetActorLocation(TrackGrid->GetWorldCenter());
 }
 
+void AEditorController::UpdateLapCountdown(int32 Seconds)
+{
+	if (EditorHUD.IsValid())
+	{
+		EditorHUD->UpdateLapCountdown(Seconds);
+	}
+}
+
 void AEditorController::SetupBuildMenu()
 {
 	if (EditorBuildMenuData)
@@ -542,6 +550,10 @@ void AEditorController::InputSelectMenu(UEditorBuildMenuDataAsset* Menu)
 
 void AEditorController::InputTestTrack()
 {
+	// Force to be ready
+	bReady = true;
+	bLocalReady = true;
+	
 	if (EditorGameMode.IsValid())
 	{
 		EditorGameMode->TestTrack(this);

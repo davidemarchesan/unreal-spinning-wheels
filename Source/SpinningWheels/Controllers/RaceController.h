@@ -40,23 +40,6 @@ public:
 
 private:
 
-	// Begin Ready status check
-	UPROPERTY(ReplicatedUsing=OnRep_bReady)
-	bool bReady = false;
-
-	bool bLocalReady = false;
-
-	UFUNCTION()
-	void OnRep_bReady();
-	
-	void CheckIfReady();
-
-	UFUNCTION(Server, Reliable)
-	void ServerImReady();
-
-	void InternalImReady();
-	// End Ready status check
-
 	// Begin Sync leaderboard on-late join
 	void SyncLeaderboard();
 	
@@ -157,6 +140,23 @@ protected:
 	virtual void BeginPlayingState() override;
 	//~ End AController Interface
 
+	// Begin Ready status check
+	UPROPERTY(ReplicatedUsing=OnRep_bReady)
+	bool bReady = false;
+
+	bool bLocalReady = false;
+
+	UFUNCTION()
+	void OnRep_bReady();
+	
+	void CheckIfReady();
+
+	UFUNCTION(Server, Reliable)
+	void ServerImReady();
+
+	void InternalImReady();
+	// End Ready status check
+
 	virtual void SetDefaultInputMode();
 
 	virtual void SetupInputBindings();
@@ -196,6 +196,8 @@ protected:
 	
 	void TryGetRaceHUD();
 	void OnRaceHUDInit();
+
+	virtual void UpdateLapCountdown(int32 Seconds);
 
 	/** Input Actions handler - Drive */
 	virtual void InputOpenMenu();

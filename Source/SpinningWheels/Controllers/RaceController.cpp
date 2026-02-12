@@ -262,6 +262,14 @@ void ARaceController::OnRaceHUDInit()
 	}
 }
 
+void ARaceController::UpdateLapCountdown(int32 Seconds)
+{
+	if (RaceHUD.IsValid())
+	{
+		RaceHUD->UpdateLapCountdown(Seconds);
+	}
+}
+
 void ARaceController::InputOpenMenu()
 {
 	if (RaceHUD.IsValid())
@@ -663,10 +671,7 @@ void ARaceController::StartDriveProcedure(float DeltaSeconds)
 		if (Diff != StartDriveSecondsRemaining)
 		{
 			StartDriveSecondsRemaining = Diff;
-			if (RaceHUD.IsValid())
-			{
-				RaceHUD->UpdateLapCountdown(StartDriveSecondsRemaining);
-			}
+			UpdateLapCountdown(StartDriveSecondsRemaining);
 		}
 	}
 }
@@ -819,10 +824,7 @@ void ARaceController::LocalStartLap()
 	}
 
 	StartDriveSecondsRemaining = 0;
-	if (RaceHUD.IsValid())
-	{
-		RaceHUD->UpdateLapCountdown(StartDriveSecondsRemaining);
-	}
+	UpdateLapCountdown(StartDriveSecondsRemaining);
 }
 
 void ARaceController::ServerStartLap_Implementation()

@@ -29,6 +29,7 @@ private:
 	void InitializeOverlayEditorSavePopup();
 	void InitializeOverlayEditorMenu();
 	void InitializeOverlayEditorTrackData();
+	void InitializeOverlayCountdown();
 
 	void ShowModalOverlay(const TSharedPtr<SWidget>& Widget, const bool bFocus = true);
 	void HideModalOverlay();
@@ -55,6 +56,7 @@ private:
 	TSharedPtr<class SEditorTrackDataOverlay> EditorTrackDataOverlay;
 	TSharedPtr<class SEditorSaveTrackPopup> SaveTrackPopup;
 	TSharedPtr<class SEditorMenuPopup> EditorMenuPopup;
+	TSharedPtr<class SCountdownOverlay> CountdownOverlay;
 	/** End Pointers to overlays */
 	
 	FReply OnTestTrack();
@@ -74,6 +76,8 @@ protected:
 
 public:
 
-	void InputOpenMenu();	
+	void InputOpenMenu();
+
+	void UpdateLapCountdown(int32 Seconds);
 	
 };

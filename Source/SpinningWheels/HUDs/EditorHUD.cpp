@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "SpinningWheels/Controllers/EditorController.h"
 #include "SpinningWheels/GameModes/EditorGameMode.h"
+#include "UI/Slate/Overlays/Countdown/CountdownOverlay.h"
 #include "UI/Slate/Overlays/EditorActions/EditorActionsOverlay.h"
 #include "UI/Slate/Overlays/EditorActions/EditorSaveTrackPopup.h"
 #include "UI/Slate/Overlays/EditorBuildMenu/EditorBuildMenuOverlay.h"
@@ -36,6 +37,14 @@ void AEditorHUD::InputOpenMenu()
 	if (EditorMenuPopup.IsValid())
 	{
 		ShowModalOverlay(EditorMenuPopup);
+	}
+}
+
+void AEditorHUD::UpdateLapCountdown(int32 Seconds)
+{
+	if (CountdownOverlay.IsValid())
+	{
+		CountdownOverlay->UpdateCountdown(Seconds);
 	}
 }
 
@@ -77,6 +86,7 @@ void AEditorHUD::InitializeRootOverlay()
 	InitializeOverlayEditorTrackData();
 	InitializeOverlayEditorSavePopup();
 	InitializeOverlayEditorMenu();
+	InitializeOverlayCountdown();
 }
 
 void AEditorHUD::InitializeOverlayEditorActions()
@@ -175,6 +185,22 @@ void AEditorHUD::InitializeOverlayEditorTrackData()
 	          .AutoSize(true)
 	[
 		SAssignNew(EditorTrackDataOverlay, SEditorTrackDataOverlay)
+	];
+}
+
+void AEditorHUD::InitializeOverlayCountdown()
+{
+	if (RootCanvas.IsValid() == false)
+	{
+		return;
+	}
+
+	RootCanvas->AddSlot()
+			  .Anchors(FAnchors(0.5f, 0.5f))
+			  .Alignment(FVector2D(0.5f, 0.5f))
+			  .AutoSize(true)
+	[
+		SAssignNew(CountdownOverlay, SCountdownOverlay)
 	];
 }
 
@@ -366,7 +392,28 @@ void AEditorHUD::OnTrackSaved(const FTrack& CurrentTrack, const bool bSuccess)
 
 void AEditorHUD::OnEditorModeChanged(const EEditorMode EditorMode)
 {
-	// todo
+	if (EditorMode == EEditorMode::EM_TestTrack)
+	{
+		if (EditorActionsOverlay.IsValid())
+		{
+			EditorActionsOverlay->SetVisibility(EVisibility::Collapsed);
+		}
+		if (EditorBuildMenuOverlay.IsValid())
+		{
+			EditorBuildMenuOverlay->SetVisibility(EVisibility::Collapsed);
+		}
+	}
+	else
+	{
+		if (EditorActionsOverlay.IsValid())
+		{
+			EditorActionsOverlay->SetVisibility(EVisibility::Visible);
+		}
+		if (EditorBuildMenuOverlay.IsValid())
+		{
+			EditorBuildMenuOverlay->SetVisibility(EVisibility::Visible);
+		}
+	}
 }
 
 FReply AEditorHUD::OnTestTrack()
