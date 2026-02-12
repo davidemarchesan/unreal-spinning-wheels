@@ -327,6 +327,10 @@ void ARaceController::SetPawn(APawn* InPawn)
 		{
 			MainCamera->SetPawn(Car.Get());
 		}
+		if (RaceHUD.IsValid() && Car.IsValid())
+		{
+			RaceHUD->SetCar(Car);
+		}
 
 		CheckIfReady();
 	}
