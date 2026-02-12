@@ -28,5 +28,8 @@ private:
 protected:
 
 public:
+
+	virtual void EnableCheckpoint();
+	virtual void DisableCheckpoint();
 	
 };

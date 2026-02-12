@@ -2,10 +2,13 @@
 
 
 #include "RaceController.h"
+
+#include "EngineUtils.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "SpinningWheels/Actors/MainCamera.h"
+#include "SpinningWheels/Actors/Blocks/CheckpointBlock.h"
 #include "SpinningWheels/Core/Simulation.h"
 #include "SpinningWheels/GameModes/RaceGameMode.h"
 #include "SpinningWheels/GameStates/RaceGameState.h"
@@ -52,7 +55,8 @@ void ARaceController::CheckIfReady()
 		return;
 	}
 
-	if (RaceGameState.IsValid() && RacePlayerState.IsValid() && RaceHUD.IsValid() && RaceHUD->IsReady() && Car.IsValid() && MainCamera.
+	if (RaceGameState.IsValid() && RacePlayerState.IsValid() && RaceHUD.IsValid() && RaceHUD->IsReady() && Car.IsValid()
+		&& MainCamera.
 		IsValid() && bCameraInitialized == true)
 	{
 		bLocalReady = true; // Dont wait the server replication bReady (do not make bReady replicated?)
@@ -256,7 +260,7 @@ void ARaceController::OnRaceHUDInit()
 		{
 			RaceHUD->SetCar(Car);
 		}
-		
+
 		if (RacePlayerState.IsValid())
 		{
 			RaceHUD->SetPlayerState(RacePlayerState.Get());
@@ -810,6 +814,18 @@ void ARaceController::InternalCancelLap()
 	if (ARaceGameModeBase* GM = GetWorld()->GetAuthGameMode<ARaceGameModeBase>())
 	{
 		GM->CancelLap(this);
+	}
+
+	for (FActorIterator It(GetWorld(), ACheckpointBlock::StaticClass()); It; ++It)
+	{
+		AActor* A = *It;
+		if (IsValid(A))
+		{
+			if (ACheckpointBlock* Block = Cast<ACheckpointBlock>(A))
+			{
+				Block->EnableCheckpoint();
+			}
+		}
 	}
 }
 

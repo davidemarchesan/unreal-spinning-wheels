@@ -249,6 +249,11 @@ void ACar::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 		if (OtherActor->IsA(ACheckpointBlock::StaticClass()))
 		{
 			RPS->CarOnCheckpoint(CurrentFrameIndex);
+
+			if (ACheckpointBlock* CheckpointBlock = Cast<ACheckpointBlock>(OtherActor))
+			{
+				CheckpointBlock->DisableCheckpoint();
+			}
 		}
 		if (OtherActor->IsA(AFinishBlock::StaticClass()))
 		{

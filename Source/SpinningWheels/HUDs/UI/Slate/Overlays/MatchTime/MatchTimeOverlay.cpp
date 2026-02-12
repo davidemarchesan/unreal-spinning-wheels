@@ -37,7 +37,7 @@ void SMatchTimeOverlay::UpdateVisuals()
 {
 
 	const int Minutes = FMath::FloorToInt(RemainingSeconds / 60.f);
-	const int Seconds = FMath::CeilToInt(RemainingSeconds - (60.f * Minutes));
+	const int Seconds = FMath::FloorToInt(RemainingSeconds - (60.f * Minutes));
 
 	FString Str = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
 
@@ -51,6 +51,6 @@ void SMatchTimeOverlay::UpdateVisuals()
 void SMatchTimeOverlay::SetMatchRemainingTime(const float Seconds)
 {
 	RemainingSeconds = Seconds;
-	RemainingSecondsCeil = FMath::CeilToInt(RemainingSeconds);
+	RemainingSecondsCeil = FMath::FloorToInt(RemainingSeconds);
 	UpdateVisuals();
 }

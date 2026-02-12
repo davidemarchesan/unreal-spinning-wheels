@@ -13,3 +13,19 @@ ACheckpointBlock::ACheckpointBlock()
 		BoxComponent->SetupAttachment(RootComponent);
 	}
 }
+
+void ACheckpointBlock::EnableCheckpoint()
+{
+	if (BoxComponent)
+	{
+		BoxComponent->SetGenerateOverlapEvents(true);
+	}
+}
+
+void ACheckpointBlock::DisableCheckpoint()
+{
+	if (BoxComponent)
+	{
+		BoxComponent->SetGenerateOverlapEvents(false);
+	}
+}
