@@ -2,5 +2,5 @@
 
 namespace GameConstants
 {
-	const FString Version = "1.2.0";
+	const FString Version = "1.2.1";
 }

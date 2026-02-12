@@ -815,18 +815,6 @@ void ARaceController::InternalCancelLap()
 	{
 		GM->CancelLap(this);
 	}
-
-	for (FActorIterator It(GetWorld(), ACheckpointBlock::StaticClass()); It; ++It)
-	{
-		AActor* A = *It;
-		if (IsValid(A))
-		{
-			if (ACheckpointBlock* Block = Cast<ACheckpointBlock>(A))
-			{
-				Block->EnableCheckpoint();
-			}
-		}
-	}
 }
 
 void ARaceController::ServerCancelLap_Implementation()

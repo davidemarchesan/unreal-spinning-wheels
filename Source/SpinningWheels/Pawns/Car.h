@@ -14,6 +14,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UCarMovementComponent;
 class ARacePlayerState;
+class ACheckpointBlock;
 
 UCLASS()
 class SPINNINGWHEELS_API ACar : public APawn
@@ -76,6 +77,8 @@ private:
 
 	void UpdateLightsBehavior(float InIntensity, FLinearColor InColor, float InFlashing);
 	void StopLights();
+
+	TArray<TWeakObjectPtr<ACheckpointBlock>> Checkpoints;
 
 #if WITH_EDITORONLY_DATA
 	
