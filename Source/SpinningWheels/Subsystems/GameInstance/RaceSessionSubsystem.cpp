@@ -83,15 +83,16 @@ void URaceSessionSubsystem::OnCreateSessionComplete(FName SessionName, bool bWas
 	{
 		bHost = true;
 		bSession = true;
-
 		ClearViewport();
-		UGameplayStatics::OpenLevel(GetWorld(), "/Game/Levels/L_Race?listen");
-		UE_LOG(LogTemp, Warning, TEXT("Session has been created"));
+		GetWorld()->ServerTravel("/Game/Levels/L_Race?listen");
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning,
 		       TEXT("URaceSessionSubsystem::OnCreateSessionComplete | Could not create online session!"));
+
+		ClearViewport();
+		GoToMainMenu();
 	}
 }
 
@@ -109,7 +110,6 @@ void URaceSessionSubsystem::OnDestroySessionComplete(FName SessionName, bool bWa
 
 		bHost = false;
 		bSession = false;
-		UE_LOG(LogTemp, Warning, TEXT("Session has been destroyed"));
 	}
 	else
 	{
@@ -121,7 +121,6 @@ void URaceSessionSubsystem::OnDestroySessionComplete(FName SessionName, bool bWa
 void URaceSessionSubsystem::OnSessionUserInviteAccepted(const bool bWasSuccessful, const int32 ControllerId,
 	const FUniqueNetIdPtr& UserId, const FOnlineSessionSearchResult& InviteResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Accepted invite success %d"), bWasSuccessful);
 	if (bWasSuccessful == false)
 	{
 		return;
@@ -133,7 +132,6 @@ void URaceSessionSubsystem::OnSessionUserInviteAccepted(const bool bWasSuccessfu
 		{
 			OnJoinSessionComplete(SessionName, Result);
 		});
-		UE_LOG(LogTemp, Warning, TEXT("joining session"));
 		SessionInterface->JoinSession(*UserId, NAME_GameSession, InviteResult);
 	}
 }
@@ -145,11 +143,9 @@ void URaceSessionSubsystem::OnJoinSessionComplete(FName SessionName, EOnJoinSess
 		SessionInterface->OnJoinSessionCompleteDelegates.Remove(OnJoinSessionCompleteDelegateHandle);
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("on join session completed %d"), Result);
 
 	if (Result != EOnJoinSessionCompleteResult::Success)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("could not join"));
 		return;
 	}
 
@@ -157,12 +153,10 @@ void URaceSessionSubsystem::OnJoinSessionComplete(FName SessionName, EOnJoinSess
 
 	if (SessionInterface->GetResolvedConnectString(SessionName, ConnectionString))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Connected to %s"), *ConnectionString);
 		bSession = true;
 		
 		if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("travelling controller"));
 			ClearViewport();
 			PlayerController->ClientTravel(ConnectionString, TRAVEL_Absolute);
 		}
@@ -207,29 +201,26 @@ void URaceSessionSubsystem::StartSteamSession()
 			FUniqueNetIdRepl NetIdRepl = LocalPlayer->GetPreferredUniqueNetId();
 			if (NetIdRepl.IsValid() == false)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("NetIdRepl.IsValid() == false"));
 				return;
 			}
 
 			const FUniqueNetId& NetId = *NetIdRepl.GetUniqueNetId();
 			if (NetId.IsValid() == false)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("NetId.IsValid() == false"));
 				return;
 			}
 
 			if (SessionInterface.IsValid())
 			{
+				
 				OnCreateSessionCompleteDelegateHandle = SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(
 					this, &URaceSessionSubsystem::OnCreateSessionComplete);
 
-				UE_LOG(LogTemp, Warning, TEXT("creating online session"));
 				if (SessionInterface->CreateSession(
 					NetId,
 					NAME_GameSession,
 					SessionSettings) == false)
 				{
-					UE_LOG(LogTemp, Warning, TEXT("creating online session failed immediately"));
 					if (SessionInterface && OnCreateSessionCompleteDelegateHandle.IsValid())
 					{
 						SessionInterface->OnCreateSessionCompleteDelegates.Remove(OnCreateSessionCompleteDelegateHandle);
@@ -249,10 +240,8 @@ void URaceSessionSubsystem::DestroySteamSession()
 			OnDestroySessionCompleteDelegateHandle = SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(
 				this, &URaceSessionSubsystem::OnDestroySessionComplete);
 
-			UE_LOG(LogTemp, Warning, TEXT("destroying online session"));
 			if (SessionInterface->DestroySession(NAME_GameSession) == false)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("destroying online session failed immediately"));
 				if (SessionInterface && OnDestroySessionCompleteDelegateHandle.IsValid())
 				{
 					SessionInterface->OnDestroySessionCompleteDelegates.Remove(OnDestroySessionCompleteDelegateHandle);
@@ -261,7 +250,6 @@ void URaceSessionSubsystem::DestroySteamSession()
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("destroy: could not find the game session"));
 			bHost = false;
 			bSession = false;
 			ClearViewport();
