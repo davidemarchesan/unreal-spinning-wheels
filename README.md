@@ -1,6 +1,6 @@
 # Spinning Wheels - Unreal Engine Project
 
-Multiplayer, TrackMania-inspired, Unreal Engine C++ Project.
+Multiplayer, TrackMania-inspired Unreal Engine C++ project.
 
 ## Demo
 
@@ -19,7 +19,7 @@ Release download: https://github.com/davidemarchesan/unreal-spinning-wheels/rele
 | Turn left | Arrow Left |
 | Turn right | Arrow Right |
 | Turbo | Space Bar |
-| Canc | Restart lap |
+| Cancel | Restart lap |
 
 ### Editor
 
@@ -43,31 +43,31 @@ Release download: https://github.com/davidemarchesan/unreal-spinning-wheels/rele
 
 ### Track editor
 
-Like TrackMania, the player can create custom tracks with a simple editor and test them on the fly. The player have 5 types of blocks at its disposal:
+Like TrackMania, the player can create custom tracks with a simple editor and test them on the fly. The player has 5 types of blocks at its disposal:
 - standard
 - turn
 - start
 - checkpoint
 - finish
 
-The player can save the track (it'll be saved as simple json file) and edit it in the future.
+The player can save the track (it'll be saved as simple JSON file) and edit it in the future.
 
 ![Editor](Media/images/editor.png)
 
 ### Grid system
 
-When loading a track, in both race and editor modes, a grid system is in charge of reading a specific struct (which comes from reading the json file) that tells which block goes in which cell (X, Y) with a specific rotation (R).
+When loading a track, in both race and editor modes, a grid system is in charge of reading a specific struct (which comes from reading the JSON file) that tells which block goes in which cell (X, Y) with a specific rotation (R).
 
 Then, the grid system will spawn all the blocks for the track.
 
 ### Car custom movement physics
 
-To create something like TrackMania's car movement, a custom movement component has been created which handle the power-slide, most important game mechanic that lets the player gain advantage on tight corners.
+To create something like TrackMania's car movement, a custom movement component has been created which handle the power-slide, most important gameplay element that lets the player gain advantage on tight corners.
 
-Acceleration: determines how much the car accelerate at a certain speed.
+Acceleration: determines how much the car accelerates at a certain speed.
 Angular speed: determines how much the car turns at a certain speed.
-Braking: determines how much brake force is being applied after time since starting braking (the more time braking, the more brake force).
-Speed: is determined by adding up forces like acceleration, braking or ground friction.
+Braking: determines how much brake force is being applied over time (the more time braking, the more brake force).
+Speed: determined by adding up forces like acceleration, braking or ground friction.
 Velocity: direction vector. Determines where the car is moving but not necessarily the facing direction.
 
 Turbo: consumable that increases acceleration when active. Resets each lap.
@@ -93,11 +93,11 @@ While sliding, the velocity direction is interpolated to the desired direction, 
 
 ![Slide](Media/images/velocity.jpg)
 
-When velocity vector and facing direction vector are the same, the car returns on drive mode.
+When velocity vector and facing direction vector are aligned again, the car returns on drive mode.
 
 #### Crash
 
-The car enter crash mode when hitting a wall at high speed. The speed is cut by a percentage and the velocity vector is changed to the hit point bounce vector. 
+The car enters crash mode when hitting a wall at high speed. The speed is cut by a percentage and the velocity vector is reflected using hit impact normal (bounce vector). 
 
 Also, the car starts spinning. When the spinning speed comes down to a controllable value, the player can retake control of the car on slide mode.
 
@@ -105,13 +105,13 @@ If the angle between velocity vector and impact normal is less than some pre-def
 
 ### Deterministic lap times
 
-Lap time is determined by the number of simulated movements that occured to complete a lap. Car does not move each frame, but each custom pre-defined delta (120hz = 0.008333s or 8.333ms). If the difference between two frames is enough to contain two simulated movements, then two simulated movements will be computed. Likewise, if the difference is not enough, no simulated movements will be computed but, the time will be considered for the next simulation.
+Lap time is determined by the number of simulated movements that occurred to complete a lap. The car does not move each frame, but each custom pre-defined delta (120hz = 0.008333s or 8.333ms). If the difference between two frames is enough to contain two simulated movements, then two simulated movements will be computed. If the difference is not enough, no simulated movements will be computed but, the time will be considered for the next simulation.
 
 Hence, lap times are determined by the number of simulated movements multiplied by the pre-defined delta (1000 movements * 8.333ms = 8333ms = 8.333s).
 
 #### Deterministic movement
 
-Accordingly, the car reads a buffer of simulated movements and consume them, one by one. A single movement is constructed of:
+Accordingly, the car reads a buffer of simulated movements and consumes them, one by one. A single movement consists of:
 - drive input (0/1)
 - brake input (0/1)
 - turn input (-1/0/+1)
@@ -123,14 +123,14 @@ Right now the car moves because simulated movements are passed by the controller
 
 The race mode is multiplayer ready where everything is being replicated and synced.
 
-The race is mode is divided in main phases:
+The race is mode is divided in three main phases:
 - waiting for players.
 - racing: players can control their cars.
 - podium: leaderboard is shown. Players can not control their cars.
 
-The server holds the leaderboard and decide wether to accept lap times from players. Changes to the leaderboard are spread to players whom HUD will notify them.
+The server holds the leaderboard and decides whether to accept lap times from players. Changes to the leaderboard are replicated to clients, and HUD notifies players.
 
-The player can choose to play solo (LAN), join a LAN race or start a Steam session. When creating a session (solo or Steam) the server will play all saved tracks for 5 minutes each.
+The player can choose to play solo (LAN), join a LAN race or start a Steam session. When creating a session (solo or Steam) the server will cycles through all saved tracks for 5 minutes each.
 
 ### Meshes and Blender
 
